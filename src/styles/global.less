@@ -1,0 +1,130 @@
+:root {
+  /* 主色调 */
+  --primary-100: #6366f1;
+  --primary-200: #4f46e5;
+  --primary-300: #3730a3;
+
+  /* 强调色 */
+  --accent-100: #06b6d4;
+  --accent-200: #0891b2;
+
+  /* 辅助色 */
+  --secondary-100: #ec4899;
+  --secondary-200: #be185d;
+
+  /* 提示状态色系 */
+  --success-100: #10b981;
+  --success-200: #059669;
+  --success-bg: #d1fae5;
+  --success-border: #a7f3d0;
+
+  --warning-100: #f59e0b;
+  --warning-200: #d97706;
+  --warning-bg: #fef3c7;
+  --warning-border: #fde68a;
+
+  --error-100: #ef4444;
+  --error-200: #dc2626;
+  --error-bg: #fee2e2;
+  --error-border: #fecaca;
+
+  --info-100: #3b82f6;
+  --info-200: #2563eb;
+  --info-bg: #dbeafe;
+  --info-border: #bfdbfe;
+
+  /* 文本色 */
+  --text-100: #1f2937;
+  --text-200: #4b5563;
+  --text-300: #6b7280;
+
+  /* 背景色  */
+  --bg-100: #ffffff;
+  --bg-200: #f9fafb;
+  --bg-300: #f3f4f6;
+  --bg-400: #e5e7eb;
+
+  /* 特殊效果色 */
+  --gradient-start: #6366f1;
+  --gradient-end: #06b6d4;
+  --shadow-color: rgba(99, 102, 241, 0.1);
+}
+
+// 全局样式
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  color: var(--text-100);
+  background-color: var(--bg-100);
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+// 通用样式类
+.text-primary {
+  color: var(--primary-100);
+}
+
+.text-accent {
+  color: var(--accent-100);
+}
+
+.bg-primary {
+  background-color: var(--primary-100);
+}
+
+.bg-light {
+  background-color: var(--bg-200);
+}
+
+// 链接样式覆盖
+a {
+  color: var(--accent-100);
+
+  &:hover {
+    color: var(--primary-200);
+  }
+
+  &:active {
+    color: var(--accent-200);
+  }
+}
+
+// 全局滚动条样式
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-100);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-200);
+}
+
+// 兼容 Firefox
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-100) var(--bg-300);
+}
