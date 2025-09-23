@@ -1,15 +1,20 @@
 import logo from "@/assets/logo-with-title.svg";
 import { Layout as AntdLayout, Menu } from "antd";
 import React from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import styles from "./index.module.less";
 
 const { Header, Content, Footer } = AntdLayout;
 
 const Layout: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const menuItems = [{ key: "/", label: <Link to="/">首页</Link> }];
+
+  const handleLogoClick = () => {
+    navigate("/");
+  };
 
   return (
     <AntdLayout className={styles.layout}>
@@ -18,6 +23,8 @@ const Layout: React.FC = () => {
           src={logo}
           alt="Pixel Artist Logo"
           className={styles.logoImage}
+          onClick={handleLogoClick}
+          style={{ cursor: "pointer" }}
         />
         <Menu
           mode="horizontal"
