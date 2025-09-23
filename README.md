@@ -42,6 +42,7 @@ npm run lint
 ```
 
 ## 项目结构
+```
 pixel-artist/ 
 ├── public/                  # 静态资源目录
 │   ├── logo.svg             # 应用图标
@@ -88,3 +89,4 @@ pixel-artist/
 ├── tsconfig.app.json        # 应用 TypeScript 配置
 ├── tsconfig.node.json       # Node.js TypeScript 配置
 └── vite.config.ts           # Vite 配置
+```
