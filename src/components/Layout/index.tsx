@@ -10,7 +10,10 @@ const Layout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const menuItems = [{ key: "/", label: <Link to="/">首页</Link> }];
+  const menuItems = [
+    { key: "/", label: <Link to="/">首页</Link> },
+    { key: "/creator", label: <Link to="/creator">创作</Link> },
+  ];
 
   const handleLogoClick = () => {
     navigate("/");
@@ -27,6 +30,7 @@ const Layout: React.FC = () => {
           style={{ cursor: "pointer" }}
         />
         <Menu
+          theme="dark"
           mode="horizontal"
           selectedKeys={[location.pathname]}
           items={menuItems}

@@ -84,6 +84,7 @@ export const antdTheme: ThemeConfig = {
     Button: {
       colorPrimary: "#6366F1",
       colorPrimaryHover: "#4F46E5",
+      colorPrimaryTextHover: "4f46e5",
       colorPrimaryActive: "#3730A3",
       borderRadius: 8,
       fontWeight: 500,
