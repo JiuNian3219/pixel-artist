@@ -41,6 +41,17 @@ npm run build
 npm run lint
 ```
 
+## 分析配置
+
+本项目使用 Umami 进行网站访问分析（暂时只包含访问分析）。要启用分析功能，请创建一个 `.env` 文件并设置以下变量：
+
+```env
+VITE_UMAMI_WEBSITE_ID=your-website-id
+VITE_UMAMI_SCRIPT_URL=https://your-umami-domain.com/script.js
+```
+
+请将 `your-website-id` 替换为您的 Umami 网站 ID，将 `https://your-umami-domain.com/script.js` 替换为您的 Umami 脚本 URL。
+
 ## 项目结构
 ```
 pixel-artist/ 
