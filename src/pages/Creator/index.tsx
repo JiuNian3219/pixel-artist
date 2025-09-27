@@ -16,9 +16,16 @@ const Creator: React.FC = () => {
         description="Pixel Artist是一款强大的在线像素艺术创作工具，通过图片转换，让您轻松创建精美的像素艺术作品"
       />
       <div className={styles.container}>
-        <Row gutter={36}>
+        <Row
+          gutter={36}
+          className={styles.creatorRow}
+        >
           <Col
-            span={10}
+            xs={24}
+            sm={24}
+            md={10}
+            lg={10}
+            xl={10}
             className={styles.left}
           >
             <ControlPanel
@@ -26,7 +33,13 @@ const Creator: React.FC = () => {
               setPixelatedImage={setPixelatedImage}
             />
           </Col>
-          <Col span={14}>
+          <Col
+            xs={24}
+            sm={24}
+            md={14}
+            lg={14}
+            xl={14}
+          >
             <PreviewPanel
               originalFile={originalFile}
               pixelatedImage={pixelatedImage}
