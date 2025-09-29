@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 .env
+# AI 编辑器配置与规则
+.trae/
+.trae/rules/
+.cursor/
+.cursor/rules/

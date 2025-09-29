@@ -11,12 +11,22 @@ const Home: React.FC = () => {
   const handleStartClick = () => {
     navigate("/creator");
   };
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    url: import.meta.env.VITE_SITE_URL,
+    name: "Pixel Artist",
+  };
+
   return (
     <>
       <SEO
         title="Pixel Artist - 像素艺术创作工具"
         description="使用Pixel Artist将您的图片转换为有质感的像素艺术作品，简单易用的在线像素画创作工具。"
         keywords="像素画,像素艺术,像素编辑器,在线像素画,像素创作"
+        siteName="Pixel Artist"
+        ogImage={`${import.meta.env.VITE_SITE_URL}/home-page.jpg`}
+        jsonLd={jsonLd}
       />
       <div className={styles.container}>
         <div className={styles.card}>

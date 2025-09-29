@@ -52,12 +52,31 @@ VITE_UMAMI_SCRIPT_URL=https://your-umami-domain.com/script.js
 
 请将 `your-website-id` 替换为您的 Umami 网站 ID，将 `https://your-umami-domain.com/script.js` 替换为您的 Umami 脚本 URL。
 
+## SEO 配置
+本项目进行了SEO优化，若需要使用，请配置SEO相关环境变量：
+
+```env
+// 站点基础 URL，用于生成 canonical、og:image 等
+VITE_SITE_URL=https://your-domain.com
+// 允许索引的路径，多个路径用逗号分隔
+VITE_ROBOTS_ALLOW=/
+```
+
+注意事项：
+- 构建前会自动生成 `public/sitemap.xml` 与 `public/robots.txt`（参见构建脚本）；确保 `VITE_SITE_URL` 已正确设置。
+- 页面内 `SEO` 组件会使用 `VITE_SITE_URL` 来拼接 `canonical`、`og:image` 与 JSON-LD 中的 `url`。
+- 404 页已通过 `robots="noindex,nofollow"` 防止被索引。
+
+
 ## 项目结构
 ```
-pixel-artist/ 
+pixel-artist/
 ├── public/                  # 静态资源目录
 │   ├── logo.svg             # 应用图标
-│   └── logo-white.svg       # 白色版本应用图标
+│   ├── logo-white.svg       # 白色版本应用图标
+│   ├── favicon.ico          # 网站图标
+│   ├── sitemap.xml          # 自动生成的站点地图（构建时生成）
+│   └── robots.txt           # 自动生成的 robots 文件（构建时生成）
 │
 ├── src/                     # 源代码目录
 │   ├── assets/              # 项目资源文件
@@ -69,13 +88,19 @@ pixel-artist/
 │   │   └── logo-with-title.png  # 带标题的应用图标(PNG)
 │   │
 │   ├── components/          # 公共组件
-│   │   └── Layout/          # 布局组件
-│   │       ├── index.tsx    # 布局组件实现
-│   │       └── index.module.less  # 布局组件样式
+│   │   ├── Layout/          # 布局组件
+│   │   │   ├── index.tsx    # 布局组件实现
+│   │   │   └── index.module.less  # 布局组件样式
+│   │   └── SEO/             # SEO 相关组件
+│   │       └── index.tsx    # SEO 组件实现
 │   │
 │   ├── pages/               # 页面组件
 │   │   ├── Home/            # 首页
-│   │   └── NotFound/        # 404页面
+│   │   │   ├── index.tsx    # 首页组件
+│   │   │   └── index.module.less  # 首页样式
+│   │   └── NotFound/        # 404 页面
+│   │       ├── index.tsx    # 404 组件
+│   │       └── index.module.less  # 404 样式
 │   │
 │   ├── routes/              # 路由配置
 │   │   └── index.tsx        # 路由定义
@@ -87,11 +112,16 @@ pixel-artist/
 │   │
 │   ├── utils/               # 工具函数
 │   │   ├── colors.ts        # 颜色工具
-│   │   └── theme.ts         # 主题配置
+│   │   ├── theme.ts         # 主题配置
+│   │   └── seo.ts           # SEO 辅助函数
 │   │
 │   ├── main.tsx             # 应用入口
 │   └── vite-env.d.ts        # Vite 类型声明
 │
+├── scripts/                 # 构建辅助脚本
+│   └── generate-seo-files.js  # 生成 sitemap.xml 与 robots.txt
+│
+├── .env.example             # 环境变量示例
 ├── .gitignore               # Git 忽略文件
 ├── eslint.config.js         # ESLint 配置
 ├── index.html               # HTML 模板
