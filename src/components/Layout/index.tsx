@@ -27,7 +27,9 @@ const Layout: React.FC = () => {
           alt="Pixel Artist Logo"
           className={styles.logoImage}
           onClick={handleLogoClick}
-          style={{ cursor: "pointer" }}
+          width={120}
+          height={50}
+          decoding="async"
         />
         <Menu
           theme="dark"
