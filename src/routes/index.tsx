@@ -18,6 +18,10 @@ const router = createBrowserRouter([
         path: "/creator",
         element: <Creator />,
       },
+      {
+        path: "/404",
+        element: <NotFound />,
+      },
     ],
   },
 ]);

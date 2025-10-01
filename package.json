@@ -41,7 +41,13 @@
   },
   "reactSnap": {
     "source": "dist",
-    "include": ["/", "/creator"],
-    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"]
+    "include": [
+      "/",
+      "/creator"
+    ],
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox"
+    ]
   }
 }
