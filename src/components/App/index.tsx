@@ -9,8 +9,8 @@ import { RouterProvider } from "react-router-dom";
 import Analytics from "../Analytics";
 
 const antdLocaleMap = {
-  zh: zhCN,
-  en: enUS,
+  "zh-CN": zhCN,
+  "en-US": enUS,
 } as const;
 
 const App = () => {
