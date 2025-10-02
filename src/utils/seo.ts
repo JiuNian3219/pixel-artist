@@ -46,7 +46,7 @@ export const seoConfigs: Record<string, SEOConfig> = {
 };
 
 export const getDefaultSEO = (): SEOConfig => ({
-  title: "404 页面未找到 - Pixel Artist",
-  description: "抱歉，您访问的页面不存在。",
+  title: "404 - Pixel Artist",
+  description: "页面未找到。Page not found.",
   robots: "noindex,nofollow",
 });
