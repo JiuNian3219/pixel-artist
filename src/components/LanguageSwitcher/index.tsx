@@ -5,6 +5,12 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
 
+// 语言显示名称映射
+const languageDisplayMap: Record<string, string> = {
+  "zh-CN": "中文",
+  "en-US": "English",
+};
+
 const LanguageSwitcher: React.FC = () => {
   const { i18n, t } = useTranslation("common");
 
@@ -14,14 +20,14 @@ const LanguageSwitcher: React.FC = () => {
 
   const items: MenuProps["items"] = [
     {
-      key: "zh",
+      key: "zh-CN",
       label: t("language.chinese"),
-      onClick: () => handleLanguageChange("zh"),
+      onClick: () => handleLanguageChange("zh-CN"),
     },
     {
-      key: "en",
+      key: "en-US",
       label: t("language.english"),
-      onClick: () => handleLanguageChange("en"),
+      onClick: () => handleLanguageChange("en-US"),
     },
   ];
 
@@ -37,7 +43,7 @@ const LanguageSwitcher: React.FC = () => {
         icon={<GlobalOutlined />}
         title={t("language.switch")}
       >
-        {i18n.language === "zh" ? "中文" : "English"}
+        {languageDisplayMap[i18n.language] || languageDisplayMap.zh}
       </Button>
     </Dropdown>
   );
