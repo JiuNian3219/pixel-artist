@@ -1,5 +1,6 @@
 import { Button, Typography } from "antd";
 import React from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import styles from "./index.module.less";
 
@@ -7,6 +8,7 @@ const { Title } = Typography;
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation("home");
   const handleStartClick = () => {
     navigate("/creator");
   };
@@ -16,7 +18,13 @@ const Home: React.FC = () => {
       <div className={styles.card}>
         <div>
           <Title className={styles.title}>
-            把你的图片，变成有<span>"质感"</span>的像素画
+            <Trans
+              i18nKey="title"
+              ns="home"
+              components={{
+                1: <span />,
+              }}
+            />
           </Title>
         </div>
 
@@ -27,7 +35,7 @@ const Home: React.FC = () => {
           onClick={handleStartClick}
           className={styles.startButton}
         >
-          开始创作→
+          {t("start_button")}
         </Button>
       </div>
     </div>

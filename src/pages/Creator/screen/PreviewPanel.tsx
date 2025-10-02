@@ -1,5 +1,6 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Image, Row, Space } from "antd";
+import { useTranslation } from "react-i18next";
 import styles from "../index.module.less";
 
 interface PreviewPanelProps {
@@ -11,6 +12,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   originalFile,
   pixelatedImage,
 }) => {
+  const { t } = useTranslation("creator");
   const handleSaveImage = () => {
     if (!pixelatedImage || !originalFile) return;
     const link = document.createElement("a");
@@ -26,7 +28,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       title={
         <Space>
           <EyeOutlined />
-          预览效果
+          {t("preview_panel.title")}
         </Space>
       }
       className={styles.rightCard}
@@ -40,7 +42,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           />
         ) : (
           <div className={styles.emptyPreview}>
-            {originalFile ? '点击"转换为像素画"按钮生成像素图' : "请先上传图片"}
+            {originalFile
+              ? t("preview_panel.upload_after_hint")
+              : t("preview_panel.upload_hint")}
           </div>
         )}
       </div>
@@ -60,7 +64,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             disabled={!pixelatedImage}
             onClick={handleSaveImage}
           >
-            保存到本地
+            {t("preview_panel.save_button")}
           </Button>
         </Col>
       </Row>

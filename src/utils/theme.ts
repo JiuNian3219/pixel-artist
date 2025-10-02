@@ -107,6 +107,7 @@ export const antdTheme: ThemeConfig = {
         "0 1px 3px 0 rgba(99, 102, 241, 0.1), 0 1px 2px 0 rgba(99, 102, 241, 0.06)",
     },
     Menu: {
+      itemColor: "rgba(255,255,255,0.65)",
       itemSelectedBg: "#F0F0FF",
       itemSelectedColor: "#6366F1",
       itemHoverColor: "#4F46E5",
