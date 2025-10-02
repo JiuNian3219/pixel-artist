@@ -1,0 +1,15 @@
+{
+  "nav": {
+    "home": "Home",
+    "creator": "Creator"
+  },
+  "actions": {
+    "start": "Start Creating",
+    "back_home": "Back to Home"
+  },
+  "language": {
+    "switch": "Switch Language",
+    "chinese": "中文",
+    "english": "English"
+  }
+}

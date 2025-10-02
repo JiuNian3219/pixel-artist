@@ -6,6 +6,7 @@ import {
 import { Button, Card, Divider, Flex, Slider, Space } from "antd";
 import { Typography } from "antd/lib";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import ImageUploader from "../components/ImageUploader";
 import styles from "../index.module.less";
 import { MAX_PIXEL_SIZE, MIN_PIXEL_SIZE } from "../utils";
@@ -23,6 +24,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [originalImage, setOriginalImage] = useState<string>("");
   const [inPixelation, setInPixelation] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const { t } = useTranslation("creator");
 
   const handleChangePixelSize = (value: number) => {
     setPixelSize(value);
@@ -148,7 +150,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       title={
         <Space>
           <SettingOutlined />
-          操作面板
+          {t("control_panel.title")}
         </Space>
       }
       className={styles.leftCard}
@@ -162,7 +164,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         onClick={handlePixelate}
         loading={inPixelation}
       >
-        转换为像素画
+        {t("control_panel.to_pixel_button")}
       </Button>
       <Divider />
       <Flex
@@ -171,7 +173,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       >
         <Space>
           <TableOutlined />
-          <span>像素尺寸</span>
+          <span>{t("control_panel.pixel_size_slider")}</span>
         </Space>
         <Typography className={styles.pixelSize}>{pixelSize}px</Typography>
       </Flex>

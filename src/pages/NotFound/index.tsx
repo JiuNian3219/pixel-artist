@@ -1,21 +1,23 @@
 import { Button, Result } from "antd";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 const NotFound: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation("404");
 
   return (
     <Result
       status="404"
       title="404"
-      subTitle="抱歉，您访问的页面不存在。"
+      subTitle={t("description")}
       extra={
         <Button
           type="primary"
           onClick={() => navigate("/")}
         >
-          返回首页
+          {t("actions.back_home")}
         </Button>
       }
     />

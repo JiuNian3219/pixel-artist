@@ -3,6 +3,7 @@ import { Image, Progress, message } from "antd";
 import Dragger from "antd/es/upload/Dragger";
 import { isEmpty } from "lodash";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "../index.module.less";
 import { isImageFile } from "../utils";
 
@@ -20,10 +21,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageChange }) => {
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const { t } = useTranslation("creator");
   const customRequest = ({ file, onSuccess, onProgress }: any) => {
     const rawFile = file as File;
     if (!isImageFile(rawFile)) {
-      message.error("仅支持 JPG、JPEG、PNG、WEBP 格式的图片");
+      message.error(t("image_uploader.type_error_message"));
       return;
     }
     setUploading(true);
@@ -60,7 +62,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageChange }) => {
     // 读取错误
     reader.onerror = () => {
       setUploading(false);
-      message.error(`${rawFile.name} 上传失败`);
+      message.error(
+        t("image_uploader.upload_failed_message", { name: rawFile.name })
+      );
     };
 
     // 读取文件
@@ -79,10 +83,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageChange }) => {
           <p className="ant-upload-drag-icon">
             <InboxOutlined className={styles.uploadIcon} />
           </p>
-          <p className="ant-upload-text">点击或拖拽文件到这里上传</p>
-          <p className="ant-upload-hint">
-            最多上传 1 个文件，支持 JPG、JPEG、PNG 格式
-          </p>
+          <p className="ant-upload-text">{t("image_uploader.hint")}</p>
+          <p className="ant-upload-hint">{t("image_uploader.tip")}</p>
         </div>
       </Dragger>
 
