@@ -1,4 +1,9 @@
 import {
+  findClosestColor,
+  getPaletteByName,
+  type Palette,
+} from "@/utils/palettes";
+import {
   HighlightOutlined,
   SettingOutlined,
   TableOutlined,
@@ -8,6 +13,7 @@ import { Typography } from "antd/lib";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ImageUploader from "../components/ImageUploader";
+import PaletteSelect from "../components/PaletteSelect";
 import styles from "../index.module.less";
 import { MAX_PIXEL_SIZE, MIN_PIXEL_SIZE } from "../utils";
 
@@ -24,7 +30,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [originalImage, setOriginalImage] = useState<string>("");
   const [inPixelation, setInPixelation] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [palette, setPalette] = useState<Palette>(getPaletteByName("全色色板"));
   const { t } = useTranslation("creator");
+
+  const handlePaletteChange = (palette: Palette) => {
+    setPalette(palette);
+  };
 
   const handleChangePixelSize = (value: number) => {
     setPixelSize(value);
@@ -85,7 +96,14 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     for (let y = 0; y < height; y += pixelSize) {
       for (let x = 0; x < width; x += pixelSize) {
         // 计算当前像素块的平均颜色
-        const avgColor = getAverageColor(data, width, height, x, y, pixelSize);
+        let avgColor = getAverageColor(data, width, height, x, y, pixelSize);
+        // 如果选择了色板，将颜色映射到最相近的色板颜色
+        if (palette) {
+          avgColor = {
+            ...findClosestColor(avgColor, palette.colors),
+            a: avgColor.a,
+          };
+        }
 
         // 将平均颜色应用到整个像素块
         for (
@@ -184,6 +202,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         value={pixelSize}
         tooltip={{ formatter: null }}
         onChange={handleChangePixelSize}
+      />
+
+      <PaletteSelect
+        defaultValue="全色色板"
+        onChange={handlePaletteChange}
       />
     </Card>
   );
