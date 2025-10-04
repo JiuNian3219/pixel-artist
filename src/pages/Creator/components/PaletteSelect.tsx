@@ -32,7 +32,8 @@ const PaletteSelect: React.FC<PaletteSelectProps> = ({
     <div className={styles.paletteSelect}>
       <Flex
         justify="space-between"
-        align="center"
+        wrap="wrap"
+        gap={3}
       >
         <Space>
           <BgColorsOutlined />
@@ -42,6 +43,7 @@ const PaletteSelect: React.FC<PaletteSelectProps> = ({
           options={paletteOptions}
           value={paletteName}
           onChange={handleSelectChange}
+          style={{ width: 200 }}
         />
       </Flex>
 
