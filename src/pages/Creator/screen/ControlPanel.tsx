@@ -2,11 +2,7 @@ import {
   getPixelAlgorithm,
   getPixelAlgorithmsOptions,
 } from "@/utils/algorithm";
-import {
-  findClosestColor,
-  getPaletteByName,
-  type Palette,
-} from "@/utils/palettes";
+import { findClosestColor, getPaletteById } from "@/utils/palettes";
 import {
   HighlightOutlined,
   SearchOutlined,
@@ -18,7 +14,7 @@ import { Typography } from "antd/lib";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ImageUploader from "../components/ImageUploader";
-import PaletteSelect from "../components/PaletteSelect";
+import PaletteSelector from "../components/PaletteSelector";
 import styles from "../index.module.less";
 import { MAX_PIXEL_SIZE, MIN_PIXEL_SIZE } from "../utils";
 
@@ -36,12 +32,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [inPixelation, setInPixelation] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [pixelAlgorithm, setPixelAlgorithm] = useState<string>("dominant");
-  const [palette, setPalette] = useState<Palette>(getPaletteByName("全色色板"));
+  const [paletteName, setPaletteName] = useState<string>("All-Colors");
   const { t } = useTranslation("creator");
   const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
 
-  const handlePaletteChange = (palette: Palette) => {
-    setPalette(palette);
+  const handlePaletteChange = (paletteName: string) => {
+    setPaletteName(paletteName);
   };
 
   const handleChangePixelSize = (value: number) => {
@@ -116,12 +112,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           pixelSize
         );
         // 如果选择了色板，将颜色映射到最相近的色板颜色
-        if (palette) {
-          pixelColor = {
-            ...findClosestColor(pixelColor, palette.colors),
-            a: pixelColor.a,
-          };
-        }
+        pixelColor = {
+          ...findClosestColor(pixelColor, getPaletteById(paletteName).colors),
+          a: pixelColor.a,
+        };
 
         // 将平均颜色应用到整个像素块
         for (
@@ -206,8 +200,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         />
       </Flex>
 
-      <PaletteSelect
-        defaultValue="全色色板"
+      <PaletteSelector
+        value={paletteName}
         onChange={handlePaletteChange}
       />
     </Card>

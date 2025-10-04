@@ -1,32 +1,22 @@
 import {
   getColorHex,
-  getPaletteByName,
-  paletteOptions,
-  type Palette,
+  getPaletteById,
+  getPaletteOptions,
 } from "@/utils/palettes";
 import { BgColorsOutlined } from "@ant-design/icons";
 import { Flex, Select, Space } from "antd";
-import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "../index.module.less";
 
 interface PaletteSelectProps {
-  onChange: (value: Palette) => void;
-  defaultValue?: string;
+  value: string;
+  onChange: (paletteId: string) => void;
 }
 
-const PaletteSelect: React.FC<PaletteSelectProps> = ({
-  onChange,
-  defaultValue = "none",
-}) => {
-  const [paletteName, setPaletteName] = useState(defaultValue);
-  const currentPalette = getPaletteByName(paletteName);
-
-  const handleSelectChange = (value: string) => {
-    setPaletteName(value);
-    // useState 异步，所以直接使用 value 获取最新值
-    const palette = getPaletteByName(value);
-    onChange(palette);
-  };
+const PaletteSelector: React.FC<PaletteSelectProps> = ({ value, onChange }) => {
+  const { t } = useTranslation("creator");
+  const currentPalette = getPaletteById(value);
+  const paletteOptions = getPaletteOptions(t);
 
   return (
     <div className={styles.paletteSelect}>
@@ -37,13 +27,13 @@ const PaletteSelect: React.FC<PaletteSelectProps> = ({
       >
         <Space>
           <BgColorsOutlined />
-          <span>色板选择</span>
+          <span>{t("palette_selector.title")}</span>
         </Space>
         <Select
           options={paletteOptions}
-          value={paletteName}
-          onChange={handleSelectChange}
-          style={{ width: 200 }}
+          value={value}
+          onChange={onChange}
+          style={{ minWidth: 200 }}
         />
       </Flex>
 
@@ -54,7 +44,7 @@ const PaletteSelect: React.FC<PaletteSelectProps> = ({
               key={index}
               className={styles.paletteColor}
               style={{ backgroundColor: getColorHex(color) }}
-            ></div>
+            />
           ))}
         </div>
       )}
@@ -62,4 +52,4 @@ const PaletteSelect: React.FC<PaletteSelectProps> = ({
   );
 };
 
-export default PaletteSelect;
+export default PaletteSelector;

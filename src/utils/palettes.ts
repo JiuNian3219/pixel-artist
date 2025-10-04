@@ -5,15 +5,15 @@ export interface Color {
 }
 
 export interface Palette {
+  id: string;
   name: string;
   colors: Color[];
-  description: string;
 }
 
 // 16位机色板
 const sixteenBitPalette: Palette = {
+  id: "16-Bit",
   name: "16-Bit 16色",
-  description: "经典16位游戏机色板",
   colors: [
     // 黑色
     { r: 0, g: 0, b: 0 },
@@ -52,8 +52,8 @@ const sixteenBitPalette: Palette = {
 
 // DawnBringer's 16色板
 const dawnBringer16Palette: Palette = {
+  id: "DawnBringer-16",
   name: "DawnBringer 16色",
-  description: "DawnBringer's 16色经典像素艺术色板",
   colors: [
     // 深紫黑
     { r: 20, g: 12, b: 28 },
@@ -92,8 +92,8 @@ const dawnBringer16Palette: Palette = {
 
 // DawnBringer's 32色板
 const dawnBringer32Palette: Palette = {
+  id: "DawnBringer-32",
   name: "DawnBringer 32色",
-  description: "DawnBringer's 32色扩展像素艺术色板",
   colors: [
     // 黑色
     { r: 0, g: 0, b: 0 },
@@ -164,8 +164,8 @@ const dawnBringer32Palette: Palette = {
 
 // PICO-8色板
 const pico8Palette: Palette = {
+  id: "Pico-8",
   name: "PICO-8 16色",
-  description: "PICO-8 游戏引擎经典16色板",
   colors: [
     // 黑色
     { r: 0, g: 0, b: 0 },
@@ -204,8 +204,8 @@ const pico8Palette: Palette = {
 
 // Arne’s 16 色板
 const arne16Palette: Palette = {
+  id: "Arne-16",
   name: "Arne 16色",
-  description: "Arne’s 16色经典像素艺术色板，偏向饱和、复古卡通感",
   colors: [
     // 黑色
     { r: 0, g: 0, b: 0 },
@@ -244,8 +244,8 @@ const arne16Palette: Palette = {
 
 // NES（红白机）的54色调色板
 const nesPalette: Palette = {
+  id: "NES-54",
   name: "NES 54色",
-  description: "NES（红白机）的54色调色板，包含16种颜色",
   colors: [
     // 白色
     { r: 255, g: 255, b: 255 },
@@ -360,12 +360,15 @@ const nesPalette: Palette = {
 
 // 全色色板
 const allColorsPalette: Palette = {
+  id: "All-Colors",
   name: "全色色板",
-  description: "",
   colors: [],
 };
 
-export const palettes: Palette[] = [
+/**
+ * 色板列表
+ */
+export const palettes = [
   allColorsPalette,
   sixteenBitPalette,
   dawnBringer16Palette,
@@ -373,7 +376,18 @@ export const palettes: Palette[] = [
   pico8Palette,
   arne16Palette,
   nesPalette,
-];
+] as const;
+
+/**
+ * 色板列索引表，以 palette.id 为 key
+ */
+export const palettesById: Record<string, Palette> = palettes.reduce(
+  (acc, palette) => {
+    acc[palette.id] = palette;
+    return acc;
+  },
+  {} as Record<string, Palette>
+);
 
 /**
  * 查找目标颜色在色板中的最接近颜色
@@ -413,8 +427,8 @@ export const findClosestColor = (
  * @param name 色板名称
  * @returns
  */
-export const getPaletteByName = (name: string): Palette => {
-  return palettes.find((palette) => palette.name === name) || allColorsPalette;
+export const getPaletteById = (id: string): Palette => {
+  return palettesById[id] || allColorsPalette;
 };
 
 /**
@@ -430,8 +444,11 @@ export const getColorHex = (color: Color): string => {
 
 /**
  * 色板选项
+ * @param t 翻译函数 const { t } = useTranslation("creator");
+ * @returns 色板选项数组
  */
-export const paletteOptions = palettes.map((palette) => ({
-  label: palette.name,
-  value: palette.name,
-}));
+export const getPaletteOptions = (t: (key: string) => string) =>
+  palettes.map((palette) => ({
+    label: t(`palettes.${palette.id}`),
+    value: palette.id,
+  }));
