@@ -8,12 +8,20 @@
   "control_panel": {
     "title": "Control Panel",
     "to_pixel_button": "Convert to Pixel Art",
-    "pixel_size_slider": "Pixel Size"
+    "pixel_size_slider": "Pixel Size",
+    "pixel_algorithm_select": "Pixel Sampling Algorithm"
   },
   "preview_panel": {
     "title": "Preview",
     "upload_hint": "Please upload an image first",
     "upload_after_hint": "Click the 'Convert to Pixel Art' button to generate pixel art",
     "save_button": "Save to Local"
+  },
+  "algorithms": {
+    "dominant": "Dominant Color",
+    "average": "Average Color",
+    "median": "Median Color",
+    "weightedByLuminance": "Weighted (Luminance)",
+    "weightedBySaturation": "Weighted (Saturation)"
   }
 }

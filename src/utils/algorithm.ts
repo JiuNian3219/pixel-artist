@@ -289,27 +289,20 @@ export const getPixelAlgorithm = (algorithm: string) => {
 };
 
 /**
- * 像素采样算法选项
+ * 像素采样算法选项，适配i18n
+ * @param t 翻译函数 const { t } = useTranslation("creator");
+ * @returns 像素采样算法选项数组
  */
-export const pixelAlgorithmsOptions = [
+export const getPixelAlgorithmsOptions = (t: (key: string) => string) => [
+  { label: t("algorithms.dominant"), value: "dominant" },
+  { label: t("algorithms.average"), value: "average" },
+  { label: t("algorithms.median"), value: "median" },
   {
-    label: "主导色采样",
-    value: "dominant",
-  },
-  {
-    label: "平均值采样",
-    value: "average",
-  },
-  {
-    label: "中值采样",
-    value: "median",
-  },
-  {
-    label: "加权平均（亮度）采样",
+    label: t("algorithms.weightedByLuminance"),
     value: "weightedByLuminance",
   },
   {
-    label: "加权平均（饱和度）采样",
+    label: t("algorithms.weightedBySaturation"),
     value: "weightedBySaturation",
   },
 ];

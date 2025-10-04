@@ -1,4 +1,7 @@
-import { getPixelAlgorithm, pixelAlgorithmsOptions } from "@/utils/algorithm";
+import {
+  getPixelAlgorithm,
+  getPixelAlgorithmsOptions,
+} from "@/utils/algorithm";
 import {
   findClosestColor,
   getPaletteByName,
@@ -35,6 +38,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [pixelAlgorithm, setPixelAlgorithm] = useState<string>("dominant");
   const [palette, setPalette] = useState<Palette>(getPaletteByName("全色色板"));
   const { t } = useTranslation("creator");
+  const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
 
   const handlePaletteChange = (palette: Palette) => {
     setPalette(palette);
@@ -192,11 +196,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       >
         <Space>
           <SearchOutlined />
-          <span>采样方式</span>
+          <span>{t("control_panel.pixel_algorithm_select")}</span>
         </Space>
         <Select
           value={pixelAlgorithm}
-          options={pixelAlgorithmsOptions}
+          options={pixelAlgorithmOptions}
           onChange={handlePixelAlgorithmChange}
           style={{ width: 200 }}
         />
