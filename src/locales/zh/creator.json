@@ -5,15 +5,36 @@
     "hint": "点击或拖拽文件到这里上传",
     "tip": "最多上传 1 个文件，支持 JPG、JPEG、PNG 格式"
   },
+  "palette_selector": {
+    "title": "调色板选择"
+  },
   "control_panel": {
     "title": "操作面板",
     "to_pixel_button": "转换为像素画",
-    "pixel_size_slider": "像素尺寸"
+    "pixel_size_slider": "像素尺寸",
+    "pixel_algorithm_select": "像素采样算法",
+    "palette_select": "调色板选择"
   },
   "preview_panel": {
     "title": "预览效果",
     "upload_hint": "请先上传图片",
     "upload_after_hint": "点击“转换为像素画”按钮生成像素画",
     "save_button": "保存到本地"
+  },
+  "algorithms": {
+    "dominant": "主导色采样",
+    "average": "平均值采样",
+    "median": "中值采样",
+    "weightedByLuminance": "加权平均（亮度）采样",
+    "weightedBySaturation": "加权平均（饱和度）采样"
+  },
+  "palettes": {
+    "All-Colors": "全色调色板",
+    "16-Bit": "16-bit (16色)",
+    "DawnBringer-16": "DawnBringer 16 (16色)",
+    "DawnBringer-32": "DawnBringer 32 (32色)",
+    "Pico-8": "Pico-8 (16色)",
+    "Arne-16": "Arne 16 (16色)",
+    "NES-54": "NES (54色)"
   }
 }
