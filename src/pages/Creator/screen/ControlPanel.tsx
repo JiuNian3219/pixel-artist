@@ -1,3 +1,4 @@
+import { useCreatorLocalStore } from "@/stores";
 import {
   getPixelAlgorithm,
   getPixelAlgorithmsOptions,
@@ -27,12 +28,18 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   setOriginalFile,
   setPixelatedImage,
 }) => {
-  const [pixelSize, setPixelSize] = useState<number>(16);
+  const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
+  const setPixelSize = useCreatorLocalStore((state) => state.setPixelSize);
+  const pixelAlgorithm = useCreatorLocalStore((state) => state.pixelAlgorithm);
+  const setPixelAlgorithm = useCreatorLocalStore(
+    (state) => state.setPixelAlgorithm
+  );
+  const paletteName = useCreatorLocalStore((state) => state.paletteName);
+  const setPaletteName = useCreatorLocalStore((state) => state.setPaletteName);
+
   const [originalImage, setOriginalImage] = useState<string>("");
   const [inPixelation, setInPixelation] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [pixelAlgorithm, setPixelAlgorithm] = useState<string>("dominant");
-  const [paletteName, setPaletteName] = useState<string>("All-Colors");
   const { t } = useTranslation("creator");
   const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
 
