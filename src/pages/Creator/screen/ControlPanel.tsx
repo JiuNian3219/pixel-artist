@@ -1,15 +1,26 @@
+import { useCreatorLocalStore } from "@/stores";
 import {
   getPixelAlgorithm,
   getPixelAlgorithmsOptions,
 } from "@/utils/algorithm";
 import { findClosestColor, getPaletteById } from "@/utils/palettes";
 import {
+  BgColorsOutlined,
   HighlightOutlined,
   SearchOutlined,
   SettingOutlined,
   TableOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Divider, Flex, Select, Slider, Space } from "antd";
+import {
+  Button,
+  Card,
+  Divider,
+  Flex,
+  Popover,
+  Select,
+  Slider,
+  Space,
+} from "antd";
 import { Typography } from "antd/lib";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,12 +38,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   setOriginalFile,
   setPixelatedImage,
 }) => {
-  const [pixelSize, setPixelSize] = useState<number>(16);
+  const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
+  const setPixelSize = useCreatorLocalStore((state) => state.setPixelSize);
+  const pixelAlgorithm = useCreatorLocalStore((state) => state.pixelAlgorithm);
+  const setPixelAlgorithm = useCreatorLocalStore(
+    (state) => state.setPixelAlgorithm
+  );
+  const paletteName = useCreatorLocalStore((state) => state.paletteName);
+  const setPaletteName = useCreatorLocalStore((state) => state.setPaletteName);
+  const extendMode = useCreatorLocalStore((state) => state.extendMode);
+
   const [originalImage, setOriginalImage] = useState<string>("");
   const [inPixelation, setInPixelation] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [pixelAlgorithm, setPixelAlgorithm] = useState<string>("dominant");
-  const [paletteName, setPaletteName] = useState<string>("All-Colors");
   const { t } = useTranslation("creator");
   const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
 
@@ -141,7 +159,114 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     return newData;
   };
 
-  return (
+  return extendMode ? (
+    <div className={styles.miniControlPanel}>
+      <ImageUploader
+        onImageChange={handleImageChange}
+        mode="button"
+      />
+      <Button
+        type="primary"
+        shape="circle"
+        icon={<HighlightOutlined />}
+        disabled={!originalImage}
+        onClick={handlePixelate}
+        loading={inPixelation}
+        className={styles.miniPixelateButton}
+      ></Button>
+      <div className={styles.miniSetting}>
+        <div className={styles.settingButtonGroup}>
+          {/* 像素尺寸设置 */}
+          <Popover
+            content={
+              <div className={styles.popoverContent}>
+                <Flex
+                  justify="space-between"
+                  align="center"
+                >
+                  <Space>
+                    <TableOutlined />
+                    <span>{t("control_panel.pixel_size_slider")}</span>
+                  </Space>
+                  <Typography className={styles.pixelSize}>
+                    {pixelSize}px
+                  </Typography>
+                </Flex>
+
+                <Slider
+                  min={MIN_PIXEL_SIZE}
+                  max={MAX_PIXEL_SIZE}
+                  value={pixelSize}
+                  tooltip={{ formatter: null }}
+                  onChange={handleChangePixelSize}
+                />
+              </div>
+            }
+            placement="left"
+            trigger="click"
+          >
+            <Button
+              shape="circle"
+              icon={<TableOutlined />}
+              className={styles.settingButton}
+            />
+          </Popover>
+
+          {/** 算法选择 */}
+          <Popover
+            content={
+              <div className={styles.popoverContent}>
+                <Flex
+                  vertical
+                  align="flex-start"
+                  gap={8}
+                >
+                  <Space>
+                    <SearchOutlined />
+                    <span>{t("control_panel.pixel_algorithm_select")}</span>
+                  </Space>
+                  <Select
+                    value={pixelAlgorithm}
+                    options={pixelAlgorithmOptions}
+                    onChange={handlePixelAlgorithmChange}
+                    style={{ width: "100%" }}
+                  />
+                </Flex>
+              </div>
+            }
+            placement="left"
+            trigger="click"
+          >
+            <Button
+              shape="circle"
+              icon={<SearchOutlined />}
+              className={styles.settingButton}
+            />
+          </Popover>
+
+          {/* 调色板选择 */}
+          <Popover
+            content={
+              <div className={styles.popoverContent}>
+                <PaletteSelector
+                  value={paletteName}
+                  onChange={handlePaletteChange}
+                />
+              </div>
+            }
+            placement="left"
+            trigger="click"
+          >
+            <Button
+              shape="circle"
+              icon={<BgColorsOutlined />}
+              className={styles.settingButton}
+            />
+          </Popover>
+        </div>
+      </div>
+    </div>
+  ) : (
     <Card
       title={
         <Space>
@@ -149,10 +274,15 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {t("control_panel.title")}
         </Space>
       }
-      className={styles.leftCard}
+      className={styles.controlCard}
     >
-      <ImageUploader onImageChange={handleImageChange} />
+      {/** 图片上传 */}
+      <ImageUploader
+        onImageChange={handleImageChange}
+        originalImage={originalImage}
+      />
 
+      {/** 像素化按钮 */}
       <Button
         type="primary"
         icon={<HighlightOutlined />}
@@ -164,6 +294,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       </Button>
       <Divider />
 
+      {/** 像素尺寸设置 */}
       <Flex
         justify="space-between"
         align="center"
@@ -183,6 +314,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         onChange={handleChangePixelSize}
       />
 
+      {/** 算法选择 */}
       <Flex
         justify="space-between"
         wrap="wrap"
@@ -200,6 +332,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         />
       </Flex>
 
+      {/** 调色板选择 */}
       <PaletteSelector
         value={paletteName}
         onChange={handlePaletteChange}
