@@ -1,4 +1,6 @@
 import logo from "@/assets/logo-with-title.svg";
+import mobileLogo from "@/assets/logo.svg";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { getDefaultSEO, seoConfigs } from "@/utils/seo";
 import { Layout as AntdLayout, Menu } from "antd";
 import React from "react";
@@ -12,6 +14,7 @@ const { Header, Content, Footer } = AntdLayout;
 
 const Layout: React.FC = () => {
   const location = useLocation();
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { t } = useTranslation("common");
   const currentSEO = seoConfigs[location.pathname] || getDefaultSEO();
@@ -39,11 +42,11 @@ const Layout: React.FC = () => {
       <AntdLayout className={styles.layout}>
         <Header className={styles.header}>
           <img
-            src={logo}
+            src={isMobile ? mobileLogo : logo}
             alt="Pixel Artist Logo"
             className={styles.logoImage}
             onClick={handleLogoClick}
-            width={120}
+            width={isMobile ? 50 : 120}
             height={50}
             decoding="async"
           />
