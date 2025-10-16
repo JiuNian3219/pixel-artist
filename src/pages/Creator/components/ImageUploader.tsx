@@ -1,11 +1,18 @@
-import { InboxOutlined, UploadOutlined } from "@ant-design/icons";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { useCreatorLocalStore } from "@/stores";
+import {
+  BorderOutlined,
+  InboxOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import { Button, Image, Progress, Upload, message } from "antd";
 import Dragger from "antd/es/upload/Dragger";
 import { isEmpty } from "lodash";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "../index.module.less";
 import { isImageFile } from "../utils";
+import PixelGrid from "./PixelGrid";
 
 interface ImageUploaderProps {
   onImageChange: (file: File | null, originalImage: string) => void;
@@ -34,7 +41,24 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 }) => {
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [previewHeight, setPreviewHeight] = useState<number>(350);
+  const [imageNaturalSize, setImageNaturalSize] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 0, height: 0 });
+  const [containerSize, setContainerSize] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 0, height: 0 });
+  const showControlPixelGrid = useCreatorLocalStore(
+    (state) => state.showControlPixelGrid
+  );
+  const setShowControlPixelGrid = useCreatorLocalStore(
+    (state) => state.setShowControlPixelGrid
+  );
+  const previewRef = useRef<HTMLDivElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(originalImage || "");
+  const isMobile = useIsMobile();
   const { t } = useTranslation("creator");
   const customRequest = ({ file, onSuccess, onProgress }: any) => {
     const rawFile = file as File;
@@ -86,6 +110,61 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     reader.readAsDataURL(rawFile);
   };
 
+  const handleResizerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const startY = e.clientY;
+    const startHeight = previewHeight;
+    const minHeight = 250;
+    const maxHeight = 800;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientY - startY;
+      const next = Math.max(
+        minHeight,
+        Math.min(maxHeight, startHeight + delta)
+      );
+      setPreviewHeight(next);
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  const togglePixelGrid = () => {
+    setShowControlPixelGrid(!showControlPixelGrid);
+  };
+
+  // 监听容器尺寸变化
+  useEffect(() => {
+    if (!previewRef.current) return;
+
+    const updateContainerSize = () => {
+      if (previewRef.current) {
+        const rect = previewRef.current.getBoundingClientRect();
+        setContainerSize({ width: rect.width, height: rect.height });
+      }
+    };
+
+    updateContainerSize();
+    window.addEventListener("resize", updateContainerSize);
+    return () => window.removeEventListener("resize", updateContainerSize);
+  }, [previewHeight, previewUrl]);
+
+  // 获取图片原始尺寸
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.target as HTMLImageElement;
+    setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+    // 图片加载完成后，确保容器尺寸及时更新
+    if (previewRef.current) {
+      const rect = previewRef.current.getBoundingClientRect();
+      setContainerSize({ width: rect.width, height: rect.height });
+    }
+  };
+
   return (
     <>
       {mode === "dragger" && (
@@ -118,17 +197,50 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       )}
 
       {mode === "dragger" && (
-        <div className={styles.preview}>
+        <div
+          className={styles.preview}
+          ref={previewRef}
+        >
           {(!isEmpty(previewUrl) || uploading) && (
-            <Image
-              className={styles.previewImage}
-              src={previewUrl}
-              style={{
-                filter: uploading ? "blur(2px) brightness(0.8)" : "none",
-                transition: "filter 0.3s",
-              }}
-              fallback=""
-            />
+            <>
+              <Image
+                className={styles.previewImage}
+                src={previewUrl}
+                style={{
+                  filter: uploading ? "blur(2px) brightness(0.8)" : "none",
+                  transition: "filter 0.3s",
+                  height: previewHeight,
+                }}
+                onLoad={handleImageLoad}
+                fallback=""
+              />
+              <Button
+                onClick={togglePixelGrid}
+                icon={<BorderOutlined />}
+                type={showControlPixelGrid ? "primary" : "default"}
+                size="small"
+                style={{
+                  position: "absolute",
+                  top: 5,
+                  right: 5,
+                  zIndex: 20,
+                }}
+              />
+              {/* 网格覆盖层 */}
+              <PixelGrid
+                imageWidth={imageNaturalSize.width}
+                imageHeight={imageNaturalSize.height}
+                containerWidth={containerSize.width}
+                containerHeight={containerSize.height}
+                visible={showControlPixelGrid}
+              />
+              {!isMobile && (
+                <div
+                  className={styles.previewResizeHandle}
+                  onMouseDown={handleResizerMouseDown}
+                />
+              )}
+            </>
           )}
           {uploading && (
             <Progress
