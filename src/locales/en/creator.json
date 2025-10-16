@@ -23,6 +23,7 @@
   },
   "algorithms": {
     "dominant": "Dominant Color",
+    "contrastAwareDominant": "Contrast-Aware Dominant Color",
     "average": "Average Color",
     "median": "Median Color",
     "weightedByLuminance": "Weighted (Luminance)",

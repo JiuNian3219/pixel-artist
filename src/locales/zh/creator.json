@@ -23,6 +23,7 @@
   },
   "algorithms": {
     "dominant": "主导色采样",
+    "contrastAwareDominant": "对比度感知主导色采样",
     "average": "平均值采样",
     "median": "中值采样",
     "weightedByLuminance": "加权平均（亮度）采样",
