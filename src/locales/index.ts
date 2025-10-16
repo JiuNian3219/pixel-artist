@@ -3,11 +3,13 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
 // 中文语言包
+import zh404 from "./zh/404.json";
 import zhCommon from "./zh/common.json";
 import zhCreator from "./zh/creator.json";
 import zhHome from "./zh/home.json";
 
 // 英文语言包
+import en404 from "./en/404.json";
 import enCommon from "./en/common.json";
 import enCreator from "./en/creator.json";
 import enHome from "./en/home.json";
@@ -17,11 +19,13 @@ const resources = {
     common: zhCommon,
     home: zhHome,
     creator: zhCreator,
+    "404": zh404,
   },
   en: {
     common: enCommon,
     home: enHome,
     creator: enCreator,
+    "404": en404,
   },
 };
 
