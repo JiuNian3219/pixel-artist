@@ -1,5 +1,3 @@
-import { useIsMobile } from "@/hooks/useIsMobile";
-import { useCreatorLocalStore } from "@/stores";
 import {
   BorderOutlined,
   DownloadOutlined,
@@ -8,9 +6,8 @@ import {
   FullscreenOutlined,
 } from "@ant-design/icons";
 import { Button, Card, Flex, Image, Row, Space } from "antd";
-import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import PixelGrid from "../components/PixelGrid";
+import usePreviewPanel from "../handles/usePreviewPanel";
 import styles from "../index.module.less";
 
 interface PreviewPanelProps {
@@ -22,91 +19,24 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   originalFile,
   pixelatedImage,
 }) => {
-  const { t } = useTranslation("creator");
-  const isMobile = useIsMobile();
-  const extendMode = useCreatorLocalStore((state) => state.extendMode);
-  const setExtendMode = useCreatorLocalStore((state) => state.setExtendMode);
-  const showPreviewPixelGrid = useCreatorLocalStore(
-    (state) => state.showPreviewPixelGrid
-  );
-  const setShowPreviewPixelGrid = useCreatorLocalStore(
-    (state) => state.setShowPreviewPixelGrid
-  );
-  const handleSaveImage = () => {
-    if (!pixelatedImage || !originalFile) return;
-    const link = document.createElement("a");
-    link.download = originalFile.name;
-    link.href = pixelatedImage;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const toggleExtendMode = () => {
-    setExtendMode(!extendMode);
-  };
-
-  const [previewHeight, setPreviewHeight] = useState<number>(350);
-  const [imageNaturalSize, setImageNaturalSize] = useState<{
-    width: number;
-    height: number;
-  }>({ width: 0, height: 0 });
-  const [containerSize, setContainerSize] = useState<{
-    width: number;
-    height: number;
-  }>({ width: 0, height: 0 });
-  const previewRef = useRef<HTMLDivElement>(null);
-
-  const handleResizerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    const startY = e.clientY;
-    const startHeight = previewHeight;
-    const minHeight = 250;
-    const maxHeight = 800;
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientY - startY;
-      const next = Math.max(
-        minHeight,
-        Math.min(maxHeight, startHeight + delta)
-      );
-      setPreviewHeight(next);
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-  };
-
-  const togglePixelGrid = () => {
-    setShowPreviewPixelGrid(!showPreviewPixelGrid);
-  };
-
-  // 监听容器尺寸变化
-  useEffect(() => {
-    if (!previewRef.current) return;
-
-    const updateContainerSize = () => {
-      if (previewRef.current) {
-        const rect = previewRef.current.getBoundingClientRect();
-        setContainerSize({ width: rect.width, height: rect.height });
-      }
-    };
-
-    updateContainerSize();
-    window.addEventListener("resize", updateContainerSize);
-    return () => window.removeEventListener("resize", updateContainerSize);
-  }, [previewHeight]);
-
-  // 获取图片原始尺寸
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.target as HTMLImageElement;
-    setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
-  };
-
+  const {
+    t,
+    showPreviewPixelGrid,
+    isMobile,
+    extendMode,
+    previewRef,
+    previewHeight,
+    imageNaturalSize,
+    containerSize,
+    togglePixelGrid,
+    handleImageLoad,
+    toggleExtendMode,
+    handleResizerMouseDown,
+    handleSaveImage,
+  } = usePreviewPanel({
+    pixelatedImage,
+    originalFile,
+  });
   return (
     <Card
       title={
