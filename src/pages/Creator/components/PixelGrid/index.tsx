@@ -1,6 +1,6 @@
 import { useCreatorLocalStore } from "@/stores";
 import { useEffect, useRef } from "react";
-import styles from "../index.module.less";
+import styles from "./index.module.less";
 
 interface PixelGridProps {
   imageWidth: number;
@@ -105,16 +105,7 @@ const PixelGrid: React.FC<PixelGridProps> = ({
   return (
     <canvas
       ref={canvasRef}
-      className={`${styles.pixelGridCanvas} ${visible ? styles.visible : ""}`}
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        zIndex: 10,
-      }}
+      className={styles.pixelGrid}
     />
   );
 };

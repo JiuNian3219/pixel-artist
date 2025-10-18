@@ -289,7 +289,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         disabled={!originalImage}
         onClick={handlePixelate}
         loading={inPixelation}
-        style={{ marginTop: 12 }}
+        className={styles.pixelateButton}
       >
         {t("control_panel.to_pixel_button")}
       </Button>

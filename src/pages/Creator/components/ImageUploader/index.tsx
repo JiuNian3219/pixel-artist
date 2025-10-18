@@ -10,9 +10,9 @@ import Dragger from "antd/es/upload/Dragger";
 import { isEmpty } from "lodash";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import styles from "../index.module.less";
-import { isImageFile } from "../utils";
-import PixelGrid from "./PixelGrid";
+import { isImageFile } from "../../utils";
+import PixelGrid from "../PixelGrid";
+import styles from "./index.module.less";
 
 interface ImageUploaderProps {
   onImageChange: (file: File | null, originalImage: string) => void;
@@ -174,7 +174,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         >
           <div className={styles.uploadDragger}>
             <p className="ant-upload-drag-icon">
-              <InboxOutlined className={styles.uploadIcon} />
+              <InboxOutlined />
             </p>
             <p className="ant-upload-text">{t("image_uploader.hint")}</p>
             <p className="ant-upload-hint">{t("image_uploader.tip")}</p>
@@ -219,12 +219,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 icon={<BorderOutlined />}
                 type={showControlPixelGrid ? "primary" : "default"}
                 size="small"
-                style={{
-                  position: "absolute",
-                  top: 5,
-                  right: 5,
-                  zIndex: 20,
-                }}
+                className={styles.previewGridButton}
               />
               {/* 网格覆盖层 */}
               <PixelGrid
