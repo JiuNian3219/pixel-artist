@@ -1,5 +1,6 @@
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useCreatorLocalStore } from "@/stores";
+import { MAX_PREVIEW_HEIGHT, MIN_PREVIEW_HEIGHT } from "@/utils/constants";
 import {
   BorderOutlined,
   InboxOutlined,
@@ -113,14 +114,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const handleResizerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const startY = e.clientY;
     const startHeight = previewHeight;
-    const minHeight = 250;
-    const maxHeight = 800;
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const delta = moveEvent.clientY - startY;
       const next = Math.max(
-        minHeight,
-        Math.min(maxHeight, startHeight + delta)
+        MIN_PREVIEW_HEIGHT,
+        Math.min(MAX_PREVIEW_HEIGHT, startHeight + delta)
       );
       setPreviewHeight(next);
     };

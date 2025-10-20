@@ -23,6 +23,14 @@ export const DEFAULT_SHOW_CONTROL_PIXEL_GRID = false;
  */
 export const DEFAULT_SHOW_PREVIEW_PIXEL_GRID = false;
 /**
+ * 默认预览面板最小高度
+ */
+export const MIN_PREVIEW_HEIGHT = 250;
+/**
+ * 默认预览面板最大高度
+ */
+export const MAX_PREVIEW_HEIGHT = 800;
+/**
  * 默认主题
  */
 export const DEFAULT_THEME = "light";

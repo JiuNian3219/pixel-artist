@@ -32,6 +32,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     handleImageLoad,
     toggleExtendMode,
     handleResizerMouseDown,
+    handlePreviewWheel,
     handleSaveImage,
   } = usePreviewPanel({
     pixelatedImage,
@@ -81,6 +82,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       <div
         className={styles.preview}
         ref={previewRef}
+        onWheel={handlePreviewWheel}
       >
         {pixelatedImage ? (
           <>
