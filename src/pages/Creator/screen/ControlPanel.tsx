@@ -1,13 +1,20 @@
 import {
+  getPixelAlgorithm,
+  getPixelAlgorithmsOptions,
+} from "@/utils/algorithm";
+import { findClosestColor, getPaletteById } from "@/utils/palettes";
+import {
   HighlightOutlined,
+  SearchOutlined,
   SettingOutlined,
   TableOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Divider, Flex, Slider, Space } from "antd";
+import { Button, Card, Divider, Flex, Select, Slider, Space } from "antd";
 import { Typography } from "antd/lib";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ImageUploader from "../components/ImageUploader";
+import PaletteSelector from "../components/PaletteSelector";
 import styles from "../index.module.less";
 import { MAX_PIXEL_SIZE, MIN_PIXEL_SIZE } from "../utils";
 
@@ -24,10 +31,21 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [originalImage, setOriginalImage] = useState<string>("");
   const [inPixelation, setInPixelation] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [pixelAlgorithm, setPixelAlgorithm] = useState<string>("dominant");
+  const [paletteName, setPaletteName] = useState<string>("All-Colors");
   const { t } = useTranslation("creator");
+  const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
+
+  const handlePaletteChange = (paletteName: string) => {
+    setPaletteName(paletteName);
+  };
 
   const handleChangePixelSize = (value: number) => {
     setPixelSize(value);
+  };
+
+  const handlePixelAlgorithmChange = (value: string) => {
+    setPixelAlgorithm(value);
   };
 
   const handleImageChange = (file: File | null, url: string) => {
@@ -40,12 +58,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   // 处理像素化转换
   const handlePixelate = () => {
     if (!imageFile || !originalImage) return;
+    setInPixelation(true);
 
     const img = new Image();
     img.src = originalImage;
 
     img.onload = () => {
-      setInPixelation(true);
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
@@ -84,8 +102,20 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     // 遍历每个像素块
     for (let y = 0; y < height; y += pixelSize) {
       for (let x = 0; x < width; x += pixelSize) {
-        // 计算当前像素块的平均颜色
-        const avgColor = getAverageColor(data, width, height, x, y, pixelSize);
+        // 计算当前像素块的合适颜色
+        let pixelColor = getPixelAlgorithm(pixelAlgorithm)(
+          data,
+          width,
+          height,
+          x,
+          y,
+          pixelSize
+        );
+        // 如果选择了色板，将颜色映射到最相近的色板颜色
+        pixelColor = {
+          ...findClosestColor(pixelColor, getPaletteById(paletteName).colors),
+          a: pixelColor.a,
+        };
 
         // 将平均颜色应用到整个像素块
         for (
@@ -99,50 +129,16 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             blockX++
           ) {
             const pixelIndex = ((y + blockY) * width + (x + blockX)) * 4;
-            newData[pixelIndex] = avgColor.r; // R
-            newData[pixelIndex + 1] = avgColor.g; // G
-            newData[pixelIndex + 2] = avgColor.b; // B
-            newData[pixelIndex + 3] = avgColor.a; // A
+            newData[pixelIndex] = pixelColor.r;
+            newData[pixelIndex + 1] = pixelColor.g;
+            newData[pixelIndex + 2] = pixelColor.b;
+            newData[pixelIndex + 3] = pixelColor.a;
           }
         }
       }
     }
 
     return newData;
-  };
-
-  // 计算像素块的平均颜色
-  const getAverageColor = (
-    data: Uint8ClampedArray,
-    width: number,
-    height: number,
-    startX: number,
-    startY: number,
-    pixelSize: number
-  ) => {
-    let r = 0,
-      g = 0,
-      b = 0,
-      a = 0;
-    let count = 0;
-
-    for (let y = 0; y < pixelSize && startY + y < height; y++) {
-      for (let x = 0; x < pixelSize && startX + x < width; x++) {
-        const pixelIndex = ((startY + y) * width + (startX + x)) * 4;
-        r += data[pixelIndex];
-        g += data[pixelIndex + 1];
-        b += data[pixelIndex + 2];
-        a += data[pixelIndex + 3];
-        count++;
-      }
-    }
-
-    return {
-      r: Math.round(r / count),
-      g: Math.round(g / count),
-      b: Math.round(b / count),
-      a: Math.round(a / count),
-    };
   };
 
   return (
@@ -167,6 +163,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         {t("control_panel.to_pixel_button")}
       </Button>
       <Divider />
+
       <Flex
         justify="space-between"
         align="center"
@@ -184,6 +181,28 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         value={pixelSize}
         tooltip={{ formatter: null }}
         onChange={handleChangePixelSize}
+      />
+
+      <Flex
+        justify="space-between"
+        wrap="wrap"
+        gap={3}
+      >
+        <Space>
+          <SearchOutlined />
+          <span>{t("control_panel.pixel_algorithm_select")}</span>
+        </Space>
+        <Select
+          value={pixelAlgorithm}
+          options={pixelAlgorithmOptions}
+          onChange={handlePixelAlgorithmChange}
+          style={{ width: 200 }}
+        />
+      </Flex>
+
+      <PaletteSelector
+        value={paletteName}
+        onChange={handlePaletteChange}
       />
     </Card>
   );

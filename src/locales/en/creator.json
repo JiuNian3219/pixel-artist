@@ -5,15 +5,36 @@
     "hint": "Drag and drop an image file or click to select one.",
     "tip": "Upload up to 1 file, JPG, JPEG, PNG formats supported"
   },
+  "palette_selector": {
+    "title": "Palette Selector"
+  },
   "control_panel": {
     "title": "Control Panel",
     "to_pixel_button": "Convert to Pixel Art",
-    "pixel_size_slider": "Pixel Size"
+    "pixel_size_slider": "Pixel Size",
+    "pixel_algorithm_select": "Pixel Sampling Algorithm",
+    "palette_select": "Palette Selection"
   },
   "preview_panel": {
     "title": "Preview",
     "upload_hint": "Please upload an image first",
     "upload_after_hint": "Click the 'Convert to Pixel Art' button to generate pixel art",
     "save_button": "Save to Local"
+  },
+  "algorithms": {
+    "dominant": "Dominant Color",
+    "average": "Average Color",
+    "median": "Median Color",
+    "weightedByLuminance": "Weighted (Luminance)",
+    "weightedBySaturation": "Weighted (Saturation)"
+  },
+  "palettes": {
+    "All-Colors": "All Colors Palette",
+    "16-Bit": "16-bit (16 Colors)",
+    "DawnBringer-16": "DawnBringer 16 (16 Colors)",
+    "DawnBringer-32": "DawnBringer 32 (32 Colors)",
+    "Pico-8": "Pico-8 (16 Colors)",
+    "Arne-16": "Arne 16 (16 Colors)",
+    "NES-54": "NES (54 Colors)"
   }
 }
