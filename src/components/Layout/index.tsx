@@ -17,6 +17,7 @@ const { Header, Content, Footer } = AntdLayout;
 
 const Layout: React.FC = () => {
   const location = useLocation();
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation("common");
   const locale = parseLocaleFromPath(location.pathname);
@@ -63,11 +64,11 @@ const Layout: React.FC = () => {
       <AntdLayout className={styles.layout}>
         <Header className={styles.header}>
           <img
-            src={logo}
+            src={isMobile ? mobileLogo : logo}
             alt="Pixel Artist Logo"
             className={styles.logoImage}
             onClick={handleLogoClick}
-            width={120}
+            width={isMobile ? 50 : 120}
             height={50}
             decoding="async"
           />

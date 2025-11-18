@@ -6,7 +6,7 @@ import {
 import { BgColorsOutlined } from "@ant-design/icons";
 import { Flex, Select, Space } from "antd";
 import { useTranslation } from "react-i18next";
-import styles from "../index.module.less";
+import styles from "./index.module.less";
 
 interface PaletteSelectProps {
   value: string;

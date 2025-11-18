@@ -198,7 +198,7 @@ const pico8Palette: Palette = {
     // 粉色
     { r: 255, g: 119, b: 168 },
     // 桃色
-    { r: 255, g: 204, b: 170 },
+    { r: 255, g: 109, b: 168 },
   ],
 };
 
@@ -353,7 +353,7 @@ const nesPalette: Palette = {
     { r: 0, g: 66, b: 74 },
     // 中灰
     { r: 181, g: 181, b: 181 },
-    // 更深灰
+    // urther灰
     { r: 82, g: 82, b: 82 },
   ],
 };
@@ -388,6 +388,195 @@ export const palettesById: Record<string, Palette> = palettes.reduce(
   },
   {} as Record<string, Palette>
 );
+/**
+ * RGB 转 XYZ 色彩空间
+ */
+const rgbToXyz = (
+  r: number,
+  g: number,
+  b: number
+): [number, number, number] => {
+  // 归一化到 0-1
+  let rNorm = r / 255;
+  let gNorm = g / 255;
+  let bNorm = b / 255;
+
+  // 应用 gamma 校正
+  rNorm =
+    rNorm > 0.04045 ? Math.pow((rNorm + 0.055) / 1.055, 2.4) : rNorm / 12.92;
+  gNorm =
+    gNorm > 0.04045 ? Math.pow((gNorm + 0.055) / 1.055, 2.4) : gNorm / 12.92;
+  bNorm =
+    bNorm > 0.04045 ? Math.pow((bNorm + 0.055) / 1.055, 2.4) : bNorm / 12.92;
+
+  // 转换到 XYZ (使用 D65 标准光源)
+  const x = rNorm * 0.4124564 + gNorm * 0.3575761 + bNorm * 0.1804375;
+  const y = rNorm * 0.2126729 + gNorm * 0.7151522 + bNorm * 0.072175;
+  const z = rNorm * 0.0193339 + gNorm * 0.119192 + bNorm * 0.9503041;
+
+  return [x * 100, y * 100, z * 100];
+};
+/**
+ * XYZ 转 Lab 色彩空间
+ */
+const xyzToLab = (
+  x: number,
+  y: number,
+  z: number
+): [number, number, number] => {
+  // D65 标准光源白点
+  const xn = 95.047;
+  const yn = 100.0;
+  const zn = 108.883;
+
+  const fx = x / xn;
+  const fy = y / yn;
+  const fz = z / zn;
+
+  const delta = 6 / 29;
+  const deltaSquared = delta * delta;
+  const deltaCubed = delta * delta * delta;
+
+  const fxTransformed =
+    fx > deltaCubed ? Math.pow(fx, 1 / 3) : fx / (3 * deltaSquared) + 4 / 29;
+  const fyTransformed =
+    fy > deltaCubed ? Math.pow(fy, 1 / 3) : fy / (3 * deltaSquared) + 4 / 29;
+  const fzTransformed =
+    fz > deltaCubed ? Math.pow(fz, 1 / 3) : fz / (3 * deltaSquared) + 4 / 29;
+
+  const L = 116 * fyTransformed - 16;
+  const a = 500 * (fxTransformed - fyTransformed);
+  const b = 200 * (fyTransformed - fzTransformed);
+
+  return [L, a, b];
+};
+
+/**
+ * RGB 转 Lab 色彩空间
+ */
+const rgbToLab = (
+  r: number,
+  g: number,
+  b: number
+): [number, number, number] => {
+  const [x, y, z] = rgbToXyz(r, g, b);
+  return xyzToLab(x, y, z);
+};
+
+/**
+ * 计算 CIEDE2000 距离 (ΔE00) - 完整版本
+ * 基于 CIE 2000 标准，包含所有修正因子
+ */
+const calculateCIEDE2000Distance = (color1: Color, color2: Color): number => {
+  const [L1, a1, b1] = rgbToLab(color1.r, color1.g, color1.b);
+  const [L2, a2, b2] = rgbToLab(color2.r, color2.g, color2.b);
+
+  // 步骤1: 计算色度值
+  const C1 = Math.sqrt(a1 * a1 + b1 * b1);
+  const C2 = Math.sqrt(a2 * a2 + b2 * b2);
+  const CAvg = (C1 + C2) / 2;
+
+  // 步骤2: 计算 G 因子
+  const G =
+    0.5 *
+    (1 - Math.sqrt(Math.pow(CAvg, 7) / (Math.pow(CAvg, 7) + Math.pow(25, 7))));
+
+  // 步骤3: 计算调整后的 a* 值
+  const a1Prime = (1 + G) * a1;
+  const a2Prime = (1 + G) * a2;
+
+  // 步骤4: 计算调整后的色度值
+  const C1Prime = Math.sqrt(a1Prime * a1Prime + b1 * b1);
+  const C2Prime = Math.sqrt(a2Prime * a2Prime + b2 * b2);
+
+  // 步骤5: 计算色相角 (弧度转角度)
+  const h1Prime = Math.atan2(b1, a1Prime) * (180 / Math.PI);
+  const h2Prime = Math.atan2(b2, a2Prime) * (180 / Math.PI);
+
+  // 确保色相角在 [0, 360) 范围内
+  const h1PrimeNorm = h1Prime >= 0 ? h1Prime : h1Prime + 360;
+  const h2PrimeNorm = h2Prime >= 0 ? h2Prime : h2Prime + 360;
+
+  // 步骤6: 计算差值
+  const deltaL = L2 - L1;
+  const deltaC = C2Prime - C1Prime;
+
+  // 计算色相差值 (考虑周期性)
+  let deltaH;
+  if (C1Prime * C2Prime === 0) {
+    deltaH = 0;
+  } else {
+    const diff = h2PrimeNorm - h1PrimeNorm;
+    if (Math.abs(diff) <= 180) {
+      deltaH = diff;
+    } else if (diff > 180) {
+      deltaH = diff - 360;
+    } else {
+      deltaH = diff + 360;
+    }
+  }
+
+  const deltaHPrime =
+    2 * Math.sqrt(C1Prime * C2Prime) * Math.sin((deltaH * Math.PI) / 360);
+
+  // 步骤7: 计算平均值
+  const LAvg = (L1 + L2) / 2;
+  const CAvgPrime = (C1Prime + C2Prime) / 2;
+
+  // 计算平均色相角
+  let HAvgPrime;
+  if (C1Prime * C2Prime === 0) {
+    HAvgPrime = h1PrimeNorm + h2PrimeNorm;
+  } else {
+    const sum = h1PrimeNorm + h2PrimeNorm;
+    const diff = Math.abs(h1PrimeNorm - h2PrimeNorm);
+    if (diff <= 180) {
+      HAvgPrime = sum / 2;
+    } else if (sum < 360) {
+      HAvgPrime = (sum + 360) / 2;
+    } else {
+      HAvgPrime = (sum - 360) / 2;
+    }
+  }
+
+  // 步骤8: 计算权重函数
+  const T =
+    1 -
+    0.17 * Math.cos(((HAvgPrime - 30) * Math.PI) / 180) +
+    0.24 * Math.cos((2 * HAvgPrime * Math.PI) / 180) +
+    0.32 * Math.cos(((3 * HAvgPrime + 6) * Math.PI) / 180) -
+    0.2 * Math.cos(((4 * HAvgPrime - 63) * Math.PI) / 180);
+
+  const deltaTheta = 30 * Math.exp(-Math.pow((HAvgPrime - 275) / 25, 2));
+
+  const RC =
+    2 *
+    Math.sqrt(
+      Math.pow(CAvgPrime, 7) / (Math.pow(CAvgPrime, 7) + Math.pow(25, 7))
+    );
+
+  const SL =
+    1 +
+    (0.015 * Math.pow(LAvg - 50, 2)) / Math.sqrt(20 + Math.pow(LAvg - 50, 2));
+  const SC = 1 + 0.045 * CAvgPrime;
+  const SH = 1 + 0.015 * CAvgPrime * T;
+
+  const RT = -Math.sin((2 * deltaTheta * Math.PI) / 180) * RC;
+
+  // 步骤9: 计算最终的 CIEDE2000 距离
+  const kL = 1; // 亮度权重因子
+  const kC = 1; // 色度权重因子
+  const kH = 1; // 色相权重因子
+
+  const deltaE00 = Math.sqrt(
+    Math.pow(deltaL / (kL * SL), 2) +
+      Math.pow(deltaC / (kC * SC), 2) +
+      Math.pow(deltaHPrime / (kH * SH), 2) +
+      RT * (deltaC / (kC * SC)) * (deltaHPrime / (kH * SH))
+  );
+
+  return deltaE00;
+};
 
 /**
  * 查找目标颜色在色板中的最接近颜色
@@ -405,13 +594,8 @@ export const findClosestColor = (
   let closestColor = palette[0];
   let minDistance = Number.MAX_VALUE;
 
-  // 使用欧几里得距离计算颜色差异
   for (const paletteColor of palette) {
-    const distance = Math.sqrt(
-      Math.pow(targetColor.r - paletteColor.r, 2) +
-        Math.pow(targetColor.g - paletteColor.g, 2) +
-        Math.pow(targetColor.b - paletteColor.b, 2)
-    );
+    const distance = calculateCIEDE2000Distance(targetColor, paletteColor);
 
     if (distance < minDistance) {
       minDistance = distance;

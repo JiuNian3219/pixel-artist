@@ -19,13 +19,13 @@ const resources = {
     common: zhCommon,
     home: zhHome,
     creator: zhCreator,
-    404: zh404,
+    "404": zh404,
   },
   en: {
     common: enCommon,
     home: enHome,
     creator: enCreator,
-    404: en404,
+    "404": en404,
   },
 };
 
