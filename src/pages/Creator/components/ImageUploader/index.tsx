@@ -9,7 +9,7 @@ import {
 import { Button, Image, Progress, Upload, message } from "antd";
 import Dragger from "antd/es/upload/Dragger";
 import { isEmpty } from "lodash";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isImageFile } from "../../utils";
 import PixelGrid from "../PixelGrid";
@@ -44,10 +44,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [previewHeight, setPreviewHeight] = useState<number>(350);
   const [imageNaturalSize, setImageNaturalSize] = useState<{
-    width: number;
-    height: number;
-  }>({ width: 0, height: 0 });
-  const [containerSize, setContainerSize] = useState<{
     width: number;
     height: number;
   }>({ width: 0, height: 0 });
@@ -137,31 +133,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     setShowControlPixelGrid(!showControlPixelGrid);
   };
 
-  // 监听容器尺寸变化
-  useEffect(() => {
-    if (!previewRef.current) return;
-
-    const updateContainerSize = () => {
-      if (previewRef.current) {
-        const rect = previewRef.current.getBoundingClientRect();
-        setContainerSize({ width: rect.width, height: rect.height });
-      }
-    };
-
-    updateContainerSize();
-    window.addEventListener("resize", updateContainerSize);
-    return () => window.removeEventListener("resize", updateContainerSize);
-  }, [previewHeight, previewUrl]);
-
   // 获取图片原始尺寸
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.target as HTMLImageElement;
     setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
-    // 图片加载完成后，确保容器尺寸及时更新
-    if (previewRef.current) {
-      const rect = previewRef.current.getBoundingClientRect();
-      setContainerSize({ width: rect.width, height: rect.height });
-    }
   };
 
   return (
@@ -201,7 +176,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           ref={previewRef}
         >
           {(!isEmpty(previewUrl) || uploading) && (
-            <>
+            <PixelGrid
+              imageWidth={imageNaturalSize.width}
+              imageHeight={imageNaturalSize.height}
+              visible={showControlPixelGrid}
+            >
               <Image
                 className={styles.previewImage}
                 src={previewUrl}
@@ -220,21 +199,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 size="small"
                 className={styles.previewGridButton}
               />
-              {/* 网格覆盖层 */}
-              <PixelGrid
-                imageWidth={imageNaturalSize.width}
-                imageHeight={imageNaturalSize.height}
-                containerWidth={containerSize.width}
-                containerHeight={containerSize.height}
-                visible={showControlPixelGrid}
-              />
               {!isMobile && (
                 <div
                   className={styles.previewResizeHandle}
                   onMouseDown={handleResizerMouseDown}
                 />
               )}
-            </>
+            </PixelGrid>
           )}
           {uploading && (
             <Progress

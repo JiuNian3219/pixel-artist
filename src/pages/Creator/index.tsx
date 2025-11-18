@@ -1,12 +1,13 @@
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useCreatorLocalStore } from "@/stores";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styles from "./index.module.less";
 import ControlPanel from "./screen/ControlPanel";
 import PreviewPanel from "./screen/PreviewPanel";
 
 const Creator: React.FC = () => {
   const extendMode = useCreatorLocalStore((state) => state.extendMode);
+  const setExtendMode = useCreatorLocalStore((state) => state.setExtendMode);
   const isMobile = useIsMobile();
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [pixelatedImage, setPixelatedImage] = useState<string>("");
@@ -18,6 +19,12 @@ const Creator: React.FC = () => {
       flexDirection: isMobile ? "column-reverse" : "row",
     } as React.CSSProperties;
   }, [extendMode, isMobile]);
+
+  useEffect(() => {
+    if (isMobile && extendMode) {
+      setExtendMode(false);
+    }
+  }, [isMobile, extendMode]);
 
   return (
     <div className={styles.container}>

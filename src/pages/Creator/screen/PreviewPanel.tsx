@@ -1,3 +1,6 @@
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { useCreatorLocalStore } from "@/stores";
+import { MAX_PREVIEW_HEIGHT, MIN_PREVIEW_HEIGHT } from "@/utils/constants";
 import {
   BorderOutlined,
   DownloadOutlined,
@@ -6,8 +9,9 @@ import {
   FullscreenOutlined,
 } from "@ant-design/icons";
 import { Button, Card, Flex, Image, Row, Space } from "antd";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import PixelGrid from "../components/PixelGrid";
-import usePreviewPanel from "../handles/usePreviewPanel";
 import styles from "../index.module.less";
 
 interface PreviewPanelProps {
@@ -19,25 +23,78 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   originalFile,
   pixelatedImage,
 }) => {
-  const {
-    t,
-    showPreviewPixelGrid,
-    isMobile,
-    extendMode,
-    previewRef,
-    previewHeight,
-    imageNaturalSize,
-    containerSize,
-    togglePixelGrid,
-    handleImageLoad,
-    toggleExtendMode,
-    handleResizerMouseDown,
-    handlePreviewWheel,
-    handleSaveImage,
-  } = usePreviewPanel({
-    pixelatedImage,
-    originalFile,
-  });
+  const { t } = useTranslation("creator");
+  const isMobile = useIsMobile();
+  const extendMode = useCreatorLocalStore((state) => state.extendMode);
+  const setExtendMode = useCreatorLocalStore((state) => state.setExtendMode);
+  const showPreviewPixelGrid = useCreatorLocalStore(
+    (state) => state.showPreviewPixelGrid
+  );
+  const setShowPreviewPixelGrid = useCreatorLocalStore(
+    (state) => state.setShowPreviewPixelGrid
+  );
+  const handleSaveImage = () => {
+    if (!pixelatedImage || !originalFile) return;
+    const link = document.createElement("a");
+    link.download = originalFile.name;
+    link.href = pixelatedImage;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const toggleExtendMode = () => {
+    setExtendMode(!extendMode);
+  };
+
+  const [previewHeight, setPreviewHeight] = useState<number>(350);
+  const [imageNaturalSize, setImageNaturalSize] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 0, height: 0 });
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const handleResizerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const startY = e.clientY;
+    const startHeight = previewHeight;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientY - startY;
+      const next = Math.max(
+        MIN_PREVIEW_HEIGHT,
+        Math.min(MAX_PREVIEW_HEIGHT, startHeight + delta)
+      );
+      setPreviewHeight(next);
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  const togglePixelGrid = () => {
+    setShowPreviewPixelGrid(!showPreviewPixelGrid);
+  };
+
+  // 获取图片原始尺寸
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.target as HTMLImageElement;
+    setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+  };
+
+  const handlePreviewWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!e.shiftKey) return;
+    const delta = e.deltaY > 0 ? -30 : 30;
+    setPreviewHeight((h) =>
+      Math.max(MIN_PREVIEW_HEIGHT, Math.min(MAX_PREVIEW_HEIGHT, h + delta))
+    );
+  };
   return (
     <Card
       title={
@@ -85,7 +142,11 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         onWheel={handlePreviewWheel}
       >
         {pixelatedImage ? (
-          <>
+          <PixelGrid
+            imageWidth={imageNaturalSize.width}
+            imageHeight={imageNaturalSize.height}
+            visible={showPreviewPixelGrid}
+          >
             <Image
               className={styles.previewImage}
               src={pixelatedImage}
@@ -93,15 +154,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
               style={{ height: previewHeight }}
               onLoad={handleImageLoad}
             />
-            {/* 网格覆盖层 */}
-            <PixelGrid
-              imageWidth={imageNaturalSize.width}
-              imageHeight={imageNaturalSize.height}
-              containerWidth={containerSize.width}
-              containerHeight={containerSize.height}
-              visible={showPreviewPixelGrid}
-            />
-          </>
+          </PixelGrid>
         ) : (
           <div className={styles.emptyPreview}>
             {originalFile
