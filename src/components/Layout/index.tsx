@@ -1,4 +1,6 @@
 import logo from "@/assets/logo-with-title.svg";
+import mobileLogo from "@/assets/logo.svg";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   getOgLocale,
   parseLocaleFromPath,
