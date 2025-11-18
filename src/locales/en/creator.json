@@ -1,5 +1,11 @@
 {
+  "common": {
+    "show_pixel_grid": "Show Pixel Grid",
+    "extend_mode": "Toggle Extend Mode",
+    "save_image": "Save Image"
+  },
   "image_uploader": {
+    "title": "Image Uploader",
     "type_error_message": "Only JPG, JPEG, PNG, and WEBP formats are supported.",
     "upload_failed_message": "{{name}} upload failed.",
     "hint": "Drag and drop an image file or click to select one.",

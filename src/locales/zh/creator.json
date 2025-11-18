@@ -1,5 +1,11 @@
 {
+  "common": {
+    "show_pixel_grid": "显示像素网格",
+    "extend_mode": "切换扩展模式",
+    "save_image": "保存图片"
+  },
   "image_uploader": {
+    "title": "图片上传",
     "type_error_message": "仅支持 JPG, JPEG, PNG, WEBP 格式",
     "upload_failed_message": "{{name}} 上传失败.",
     "hint": "点击或拖拽文件到这里上传",

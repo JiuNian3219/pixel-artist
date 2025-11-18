@@ -110,6 +110,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             {/* 网格显示切换按钮 */}
             {pixelatedImage && (
               <Button
+                title={t("common.show_pixel_grid")}
                 onClick={togglePixelGrid}
                 icon={<BorderOutlined />}
                 type={showPreviewPixelGrid ? "primary" : "default"}
@@ -118,6 +119,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             )}
             {!isMobile && (
               <Button
+                title={t("common.extend_mode")}
                 onClick={toggleExtendMode}
                 style={{
                   fontSize: "20px",
@@ -173,6 +175,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
         {!isMobile && (
           <Button
+            title={t("common.save_image")}
             className={styles.topSaveButton}
             icon={<DownloadOutlined />}
             disabled={!pixelatedImage}
@@ -185,6 +188,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       {isMobile && (
         <Row className={styles.actionRow}>
           <Button
+            title={t("common.save_image")}
             type="primary"
             className={styles.saveButton}
             disabled={!pixelatedImage}

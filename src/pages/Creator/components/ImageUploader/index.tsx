@@ -162,6 +162,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           customRequest={customRequest}
         >
           <Button
+            title={t("image_uploader.title")}
             shape="circle"
             type="dashed"
             icon={<UploadOutlined />}
@@ -193,6 +194,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 fallback=""
               />
               <Button
+                title={t("common.show_pixel_grid")}
                 onClick={togglePixelGrid}
                 icon={<BorderOutlined />}
                 type={showControlPixelGrid ? "primary" : "default"}

@@ -118,6 +118,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         mode="button"
       />
       <Button
+        title={t("control_panel.to_pixel_button")}
         type="primary"
         shape="circle"
         icon={<HighlightOutlined />}
@@ -131,7 +132,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/* 像素尺寸设置 */}
           <Popover
             content={
-              <div className={styles.popoverContent}>
+              <div style={{ width: "200px" }}>
                 <Flex
                   justify="space-between"
                   align="center"
@@ -158,6 +159,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             trigger="click"
           >
             <Button
+              title={t("control_panel.pixel_size_slider")}
               shape="circle"
               icon={<TableOutlined />}
               className={styles.settingButton}
@@ -167,7 +169,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/** 算法选择 */}
           <Popover
             content={
-              <div className={styles.popoverContent}>
+              <div>
                 <Flex
                   vertical
                   align="flex-start"
@@ -181,7 +183,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                     value={pixelAlgorithm}
                     options={pixelAlgorithmOptions}
                     onChange={handlePixelAlgorithmChange}
-                    style={{ width: "100%" }}
+                    style={{ width: "200px" }}
+                    popupMatchSelectWidth={false}
                   />
                 </Flex>
               </div>
@@ -191,6 +194,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           >
             <Button
               shape="circle"
+              title={t("control_panel.pixel_algorithm_select")}
               icon={<SearchOutlined />}
               className={styles.settingButton}
             />
@@ -199,17 +203,16 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/* 调色板选择 */}
           <Popover
             content={
-              <div className={styles.popoverContent}>
-                <PaletteSelector
-                  value={paletteName}
-                  onChange={handlePaletteChange}
-                />
-              </div>
+              <PaletteSelector
+                value={paletteName}
+                onChange={handlePaletteChange}
+              />
             }
             placement="left"
             trigger="click"
           >
             <Button
+              title={t("palette_selector.title")}
               shape="circle"
               icon={<BgColorsOutlined />}
               className={styles.settingButton}
@@ -236,6 +239,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/** 像素化按钮 */}
       <Button
+        title={t("control_panel.to_pixel_button")}
         type="primary"
         icon={<HighlightOutlined />}
         disabled={!originalImage}
@@ -281,6 +285,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           value={pixelAlgorithm}
           options={pixelAlgorithmOptions}
           onChange={handlePixelAlgorithmChange}
+          popupMatchSelectWidth={false}
           style={{ width: 200 }}
         />
       </Flex>

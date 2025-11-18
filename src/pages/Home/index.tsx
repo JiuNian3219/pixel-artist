@@ -1,8 +1,8 @@
+import { parseLocaleFromPath, withLocalePath } from "@/utils/locale";
 import { Button, Typography } from "antd";
 import React from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { parseLocaleFromPath, withLocalePath } from "@/utils/locale";
 import styles from "./index.module.less";
 
 const { Title } = Typography;
@@ -31,6 +31,7 @@ const Home: React.FC = () => {
         </div>
 
         <Button
+          title={t("start_button")}
           color="primary"
           variant="outlined"
           size="large"

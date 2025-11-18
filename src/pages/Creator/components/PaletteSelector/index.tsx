@@ -1,3 +1,4 @@
+import { useCreatorLocalStore } from "@/stores";
 import {
   getColorHex,
   getPaletteById,
@@ -16,10 +17,16 @@ interface PaletteSelectProps {
 const PaletteSelector: React.FC<PaletteSelectProps> = ({ value, onChange }) => {
   const { t } = useTranslation("creator");
   const currentPalette = getPaletteById(value);
+  const extendMode = useCreatorLocalStore((state) => state.extendMode);
   const paletteOptions = getPaletteOptions(t);
 
   return (
-    <div className={styles.paletteSelect}>
+    <div
+      className={styles.paletteSelect}
+      style={{
+        maxWidth: extendMode ? "200px" : "",
+      }}
+    >
       <Flex
         justify="space-between"
         wrap="wrap"
@@ -34,6 +41,7 @@ const PaletteSelector: React.FC<PaletteSelectProps> = ({ value, onChange }) => {
           value={value}
           onChange={onChange}
           style={{ minWidth: 200 }}
+          popupMatchSelectWidth={false}
         />
       </Flex>
 
