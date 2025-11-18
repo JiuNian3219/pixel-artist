@@ -265,6 +265,88 @@ const getMedianColor = (
   };
 };
 
+const ALT_COLOR_RATIO_MIN = 0.35;
+const ALT_COLOR_DISTANCE_MIN = 50;
+
+const colorDistance = (c1: Color, c2: Color) => {
+  const dr = c1.r - c2.r;
+  const dg = c1.g - c2.g;
+  const db = c1.b - c2.b;
+  return Math.sqrt(dr * dr + dg * dg + db * db);
+};
+
+const getContrastAwareDominantColor = (
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+  startX: number,
+  startY: number,
+  pixelSize: number
+) => {
+  const colorMap = new Map<string, { color: Color; count: number }>();
+  for (let y = 0; y < pixelSize && startY + y < height; y++) {
+    for (let x = 0; x < pixelSize && startX + x < width; x++) {
+      const i = ((startY + y) * width + (startX + x)) * 4;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const a = data[i + 3];
+      const qr = Math.round(r / 16) * 16;
+      const qg = Math.round(g / 16) * 16;
+      const qb = Math.round(b / 16) * 16;
+      const key = `${qr},${qg},${qb}`;
+      const cur = colorMap.get(key);
+      if (cur) {
+        cur.count++;
+      } else {
+        colorMap.set(key, { color: { r: qr, g: qg, b: qb, a }, count: 1 });
+      }
+    }
+  }
+
+  let dominantColor = { r: 0, g: 0, b: 0, a: 255 };
+  let maxCount = 0;
+  for (const { color, count } of colorMap.values()) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominantColor = color;
+    }
+  }
+
+  const totalCount = Array.from(colorMap.values()).reduce(
+    (s, v) => s + v.count,
+    0
+  );
+
+  let bestAlt: Color | null = null;
+  let bestScore = -Infinity;
+
+  for (const { color, count } of colorMap.values()) {
+    if (
+      color.r === dominantColor.r &&
+      color.g === dominantColor.g &&
+      color.b === dominantColor.b
+    ) {
+      continue;
+    }
+    const ratio = count / totalCount;
+    if (ratio < ALT_COLOR_RATIO_MIN) continue;
+    const contrast = colorDistance(color, dominantColor);
+    if (contrast < ALT_COLOR_DISTANCE_MIN) continue;
+    const score = contrast * ratio;
+    if (score > bestScore) {
+      bestScore = score;
+      bestAlt = color;
+    }
+  }
+
+  if (bestAlt) {
+    dominantColor = bestAlt;
+  }
+
+  return dominantColor;
+};
+
 /**
  * 像素采样算法Map
  */
@@ -274,6 +356,7 @@ export const pixelAlgorithms = {
   dominant: getDominantColor,
   weightedByLuminance: getWeightedAverageColorByLuminance,
   weightedBySaturation: getWeightedAverageColorBySaturation,
+  contrastAwareDominant: getContrastAwareDominantColor,
 };
 
 /**
@@ -294,6 +377,10 @@ export const getPixelAlgorithm = (algorithm: string) => {
  * @returns 像素采样算法选项数组
  */
 export const getPixelAlgorithmsOptions = (t: (key: string) => string) => [
+  {
+    label: t("algorithms.contrastAwareDominant"),
+    value: "contrastAwareDominant",
+  },
   { label: t("algorithms.dominant"), value: "dominant" },
   { label: t("algorithms.average"), value: "average" },
   { label: t("algorithms.median"), value: "median" },

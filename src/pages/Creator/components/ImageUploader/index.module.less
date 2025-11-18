@@ -1,0 +1,61 @@
+.uploadDragger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadButton {
+  border: 2px dashed var(--text-300);
+  font-size: 20px;
+  width: 50px !important;
+  height: 50px;
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background-color: var(--bg-300);
+  position: relative;
+  transition: all ease 0.3s;
+  user-select: none;
+
+  .previewImage {
+    height: 350px;
+    object-fit: contain;
+
+    @media (max-width: 768px) {
+      height: 250px;
+    }
+  }
+
+  .previewGridButton {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 20;
+  }
+
+  .previewResizeHandle {
+    position: absolute;
+    left: 0;
+    bottom: -8px;
+    width: 100%;
+    height: 8px;
+    cursor: ns-resize;
+    background-color: rgba(99, 102, 241, 0.1);
+    border-top: 1px solid var(--bg-400);
+
+    &:hover {
+      background-color: rgba(99, 102, 241, 0.3);
+    }
+  }
+
+  .uploadProgress {
+    position: absolute;
+    top: 50%;
+  }
+}

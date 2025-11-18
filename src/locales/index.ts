@@ -3,11 +3,13 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
 // 中文语言包
+import zh404 from "./zh/404.json";
 import zhCommon from "./zh/common.json";
 import zhCreator from "./zh/creator.json";
 import zhHome from "./zh/home.json";
 
 // 英文语言包
+import en404 from "./en/404.json";
 import enCommon from "./en/common.json";
 import enCreator from "./en/creator.json";
 import enHome from "./en/home.json";
@@ -17,11 +19,13 @@ const resources = {
     common: zhCommon,
     home: zhHome,
     creator: zhCreator,
+    "404": zh404,
   },
   en: {
     common: enCommon,
     home: enHome,
     creator: enCreator,
+    "404": en404,
   },
 };
 
@@ -34,10 +38,13 @@ i18n
     defaultNS: "common",
 
     detection: {
-      order: ["localStorage", "navigator", "htmlTag"],
-      caches: ["localStorage"],
-      lookupLocalStorage: "pixel-artist-language",
+      // 优先路径，其次浏览器语言（主要用于以/目录进入时确定网页语言）
+      order: ["path", "navigator"],
+      lookupFromPathIndex: 0,
     },
+
+    supportedLngs: ["zh", "en"],
+    load: "languageOnly",
 
     interpolation: {
       escapeValue: false,

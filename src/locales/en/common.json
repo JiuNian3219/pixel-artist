@@ -10,6 +10,10 @@
   "language": {
     "switch": "Switch Language",
     "chinese": "中文",
-    "english": "English"
+    "english": "English",
+    "names": {
+      "zh": "中文",
+      "en": "English"
+    }
   }
 }

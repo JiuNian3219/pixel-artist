@@ -67,8 +67,57 @@ VITE_ROBOTS_ALLOW=/
 - 页面内 `SEO` 组件会使用 `VITE_SITE_URL` 来拼接 `canonical`、`og:image` 与 JSON-LD 中的 `url`。
 - 404 页已通过 `robots="noindex,nofollow"` 防止被索引。
 
+## 多语言：如何添加新语言
+本项目已内置中文（`zh`）与英文（`en`）。若要新增语言（例如法语 `fr`），请按照以下步骤修改相应文件：
 
-## 项目结构
+1) 类型与语言常量
+- 修改 `src/types/locale.ts`：将新语言加入 `Locale` 与（如需）`OgLocale` 联合类型。
+  - 例如：加入 `"fr"` 到 `Locale`，并在需要时加入 `"fr_FR"` 到 `OgLocale`。
+- 修改 `src/utils/locale.ts`：
+  - 将新语言加入 `LOCALES` 常量数组。
+  - 为 `OG_LOCALE_MAP` 添加映射（如 `fr: "fr_FR"`）。
+  - 更新 `normalizeLocale(input)` 使其识别新语言（按前缀或直接匹配）。
+
+2) i18n 资源与支持列表
+- 在 `src/locales/<lang>/` 目录创建翻译文件，至少包含：
+  - `common.json`：需包含 `language.switch` 与 `language.names.<lang>`（用于语言切换器显示），以及通用文案。
+  - `home.json`、`creator.json`、`404.json`：对应各页面的文案。
+- 修改 `src/locales/index.ts`：
+  - 在 `resources` 中注册新语言的各命名空间。
+  - 将新语言加入 `supportedLngs` 列表。
+
+3) Ant Design 语言包
+- 修改 `src/components/App/index.tsx`：
+  - 引入 AntD 对应语言包（如 `import frFR from "antd/locale/fr_FR"`）。
+  - 将 `antdLocaleMap` 扩展为 `{ zh: zhCN, en: enUS, fr: frFR }`。
+  - 若 AntD 暂无该语言包，可先回退到最接近的语言，确保不报错。
+
+4) 路由与重定向（通常无需改动）
+- 路由由 `src/routes/index.tsx` 基于 `LOCALES` 自动生成：会产生 `/<lang>/` 与 `/<lang>/creator` 等路径。
+- 根路径重定向使用 `src/routes/RootRedirect.tsx`：会根据浏览器语言跳转到对应 `/<lang>/`。
+
+5) SEO 与预渲染
+- 修改 `src/utils/seo.ts`：
+  - 在 `localizedSEO` 中为各基础路径（`"/"`、`"/creator"`、`"/404"`）补充新语言的 `title/description/keywords` 等。
+  - 更新 `getAlternateLinks(siteUrl, basePath)` 以包含新语言的 `hreflang`。
+- 修改站点地图生成脚本 `scripts/generate-sitemap.mjs`：
+  - 将新语言加入 `locales` 数组（如 `const locales = ["zh", "en", "fr"];`）。
+- 修改 `package.json` 的 `reactSnap.include`：
+  - 添加新语言需要快照的路由，如 `"/<lang>/"`、`"/<lang>/creator"`。
+
+6) 验证
+- 运行开发服务器并检查新语言页面：
+  - `npm run dev`
+  - 打开 `http://localhost:5173/<lang>/`，检查页面文案与 AntD 组件文案是否为新语言。
+- 构建并预览：
+  - `npm run build`
+  - `npm run preview`
+  - 验证 `public/sitemap.xml` 是否包含新语言路径；预览页面源代码，确认 `og:locale` 与 `link[rel="alternate"]` 已包含新语言。
+
+提示：新增语言时，优先复用现有工具与结构（`LOCALES`、`normalizeLocale`、`antdLocaleMap`、i18n `supportedLngs`、`reactSnap.include` 与 `sitemap locales`）。保持命名、风格与当前项目一致，避免引入额外依赖。
+
+
+## 项目结构（待更新）
 ```
 pixel-artist/
 ├── public/                  # 静态资源目录
