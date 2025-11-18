@@ -2,15 +2,17 @@ import { Button, Typography } from "antd";
 import React from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { parseLocaleFromPath, withLocalePath } from "@/utils/locale";
 import styles from "./index.module.less";
 
 const { Title } = Typography;
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const locale = parseLocaleFromPath(window.location.pathname);
   const { t } = useTranslation("home");
   const handleStartClick = () => {
-    navigate("/creator");
+    navigate(withLocalePath(locale, "/creator"));
   };
 
   return (

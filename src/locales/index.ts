@@ -38,10 +38,13 @@ i18n
     defaultNS: "common",
 
     detection: {
-      order: ["localStorage", "navigator", "htmlTag"],
-      caches: ["localStorage"],
-      lookupLocalStorage: "pixel-artist-language",
+      // 优先路径，其次浏览器语言（主要用于以/目录进入时确定网页语言）
+      order: ["path", "navigator"],
+      lookupFromPathIndex: 0,
     },
+
+    supportedLngs: ["zh", "en"],
+    load: "languageOnly",
 
     interpolation: {
       escapeValue: false,

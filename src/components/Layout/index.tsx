@@ -1,9 +1,12 @@
 import logo from "@/assets/logo-with-title.svg";
-import mobileLogo from "@/assets/logo.svg";
-import { useIsMobile } from "@/hooks/useIsMobile";
-import { getDefaultSEO, seoConfigs } from "@/utils/seo";
+import {
+  getOgLocale,
+  parseLocaleFromPath,
+  withLocalePath,
+} from "@/utils/locale";
+import { getDefaultSEO, resolveSEOByPath } from "@/utils/seo";
 import { Layout as AntdLayout, Menu } from "antd";
-import React from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import LanguageSwitcher from "../LanguageSwitcher";
@@ -16,17 +19,35 @@ const Layout: React.FC = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { t } = useTranslation("common");
-  const currentSEO = seoConfigs[location.pathname] || getDefaultSEO();
+  const { t, i18n } = useTranslation("common");
+  const locale = parseLocaleFromPath(location.pathname);
+
+  const currentSEO =
+    resolveSEOByPath(location.pathname, locale) || getDefaultSEO();
 
   const menuItems = [
-    { key: "/", label: <Link to="/">{t("nav.home")}</Link> },
-    { key: "/creator", label: <Link to="/creator">{t("nav.creator")}</Link> },
+    {
+      key: withLocalePath(locale, "/"),
+      label: <Link to={withLocalePath(locale, "/")}>{t("nav.home")}</Link>,
+    },
+    {
+      key: withLocalePath(locale, "/creator"),
+      label: (
+        <Link to={withLocalePath(locale, "/creator")}>{t("nav.creator")}</Link>
+      ),
+    },
   ];
 
   const handleLogoClick = () => {
-    navigate("/");
+    navigate(withLocalePath(locale, "/"));
   };
+
+  // 保持 i18n 与路由语言同步
+  useEffect(() => {
+    if (i18n.language !== locale) {
+      i18n.changeLanguage(locale);
+    }
+  }, [locale, i18n]);
 
   return (
     <>
@@ -38,6 +59,7 @@ const Layout: React.FC = () => {
         ogImage={currentSEO.ogImage}
         robots={currentSEO.robots}
         jsonLd={currentSEO.jsonLd}
+        locale={getOgLocale(locale)}
       />
       <AntdLayout className={styles.layout}>
         <Header className={styles.header}>

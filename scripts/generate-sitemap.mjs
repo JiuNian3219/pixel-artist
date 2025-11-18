@@ -45,16 +45,19 @@ ${urls}
     // 去除结尾横杠
     const siteUrl = rawUrl.replace(/\/+$/, "");
 
-    // 此处配置路由、权重、更新频率
-    const routes = [{
-      path: "/",
-      priority: "1.0",
-      changefreq: "weekly",
-    }, {
-      path: "/creator",
-      priority: "0.8",
-      changefreq: "weekly",
-    }];
+    // 此处配置基础路由与多语言扩展
+    const baseRoutes = [
+      { base: "/", priority: "1.0", changefreq: "weekly" },
+      { base: "/creator", priority: "0.8", changefreq: "weekly" },
+    ];
+    const locales = ["zh", "en"];
+    const routes = [];
+    for (const loc of locales) {
+      for (const r of baseRoutes) {
+        const pathWithLocale = r.base === "/" ? `/${loc}/` : `/${loc}${r.base}`;
+        routes.push({ path: pathWithLocale, priority: r.priority, changefreq: r.changefreq });
+      }
+    }
 
     const publicDir = path.join(cwd, "public");
     ensureDir(publicDir);
