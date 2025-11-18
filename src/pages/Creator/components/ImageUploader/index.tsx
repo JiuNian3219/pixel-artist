@@ -1,5 +1,6 @@
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useCreatorLocalStore } from "@/stores";
+import { MAX_PREVIEW_HEIGHT, MIN_PREVIEW_HEIGHT } from "@/utils/constants";
 import {
   BorderOutlined,
   InboxOutlined,
@@ -10,9 +11,9 @@ import Dragger from "antd/es/upload/Dragger";
 import { isEmpty } from "lodash";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import styles from "../index.module.less";
-import { isImageFile } from "../utils";
-import PixelGrid from "./PixelGrid";
+import { isImageFile } from "../../utils";
+import PixelGrid from "../PixelGrid";
+import styles from "./index.module.less";
 
 interface ImageUploaderProps {
   onImageChange: (file: File | null, originalImage: string) => void;
@@ -113,14 +114,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const handleResizerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const startY = e.clientY;
     const startHeight = previewHeight;
-    const minHeight = 250;
-    const maxHeight = 800;
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const delta = moveEvent.clientY - startY;
       const next = Math.max(
-        minHeight,
-        Math.min(maxHeight, startHeight + delta)
+        MIN_PREVIEW_HEIGHT,
+        Math.min(MAX_PREVIEW_HEIGHT, startHeight + delta)
       );
       setPreviewHeight(next);
     };
@@ -174,7 +173,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         >
           <div className={styles.uploadDragger}>
             <p className="ant-upload-drag-icon">
-              <InboxOutlined className={styles.uploadIcon} />
+              <InboxOutlined />
             </p>
             <p className="ant-upload-text">{t("image_uploader.hint")}</p>
             <p className="ant-upload-hint">{t("image_uploader.tip")}</p>
@@ -219,12 +218,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 icon={<BorderOutlined />}
                 type={showControlPixelGrid ? "primary" : "default"}
                 size="small"
-                style={{
-                  position: "absolute",
-                  top: 5,
-                  right: 5,
-                  zIndex: 20,
-                }}
+                className={styles.previewGridButton}
               />
               {/* 网格覆盖层 */}
               <PixelGrid
