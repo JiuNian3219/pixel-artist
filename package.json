@@ -45,8 +45,10 @@
   "reactSnap": {
     "source": "dist",
     "include": [
-      "/",
-      "/creator"
+      "/zh/",
+      "/zh/creator",
+      "/en/",
+      "/en/creator"
     ],
     "puppeteerArgs": [
       "--no-sandbox",

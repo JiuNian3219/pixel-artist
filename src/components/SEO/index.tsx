@@ -1,3 +1,4 @@
+import { getAlternateLinks, normalizeBasePath } from "@/utils/seo";
 import React from "react";
 
 interface SEOProps {
@@ -42,6 +43,12 @@ export const SEO: React.FC<SEOProps> = ({
       ? `${siteUrl}${window.location.pathname}`
       : undefined;
   const finalCanonical = canonicalUrl || autoCanonical;
+
+  // 多语言 alternate 链接
+  const alternates =
+    typeof window !== "undefined" && siteUrl
+      ? getAlternateLinks(siteUrl, normalizeBasePath(window.location.pathname))
+      : [];
 
   return (
     <>
@@ -111,6 +118,16 @@ export const SEO: React.FC<SEOProps> = ({
           href={finalCanonical}
         />
       )}
+
+      {/* Alternate hreflang */}
+      {alternates.map((a) => (
+        <link
+          key={a.hreflang}
+          rel="alternate"
+          hrefLang={a.hreflang}
+          href={a.href}
+        />
+      ))}
 
       {/* Robots */}
       {robots && (
