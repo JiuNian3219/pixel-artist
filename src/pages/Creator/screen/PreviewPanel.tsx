@@ -1,27 +1,27 @@
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useCreatorLocalStore } from "@/stores";
-import { MAX_PREVIEW_HEIGHT, MIN_PREVIEW_HEIGHT } from "@/utils/constants";
+import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
+import { TASK_FACTORS } from "@/utils/constants";
+import { getPaletteOptions } from "@/utils/palettes";
 import {
   BorderOutlined,
-  DownloadOutlined,
   EyeOutlined,
   FullscreenExitOutlined,
   FullscreenOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Flex, Image, Row, Space } from "antd";
-import { useRef, useState } from "react";
+import { Button, Card, Flex, Space, Spin } from "antd";
 import { useTranslation } from "react-i18next";
-import PixelGrid from "../components/PixelGrid";
+import PreviewCard from "../components/PreviewCard";
 import styles from "../index.module.less";
 
 interface PreviewPanelProps {
   originalFile: File | null;
-  pixelatedImage: string;
+  pixelatedResults?: { url: string; algorithm: string; palette: string }[];
 }
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({
   originalFile,
-  pixelatedImage,
+  pixelatedResults = [],
 }) => {
   const { t } = useTranslation("creator");
   const isMobile = useIsMobile();
@@ -33,68 +33,35 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const setShowPreviewPixelGrid = useCreatorLocalStore(
     (state) => state.setShowPreviewPixelGrid
   );
-  const handleSaveImage = () => {
-    if (!pixelatedImage || !originalFile) return;
-    const link = document.createElement("a");
-    link.download = originalFile.name;
-    link.href = pixelatedImage;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const inPixelation = useCreatorLocalStore((state) => state.inPixelation);
+  const multiAlgorithmEnabled = useCreatorLocalStore(
+    (state) => state.multiAlgorithmEnabled
+  );
+  const selectedAlgorithms = useCreatorLocalStore(
+    (state) => state.selectedAlgorithms
+  );
+  const selectedPalettes = useCreatorLocalStore(
+    (state) => state.selectedPalettes
+  );
+  const taskFactorsOrder = useCreatorLocalStore(
+    (state) => state.taskFactorsOrder
+  );
+
+  const algoOptions = getPixelAlgorithmsOptions(t);
+  const paletteOptions = getPaletteOptions(t);
+  const labelOf = (
+    list: { label: React.ReactNode; value: string | number }[],
+    v: string
+  ) => (list.find((o) => o.value === v)?.label as string) ?? v;
 
   const toggleExtendMode = () => {
     setExtendMode(!extendMode);
-  };
-
-  const [previewHeight, setPreviewHeight] = useState<number>(350);
-  const [imageNaturalSize, setImageNaturalSize] = useState<{
-    width: number;
-    height: number;
-  }>({ width: 0, height: 0 });
-  const previewRef = useRef<HTMLDivElement>(null);
-
-  const handleResizerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    const startY = e.clientY;
-    const startHeight = previewHeight;
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientY - startY;
-      const next = Math.max(
-        MIN_PREVIEW_HEIGHT,
-        Math.min(MAX_PREVIEW_HEIGHT, startHeight + delta)
-      );
-      setPreviewHeight(next);
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
   };
 
   const togglePixelGrid = () => {
     setShowPreviewPixelGrid(!showPreviewPixelGrid);
   };
 
-  // 获取图片原始尺寸
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.target as HTMLImageElement;
-    setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
-  };
-
-  const handlePreviewWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!e.shiftKey) return;
-    const delta = e.deltaY > 0 ? -30 : 30;
-    setPreviewHeight((h) =>
-      Math.max(MIN_PREVIEW_HEIGHT, Math.min(MAX_PREVIEW_HEIGHT, h + delta))
-    );
-  };
   return (
     <Card
       title={
@@ -108,7 +75,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           </Space>
           <Space>
             {/* 网格显示切换按钮 */}
-            {pixelatedImage && (
+            {pixelatedResults.length > 0 && (
               <Button
                 title={t("common.show_pixel_grid")}
                 onClick={togglePixelGrid}
@@ -138,65 +105,51 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       }
       className={styles.previewCard}
     >
-      <div
-        className={styles.preview}
-        ref={previewRef}
-        onWheel={handlePreviewWheel}
-      >
-        {pixelatedImage ? (
-          <PixelGrid
-            imageWidth={imageNaturalSize.width}
-            imageHeight={imageNaturalSize.height}
-            visible={showPreviewPixelGrid}
-          >
-            <Image
-              className={styles.previewImage}
-              src={pixelatedImage}
-              fallback=""
-              style={{ height: previewHeight }}
-              onLoad={handleImageLoad}
+      {pixelatedResults.length > 0 ? (
+        <>
+          {pixelatedResults.map((res, idx) => (
+            <PreviewCard
+              key={`${res.algorithm}-${res.palette}-${idx}`}
+              tags={[
+                labelOf(algoOptions, res.algorithm),
+                labelOf(paletteOptions, res.palette),
+              ]}
+              originalFile={originalFile}
+              pixelatedImage={res.url}
+              showPixelGrid={showPreviewPixelGrid}
+              saveButtonPlacement={isMobile ? "bottom" : "top"}
+              showResizeHandle={!isMobile}
             />
-          </PixelGrid>
-        ) : (
-          <div className={styles.emptyPreview}>
-            {originalFile
-              ? t("preview_panel.upload_after_hint")
-              : t("preview_panel.upload_hint")}
-          </div>
-        )}
-
-        {/* 底部高度调节句柄 */}
-        {!isMobile && (
-          <div
-            className={styles.previewResizeHandle}
-            onMouseDown={handleResizerMouseDown}
-          />
-        )}
-
-        {!isMobile && (
-          <Button
-            title={t("common.save_image")}
-            className={styles.topSaveButton}
-            icon={<DownloadOutlined />}
-            disabled={!pixelatedImage}
-            onClick={handleSaveImage}
-          ></Button>
-        )}
-      </div>
-
-      {/** 保存按钮（仅移动端显示） */}
-      {isMobile && (
-        <Row className={styles.actionRow}>
-          <Button
-            title={t("common.save_image")}
-            type="primary"
-            className={styles.saveButton}
-            disabled={!pixelatedImage}
-            onClick={handleSaveImage}
-          >
-            {t("preview_panel.save_button")}
-          </Button>
-        </Row>
+          ))}
+          {/** 当多方案生成且生成中，提示加载动画 */}
+          {(() => {
+            const expectedCount = multiAlgorithmEnabled
+              ? taskFactorsOrder.reduce((prod, dim) => {
+                  const len =
+                    dim === TASK_FACTORS.ALGORITHM
+                      ? selectedAlgorithms.length
+                      : selectedPalettes.length;
+                  return prod * Math.max(1, len);
+                }, 1)
+              : 1;
+            return inPixelation && pixelatedResults.length < expectedCount ? (
+              <Flex
+                justify="center"
+                style={{ marginTop: 12 }}
+              >
+                <Spin tip="生成中..." />
+              </Flex>
+            ) : null;
+          })()}
+        </>
+      ) : (
+        <PreviewCard
+          originalFile={originalFile}
+          pixelatedImage={""}
+          showPixelGrid={showPreviewPixelGrid}
+          saveButtonPlacement={isMobile ? "bottom" : "top"}
+          showResizeHandle={!isMobile}
+        />
       )}
     </Card>
   );

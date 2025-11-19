@@ -23,6 +23,32 @@ export const DEFAULT_SHOW_CONTROL_PIXEL_GRID = false;
  */
 export const DEFAULT_SHOW_PREVIEW_PIXEL_GRID = false;
 /**
+ * 默认是否开启多方案生成
+ */
+export const DEFAULT_MULTI_ALGORITHM_ENABLED = false;
+/**
+ * 默认多方案选择的算法集合
+ */
+export const DEFAULT_SELECTED_ALGORITHMS: string[] = [];
+/**
+ * 默认多方案选择的调色板集合
+ */
+export const DEFAULT_SELECTED_PALETTES: string[] = [];
+/**
+ * 批任务排列因子
+ */
+export const TASK_FACTORS = {
+  ALGORITHM: "algorithm",
+  PALETTE: "palette",
+} as const;
+/**
+ * 默认批任务排列因子顺序
+ */
+export const DEFAULT_TASK_FACTORS_ORDER = [
+  TASK_FACTORS.ALGORITHM,
+  TASK_FACTORS.PALETTE,
+] as const;
+/**
  * 默认预览面板最小高度
  */
 export const MIN_PREVIEW_HEIGHT = 250;

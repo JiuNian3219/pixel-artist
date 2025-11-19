@@ -27,6 +27,14 @@
     "upload_after_hint": "点击“转换为像素画”按钮生成像素画",
     "save_button": "保存到本地"
   },
+  "multi_algorithm_panel": {
+    "title": "多方案生成",
+    "factor_order": "方案排列顺序",
+    "factor_order_hint": "拖拽以调整方案排列顺序",
+    "algorithm": "采样算法",
+    "palette": "调色板",
+    "palette_preview": "调色板颜色预览"
+  },
   "algorithms": {
     "dominant": "主导色采样",
     "contrastAwareDominant": "对比度感知主导色采样",

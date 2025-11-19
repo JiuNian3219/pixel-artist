@@ -10,7 +10,9 @@ const Creator: React.FC = () => {
   const setExtendMode = useCreatorLocalStore((state) => state.setExtendMode);
   const isMobile = useIsMobile();
   const [originalFile, setOriginalFile] = useState<File | null>(null);
-  const [pixelatedImage, setPixelatedImage] = useState<string>("");
+  const [pixelatedResults, setPixelatedResults] = useState<
+    { url: string; algorithm: string; palette: string }[]
+  >([]);
 
   const layoutStyle = useMemo(() => {
     return {
@@ -35,13 +37,13 @@ const Creator: React.FC = () => {
         <div className={styles.previewArea}>
           <PreviewPanel
             originalFile={originalFile}
-            pixelatedImage={pixelatedImage}
+            pixelatedResults={pixelatedResults}
           />
         </div>
         <div className={styles.controlArea}>
           <ControlPanel
             setOriginalFile={setOriginalFile}
-            setPixelatedImage={setPixelatedImage}
+            setPixelatedResults={setPixelatedResults}
           />
         </div>
       </div>

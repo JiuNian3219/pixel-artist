@@ -27,6 +27,14 @@
     "upload_after_hint": "Click the 'Convert to Pixel Art' button to generate pixel art",
     "save_button": "Save to Local"
   },
+  "multi_algorithm_panel": {
+    "title": "Multi-Algorithm Generation",
+    "factor_order": "Factor Order",
+    "factor_order_hint": "Drag to adjust the order of factors",
+    "algorithm": "Sampling Algorithm",
+    "palette": "Palette",
+    "palette_preview": "Palette Preview"
+  },
   "algorithms": {
     "dominant": "Dominant Color",
     "contrastAwareDominant": "Contrast-Aware Dominant Color",
