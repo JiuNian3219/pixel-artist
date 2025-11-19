@@ -1,3 +1,4 @@
+import { useCreatorLocalStore } from "@/stores";
 import {
   getColorHex,
   getPaletteById,
@@ -11,29 +12,45 @@ import styles from "./index.module.less";
 interface PaletteSelectProps {
   value: string;
   onChange: (paletteId: string) => void;
+  previewEnabled?: boolean;
 }
 
-const PaletteSelector: React.FC<PaletteSelectProps> = ({ value, onChange }) => {
+const PaletteSelector: React.FC<PaletteSelectProps> = ({
+  value,
+  onChange,
+  previewEnabled = false,
+}) => {
   const { t } = useTranslation("creator");
   const currentPalette = getPaletteById(value);
+  const extendMode = useCreatorLocalStore((state) => state.extendMode);
   const paletteOptions = getPaletteOptions(t);
 
   return (
-    <div className={styles.paletteSelect}>
+    <div
+      className={styles.paletteSelect}
+      style={{
+        maxWidth: extendMode ? "200px" : "",
+      }}
+    >
       <Flex
         justify="space-between"
         wrap="wrap"
         gap={3}
       >
-        <Space>
+        <Space className={styles.settingLabel}>
           <BgColorsOutlined />
-          <span>{t("palette_selector.title")}</span>
+          <span>
+            {previewEnabled
+              ? t("multi_algorithm_panel.palette_preview")
+              : t("palette_selector.title")}
+          </span>
         </Space>
         <Select
           options={paletteOptions}
           value={value}
           onChange={onChange}
           style={{ minWidth: 200 }}
+          popupMatchSelectWidth={false}
         />
       </Flex>
 

@@ -1,10 +1,16 @@
+import { useIsMobile } from "@/hooks/useIsMobile";
+import {
+  LOCALES,
+  parseLocaleFromPath,
+  stripLocaleFromPath,
+  withLocalePath,
+} from "@/utils/locale";
 import { GlobalOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Button, Dropdown } from "antd";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { parseLocaleFromPath, stripLocaleFromPath, withLocalePath, LOCALES } from "@/utils/locale";
 import styles from "./index.module.less";
 
 const LanguageSwitcher: React.FC = () => {
@@ -12,10 +18,12 @@ const LanguageSwitcher: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentLocale = parseLocaleFromPath(location.pathname);
-
+  const isMobile = useIsMobile();
   const handleLanguageChange = (language: "zh" | "en") => {
     const basePath = stripLocaleFromPath(location.pathname);
-    navigate(withLocalePath(language, basePath) + location.search, { replace: true });
+    navigate(withLocalePath(language, basePath) + location.search, {
+      replace: true,
+    });
     i18n.changeLanguage(language);
   };
 
@@ -32,8 +40,12 @@ const LanguageSwitcher: React.FC = () => {
       trigger={["click"]}
       className={styles.languageSwitcher}
     >
-      <Button type="text" icon={<GlobalOutlined />} title={t("language.switch")}>
-        {t(`language.names.${currentLocale}`)}
+      <Button
+        type="text"
+        icon={<GlobalOutlined />}
+        title={t("language.switch")}
+      >
+        {!isMobile && t(`language.names.${currentLocale}`)}
       </Button>
     </Dropdown>
   );

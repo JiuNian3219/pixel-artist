@@ -1,0 +1,65 @@
+.multiAlgorithmPanel {
+  width: 100%;
+
+  .settingLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-200);
+  }
+
+  .miniSettingLabel {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-300);
+  }
+
+  .checkboxLabel {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-200);
+  }
+
+  .divider {
+    margin: 4px 0;
+  }
+
+  // 卷轴式展开容器
+  .rollContainer {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: max-height 240ms ease, opacity 180ms ease, transform 240ms ease;
+    pointer-events: none;
+  }
+
+  .rollOpen {
+    // 足以容纳当前选项高度
+    max-height: 1000px;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .factorOrder {
+    padding: 2px 8px;
+    background-color: rgba(245, 245, 245, 0.8);
+    border-radius: 4px;
+    .factorOrderItem {
+      padding: 2px 4px;
+      border: 1px dashed #d9d9d9;
+      border-radius: 4px;
+      cursor: move;
+      background: #ffffff;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-200);
+    }
+
+    @media (max-width: 768px) {
+      .factorOrderItem {
+        cursor: pointer;
+      }
+    }
+  }
+}

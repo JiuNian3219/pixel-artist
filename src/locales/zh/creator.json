@@ -1,5 +1,11 @@
 {
+  "common": {
+    "show_pixel_grid": "显示像素网格",
+    "extend_mode": "切换扩展模式",
+    "save_image": "保存图片"
+  },
   "image_uploader": {
+    "title": "图片上传",
     "type_error_message": "仅支持 JPG, JPEG, PNG, WEBP 格式",
     "upload_failed_message": "{{name}} 上传失败.",
     "hint": "点击或拖拽文件到这里上传",
@@ -20,6 +26,14 @@
     "upload_hint": "请先上传图片",
     "upload_after_hint": "点击“转换为像素画”按钮生成像素画",
     "save_button": "保存到本地"
+  },
+  "multi_algorithm_panel": {
+    "title": "多方案生成",
+    "factor_order": "方案排列顺序",
+    "factor_order_hint": "拖拽以调整方案排列顺序",
+    "algorithm": "采样算法",
+    "palette": "调色板",
+    "palette_preview": "调色板颜色预览"
   },
   "algorithms": {
     "dominant": "主导色采样",

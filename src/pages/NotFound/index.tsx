@@ -1,8 +1,8 @@
+import { parseLocaleFromPath, withLocalePath } from "@/utils/locale";
 import { Button, Result } from "antd";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { parseLocaleFromPath, withLocalePath } from "@/utils/locale";
 
 const NotFound: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ const NotFound: React.FC = () => {
       subTitle={t("description")}
       extra={
         <Button
+          title={t("actions.back_home")}
           type="primary"
           onClick={() => navigate(withLocalePath(locale, "/"))}
         >

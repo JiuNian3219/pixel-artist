@@ -7,7 +7,8 @@ import {
   withLocalePath,
 } from "@/utils/locale";
 import { getDefaultSEO, resolveSEOByPath } from "@/utils/seo";
-import { Layout as AntdLayout, Menu } from "antd";
+import { GithubOutlined } from "@ant-design/icons";
+import { Layout as AntdLayout, Menu, Space } from "antd";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -89,7 +90,22 @@ const Layout: React.FC = () => {
           <Outlet />
         </Content>
         <Footer className={styles.footer}>
-          Pixel Artist ©{new Date().getFullYear()}
+          <span>{t("footer.description")}</span>
+          <span>
+            <span>Pixel Artist ©{new Date().getFullYear()}</span>
+            <span className={styles.separator}> · </span>
+            <Space>
+              <GithubOutlined />
+              <a
+                href="https://github.com/JiuNian3219/pixel-artist"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.footerLink}
+              >
+                GitHub
+              </a>
+            </Space>
+          </span>
         </Footer>
       </AntdLayout>
     </>

@@ -1,20 +1,47 @@
 import Layout from "@/components/Layout";
-import Creator from "@/pages/Creator";
-import Home from "@/pages/Home";
-import NotFound from "@/pages/NotFound";
 import { DEFAULT_LOCALE, LOCALES } from "@/utils/locale";
+import { Spin } from "antd";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import RootRedirect from "./RootRedirect";
+const Creator = lazy(() => import("@/pages/Creator"));
+const Home = lazy(() => import("@/pages/Home"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // 基于 LOCALES 自动生成多语言路由分组
 const localeRoutes = LOCALES.map((lng) => ({
   path: `/${lng}`,
   element: <Layout />,
-  errorElement: <NotFound />,
+  errorElement: (
+    <Suspense fallback={<Spin style={{ marginTop: "24px" }} />}>
+      <NotFound />
+    </Suspense>
+  ),
   children: [
-    { index: true, element: <Home /> },
-    { path: "creator", element: <Creator /> },
-    { path: "404", element: <NotFound /> },
+    {
+      index: true,
+      element: (
+        <Suspense fallback={<Spin style={{ marginTop: "24px" }} />}>
+          <Home />
+        </Suspense>
+      ),
+    },
+    {
+      path: "creator",
+      element: (
+        <Suspense fallback={<Spin style={{ marginTop: "24px" }} />}>
+          <Creator />
+        </Suspense>
+      ),
+    },
+    {
+      path: "404",
+      element: (
+        <Suspense fallback={<Spin style={{ marginTop: "24px" }} />}>
+          <NotFound />
+        </Suspense>
+      ),
+    },
   ],
 }));
 

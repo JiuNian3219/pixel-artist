@@ -1,27 +1,67 @@
 import { useCreatorLocalStore } from "@/stores";
-import { useEffect, useRef } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import styles from "./index.module.less";
 
 interface PixelGridProps {
   imageWidth: number;
   imageHeight: number;
-  containerWidth: number;
-  containerHeight: number;
   visible: boolean;
+  children?: React.ReactNode;
+  gridColor?: string;
+  lineWidth?: number;
 }
 
 const PixelGrid: React.FC<PixelGridProps> = ({
   imageWidth,
   imageHeight,
-  containerWidth,
-  containerHeight,
   visible,
+  children,
+  gridColor = "rgba(105, 90, 90, 0.6)",
+  lineWidth = 1,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
+  // 使用延迟值降低快速滑动时的重绘频率
+  const deferredPixelSize = useDeferredValue(pixelSize);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  useLayoutEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerSize({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+
+    resizeObserver.observe(wrapper);
+
+    return () => {
+      resizeObserver.unobserve(wrapper);
+    };
+  }, []);
 
   useEffect(() => {
-    if (!visible || !canvasRef.current || !imageWidth || !imageHeight) {
+    const { width: containerWidth, height: containerHeight } = containerSize;
+    if (
+      !visible ||
+      !canvasRef.current ||
+      !imageWidth ||
+      !imageHeight ||
+      !containerWidth ||
+      !containerHeight
+    ) {
       return;
     }
 
@@ -58,13 +98,13 @@ const PixelGrid: React.FC<PixelGridProps> = ({
     const scaleY = displayHeight / imageHeight;
 
     // 每个像素格在画布上的步长
-    const stepX = pixelSize * scaleX;
-    const stepY = pixelSize * scaleY;
+    const stepX = deferredPixelSize * scaleX;
+    const stepY = deferredPixelSize * scaleY;
     if (stepX <= 0 || stepY <= 0) return;
 
     // 设置网格样式
-    ctx.strokeStyle = "rgba(105, 90, 90, 0.6)";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = lineWidth;
 
     // 垂直线
     {
@@ -91,22 +131,27 @@ const PixelGrid: React.FC<PixelGridProps> = ({
     }
   }, [
     visible,
-    pixelSize,
+    deferredPixelSize,
     imageWidth,
     imageHeight,
-    containerWidth,
-    containerHeight,
+    containerSize,
+    gridColor,
+    lineWidth,
   ]);
 
-  if (!visible) {
-    return null;
-  }
-
   return (
-    <canvas
-      ref={canvasRef}
-      className={styles.pixelGrid}
-    />
+    <div
+      ref={wrapperRef}
+      className={styles.pixelGridWrapper}
+    >
+      {children}
+      {visible && (
+        <canvas
+          ref={canvasRef}
+          className={styles.pixelGrid}
+        />
+      )}
+    </div>
   );
 };
 

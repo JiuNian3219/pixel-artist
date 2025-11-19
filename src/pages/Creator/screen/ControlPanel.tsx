@@ -1,5 +1,14 @@
+import { useCreatorLocalStore } from "@/stores";
+import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
+import { TASK_FACTORS } from "@/utils/constants";
+import {
+  ResultType,
+  SendType,
+  type PixelateBatchMessageData,
+} from "@/workers/pixelWorker";
 import {
   BgColorsOutlined,
+  DeploymentUnitOutlined,
   HighlightOutlined,
   SearchOutlined,
   SettingOutlined,
@@ -16,39 +25,192 @@ import {
   Space,
 } from "antd";
 import { Typography } from "antd/lib";
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import ImageUploader from "../components/ImageUploader";
+import MultiAlgorithmPanel from "../components/MultiAlgorithmPanel";
 import PaletteSelector from "../components/PaletteSelector";
-import useControlPanel from "../handles/useControlPanel";
 import styles from "../index.module.less";
 import { MAX_PIXEL_SIZE, MIN_PIXEL_SIZE } from "../utils";
 
 interface ControlPanelProps {
   setOriginalFile: (file: File | null) => void;
-  setPixelatedImage: (url: string) => void;
+  setPixelatedResults?: Dispatch<
+    SetStateAction<{ url: string; algorithm: string; palette: string }[]>
+  >;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
   setOriginalFile,
-  setPixelatedImage,
+  setPixelatedResults,
 }) => {
-  const {
-    t,
-    extendMode,
-    originalImage,
-    inPixelation,
-    pixelSize,
-    paletteName,
-    pixelAlgorithm,
-    pixelAlgorithmOptions,
-    handleImageChange,
-    handleChangePixelSize,
-    handlePixelAlgorithmChange,
-    handlePaletteChange,
-    handlePixelate,
-  } = useControlPanel({
-    setOriginalFile,
-    setPixelatedImage,
-  });
+  const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
+  const setPixelSize = useCreatorLocalStore((state) => state.setPixelSize);
+  const pixelAlgorithm = useCreatorLocalStore((state) => state.pixelAlgorithm);
+  const multiAlgorithmEnabled = useCreatorLocalStore(
+    (state) => state.multiAlgorithmEnabled
+  );
+  const setPixelAlgorithm = useCreatorLocalStore(
+    (state) => state.setPixelAlgorithm
+  );
+  const setMultiAlgorithmEnabled = useCreatorLocalStore(
+    (state) => state.setMultiAlgorithmEnabled
+  );
+  const paletteName = useCreatorLocalStore((state) => state.paletteName);
+  const setPaletteName = useCreatorLocalStore((state) => state.setPaletteName);
+  const extendMode = useCreatorLocalStore((state) => state.extendMode);
+  const selectedAlgorithms = useCreatorLocalStore(
+    (state) => state.selectedAlgorithms
+  );
+  const selectedPalettes = useCreatorLocalStore(
+    (state) => state.selectedPalettes
+  );
+  const taskFactorsOrder = useCreatorLocalStore(
+    (state) => state.taskFactorsOrder
+  );
+  const inPixelation = useCreatorLocalStore((state) => state.inPixelation);
+  const setInPixelation = useCreatorLocalStore(
+    (state) => state.setInPixelation
+  );
+
+  const [originalImage, setOriginalImage] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const { t } = useTranslation("creator");
+  const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
+
+  const handlePaletteChange = (paletteName: string) => {
+    setPaletteName(paletteName);
+  };
+
+  const handleChangePixelSize = (value: number) => {
+    setPixelSize(value);
+  };
+
+  const handlePixelAlgorithmChange = (value: string) => {
+    setPixelAlgorithm(value);
+  };
+
+  const handleMultiAlgorithmChange = (checked: boolean) => {
+    setMultiAlgorithmEnabled(checked);
+  };
+
+  const handleImageChange = (file: File | null, url: string) => {
+    setImageFile(file);
+    setOriginalFile(file);
+    setOriginalImage(url);
+    setPixelatedResults?.([]);
+  };
+
+  // 可以像素画的条件：必须已选择图片，且如果开启多方案模式，其下至少选择一个算法与一个调色板
+  const canPixelate =
+    !!originalImage &&
+    (!multiAlgorithmEnabled ||
+      (selectedAlgorithms.length > 0 && selectedPalettes.length > 0));
+
+  // 处理像素化转换
+  const handlePixelate = () => {
+    if (!imageFile || !originalImage) return;
+    setInPixelation(true);
+
+    const img = new Image();
+    img.src = originalImage;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const width = img.width;
+      const height = img.height;
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+
+      const tasks = multiAlgorithmEnabled
+        ? (() => {
+            // 根据排列因子顺序进行笛卡尔积展开
+            const order = taskFactorsOrder;
+            let acc: { algorithm?: string; palette?: string }[] = [{}];
+            for (const dim of order) {
+              const values =
+                dim === TASK_FACTORS.ALGORITHM
+                  ? selectedAlgorithms
+                  : selectedPalettes;
+              if (values.length === 0) {
+                acc = [];
+                break;
+              }
+              const next: { algorithm?: string; palette?: string }[] = [];
+              for (const item of acc) {
+                for (const v of values) {
+                  next.push({
+                    ...item,
+                    [dim]: v,
+                  });
+                }
+              }
+              acc = next;
+            }
+            return acc.map((it) => ({
+              algorithm: it.algorithm!,
+              palette: it.palette!,
+            }));
+          })()
+        : [{ algorithm: pixelAlgorithm, palette: paletteName }];
+
+      // 多方案模式下，若任务集为空，则直接结束
+      if (tasks.length === 0) {
+        setInPixelation(false);
+        return;
+      }
+
+      const worker = new Worker(
+        new URL("../../../workers/pixelWorker.ts", import.meta.url),
+        { type: "module" }
+      );
+
+      // 开始前清空预览结果
+      setPixelatedResults?.([]);
+
+      worker.onmessage = (ev) => {
+        const msg = ev.data as PixelateBatchMessageData;
+        if (msg.type === ResultType.RESULT) {
+          const { data: outData, algorithm, palette } = msg.payload;
+          const outArray = new Uint8ClampedArray(outData.length);
+          outArray.set(outData);
+          const outImage = new ImageData(outArray, width, height);
+          ctx.putImageData(outImage, 0, 0);
+          const url = canvas.toDataURL("image/png");
+          setPixelatedResults?.((prev) => [
+            ...(prev ?? []),
+            { url, algorithm, palette },
+          ]);
+        } else if (msg.type === ResultType.COMPLETE) {
+          setInPixelation(false);
+          worker.terminate();
+        }
+      };
+
+      worker.postMessage(
+        {
+          type: SendType.PIXELATE_BATCH,
+          payload: {
+            data,
+            width,
+            height,
+            pixelSize,
+            tasks,
+          },
+        },
+        [data.buffer]
+      );
+    };
+  };
+
   return extendMode ? (
     <div className={styles.miniControlPanel}>
       <ImageUploader
@@ -56,10 +218,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         mode="button"
       />
       <Button
+        title={t("control_panel.to_pixel_button")}
         type="primary"
         shape="circle"
         icon={<HighlightOutlined />}
-        disabled={!originalImage}
+        disabled={!canPixelate}
         onClick={handlePixelate}
         loading={inPixelation}
         className={styles.miniPixelateButton}
@@ -69,7 +232,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/* 像素尺寸设置 */}
           <Popover
             content={
-              <div className={styles.popoverContent}>
+              <div style={{ width: "200px" }}>
                 <Flex
                   justify="space-between"
                   align="center"
@@ -96,6 +259,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             trigger="click"
           >
             <Button
+              title={t("control_panel.pixel_size_slider")}
               shape="circle"
               icon={<TableOutlined />}
               className={styles.settingButton}
@@ -103,44 +267,67 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           </Popover>
 
           {/** 算法选择 */}
+          {!multiAlgorithmEnabled && (
+            <Popover
+              content={
+                <div>
+                  <Flex
+                    vertical
+                    align="flex-start"
+                    gap={8}
+                  >
+                    <Space>
+                      <SearchOutlined />
+                      <span>{t("control_panel.pixel_algorithm_select")}</span>
+                    </Space>
+                    <Select
+                      value={pixelAlgorithm}
+                      options={pixelAlgorithmOptions}
+                      onChange={handlePixelAlgorithmChange}
+                      style={{ width: "200px" }}
+                      popupMatchSelectWidth={false}
+                    />
+                  </Flex>
+                </div>
+              }
+              placement="left"
+              trigger="click"
+            >
+              <Button
+                shape="circle"
+                title={t("control_panel.pixel_algorithm_select")}
+                icon={<SearchOutlined />}
+                className={styles.settingButton}
+              />
+            </Popover>
+          )}
+
+          {/* 调色板选择 */}
           <Popover
             content={
-              <div className={styles.popoverContent}>
-                <Flex
-                  vertical
-                  align="flex-start"
-                  gap={8}
-                >
-                  <Space>
-                    <SearchOutlined />
-                    <span>{t("control_panel.pixel_algorithm_select")}</span>
-                  </Space>
-                  <Select
-                    value={pixelAlgorithm}
-                    options={pixelAlgorithmOptions}
-                    onChange={handlePixelAlgorithmChange}
-                    style={{ width: "100%" }}
-                  />
-                </Flex>
-              </div>
+              <PaletteSelector
+                value={paletteName}
+                onChange={handlePaletteChange}
+                previewEnabled={multiAlgorithmEnabled}
+              />
             }
             placement="left"
             trigger="click"
           >
             <Button
+              title={t("palette_selector.title")}
               shape="circle"
-              icon={<SearchOutlined />}
+              icon={<BgColorsOutlined />}
               className={styles.settingButton}
             />
           </Popover>
-
-          {/* 调色板选择 */}
+          {/** 多方案生成 */}
           <Popover
             content={
-              <div className={styles.popoverContent}>
-                <PaletteSelector
-                  value={paletteName}
-                  onChange={handlePaletteChange}
+              <div style={{ width: "400px" }}>
+                <MultiAlgorithmPanel
+                  enabled={multiAlgorithmEnabled}
+                  onChange={handleMultiAlgorithmChange}
                 />
               </div>
             }
@@ -149,7 +336,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           >
             <Button
               shape="circle"
-              icon={<BgColorsOutlined />}
+              title={t("multi_algorithm_panel.title")}
+              icon={<DeploymentUnitOutlined />}
               className={styles.settingButton}
             />
           </Popover>
@@ -174,9 +362,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/** 像素化按钮 */}
       <Button
+        title={t("control_panel.to_pixel_button")}
         type="primary"
         icon={<HighlightOutlined />}
-        disabled={!originalImage}
+        disabled={!canPixelate}
         onClick={handlePixelate}
         loading={inPixelation}
         className={styles.pixelateButton}
@@ -190,7 +379,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         justify="space-between"
         align="center"
       >
-        <Space>
+        <Space className={styles.settingLabel}>
           <TableOutlined />
           <span>{t("control_panel.pixel_size_slider")}</span>
         </Space>
@@ -206,27 +395,37 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       />
 
       {/** 算法选择 */}
-      <Flex
-        justify="space-between"
-        wrap="wrap"
-        gap={3}
-      >
-        <Space>
-          <SearchOutlined />
-          <span>{t("control_panel.pixel_algorithm_select")}</span>
-        </Space>
-        <Select
-          value={pixelAlgorithm}
-          options={pixelAlgorithmOptions}
-          onChange={handlePixelAlgorithmChange}
-          style={{ width: 200 }}
-        />
-      </Flex>
+      {!multiAlgorithmEnabled && (
+        <Flex
+          justify="space-between"
+          wrap="wrap"
+          gap={3}
+        >
+          <Space className={styles.settingLabel}>
+            <SearchOutlined />
+            <span>{t("control_panel.pixel_algorithm_select")}</span>
+          </Space>
+          <Select
+            value={pixelAlgorithm}
+            options={pixelAlgorithmOptions}
+            onChange={handlePixelAlgorithmChange}
+            popupMatchSelectWidth={false}
+            style={{ width: 200 }}
+          />
+        </Flex>
+      )}
 
       {/** 调色板选择 */}
       <PaletteSelector
         value={paletteName}
         onChange={handlePaletteChange}
+        previewEnabled={multiAlgorithmEnabled}
+      />
+
+      {/* 多方案生成 */}
+      <MultiAlgorithmPanel
+        enabled={multiAlgorithmEnabled}
+        onChange={handleMultiAlgorithmChange}
       />
     </Card>
   );

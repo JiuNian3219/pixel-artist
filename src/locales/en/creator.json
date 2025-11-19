@@ -1,5 +1,11 @@
 {
+  "common": {
+    "show_pixel_grid": "Show Pixel Grid",
+    "extend_mode": "Toggle Extend Mode",
+    "save_image": "Save Image"
+  },
   "image_uploader": {
+    "title": "Image Uploader",
     "type_error_message": "Only JPG, JPEG, PNG, and WEBP formats are supported.",
     "upload_failed_message": "{{name}} upload failed.",
     "hint": "Drag and drop an image file or click to select one.",
@@ -20,6 +26,14 @@
     "upload_hint": "Please upload an image first",
     "upload_after_hint": "Click the 'Convert to Pixel Art' button to generate pixel art",
     "save_button": "Save to Local"
+  },
+  "multi_algorithm_panel": {
+    "title": "Multi-Algorithm Generation",
+    "factor_order": "Factor Order",
+    "factor_order_hint": "Drag to adjust the order of factors",
+    "algorithm": "Sampling Algorithm",
+    "palette": "Palette",
+    "palette_preview": "Palette Preview"
   },
   "algorithms": {
     "dominant": "Dominant Color",
