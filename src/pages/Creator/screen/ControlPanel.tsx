@@ -1,6 +1,12 @@
 import { useCreatorLocalStore } from "@/stores";
 import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
-import { TASK_FACTORS } from "@/utils/constants";
+import {
+  MAX_PIXEL_SIZE,
+  MAX_PREVIEW_HEIGHT,
+  MIN_PIXEL_SIZE,
+  MIN_PREVIEW_HEIGHT,
+  TASK_FACTORS,
+} from "@/utils/constants";
 import {
   ResultType,
   SendType,
@@ -8,6 +14,7 @@ import {
 } from "@/workers/pixelWorker";
 import {
   BgColorsOutlined,
+  ColumnHeightOutlined,
   DeploymentUnitOutlined,
   HighlightOutlined,
   SearchOutlined,
@@ -25,13 +32,19 @@ import {
   Space,
 } from "antd";
 import { Typography } from "antd/lib";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import debounce from "lodash/debounce";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { useTranslation } from "react-i18next";
 import ImageUploader from "../components/ImageUploader";
 import MultiAlgorithmPanel from "../components/MultiAlgorithmPanel";
 import PaletteSelector from "../components/PaletteSelector";
 import styles from "../index.module.less";
-import { MAX_PIXEL_SIZE, MIN_PIXEL_SIZE } from "../utils";
 
 interface ControlPanelProps {
   setOriginalFile: (file: File | null) => void;
@@ -46,6 +59,17 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
   const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
   const setPixelSize = useCreatorLocalStore((state) => state.setPixelSize);
+  const [uiPixelSize, setUiPixelSize] = useState<number>(pixelSize);
+  const debouncedSetPixelSize = useMemo(
+    () => debounce((v: number) => setPixelSize(v), 200),
+    [setPixelSize]
+  );
+  const defaultPreviewHeight = useCreatorLocalStore(
+    (state) => state.defaultPreviewHeight
+  );
+  const setDefaultPreviewHeight = useCreatorLocalStore(
+    (state) => state.setDefaultPreviewHeight
+  );
   const pixelAlgorithm = useCreatorLocalStore((state) => state.pixelAlgorithm);
   const multiAlgorithmEnabled = useCreatorLocalStore(
     (state) => state.multiAlgorithmEnabled
@@ -83,8 +107,43 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   const handleChangePixelSize = (value: number) => {
-    setPixelSize(value);
+    setUiPixelSize(value);
+    debouncedSetPixelSize(value);
   };
+
+  // 预览高度百分比与像素的互相转换（30% -> 250px，100% -> 800px）
+  const percentToPx = (percent: number): number => {
+    const k = (percent - 30) / 70;
+    const px =
+      MIN_PREVIEW_HEIGHT + k * (MAX_PREVIEW_HEIGHT - MIN_PREVIEW_HEIGHT);
+    return Math.round(px);
+  };
+
+  const pxToPercent = (px: number): number => {
+    const k =
+      (px - MIN_PREVIEW_HEIGHT) / (MAX_PREVIEW_HEIGHT - MIN_PREVIEW_HEIGHT);
+    const percent = 30 + k * 70;
+    return Math.round(percent);
+  };
+
+  const [uiPreviewHeightPercent, setUiPreviewHeightPercent] = useState<number>(
+    pxToPercent(defaultPreviewHeight)
+  );
+  const debouncedSetDefaultPreviewHeight = useMemo(
+    () =>
+      debounce(
+        (percent: number) => setDefaultPreviewHeight(percentToPx(percent)),
+        200
+      ),
+    [setDefaultPreviewHeight]
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSetPixelSize.cancel();
+      debouncedSetDefaultPreviewHeight.cancel();
+    };
+  }, [debouncedSetPixelSize, debouncedSetDefaultPreviewHeight]);
 
   const handlePixelAlgorithmChange = (value: string) => {
     setPixelAlgorithm(value);
@@ -242,14 +301,14 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                     <span>{t("control_panel.pixel_size_slider")}</span>
                   </Space>
                   <Typography className={styles.pixelSize}>
-                    {pixelSize}px
+                    {uiPixelSize}px
                   </Typography>
                 </Flex>
 
                 <Slider
                   min={MIN_PIXEL_SIZE}
                   max={MAX_PIXEL_SIZE}
-                  value={pixelSize}
+                  value={uiPixelSize}
                   tooltip={{ formatter: null }}
                   onChange={handleChangePixelSize}
                 />
@@ -262,6 +321,46 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               title={t("control_panel.pixel_size_slider")}
               shape="circle"
               icon={<TableOutlined />}
+              className={styles.settingButton}
+            />
+          </Popover>
+
+          {/* 预览高度设置（30% - 100%，对应 250px - 800px） */}
+          <Popover
+            content={
+              <div style={{ width: "200px" }}>
+                <Flex
+                  justify="space-between"
+                  align="center"
+                >
+                  <Space>
+                    <ColumnHeightOutlined />
+                    <span>{t("control_panel.preview_height_slider")}</span>
+                  </Space>
+                  <Typography className={styles.pixelSize}>
+                    {uiPreviewHeightPercent}%
+                  </Typography>
+                </Flex>
+
+                <Slider
+                  min={30}
+                  max={100}
+                  value={uiPreviewHeightPercent}
+                  tooltip={{ formatter: null }}
+                  onChange={(v) => {
+                    setUiPreviewHeightPercent(v as number);
+                    debouncedSetDefaultPreviewHeight(v as number);
+                  }}
+                />
+              </div>
+            }
+            placement="left"
+            trigger="click"
+          >
+            <Button
+              title={t("control_panel.preview_height_slider")}
+              shape="circle"
+              icon={<ColumnHeightOutlined />}
               className={styles.settingButton}
             />
           </Popover>
@@ -383,15 +482,40 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           <TableOutlined />
           <span>{t("control_panel.pixel_size_slider")}</span>
         </Space>
-        <Typography className={styles.pixelSize}>{pixelSize}px</Typography>
+        <Typography className={styles.pixelSize}>{uiPixelSize}px</Typography>
       </Flex>
 
       <Slider
         min={MIN_PIXEL_SIZE}
         max={MAX_PIXEL_SIZE}
-        value={pixelSize}
+        value={uiPixelSize}
         tooltip={{ formatter: null }}
         onChange={handleChangePixelSize}
+      />
+
+      {/** 预览高度设置（30% - 100%，对应 250px - 800px） */}
+      <Flex
+        justify="space-between"
+        align="center"
+      >
+        <Space className={styles.settingLabel}>
+          <ColumnHeightOutlined />
+          <span>{t("control_panel.preview_height_slider")}</span>
+        </Space>
+        <Typography className={styles.pixelSize}>
+          {uiPreviewHeightPercent}%
+        </Typography>
+      </Flex>
+
+      <Slider
+        min={30}
+        max={100}
+        value={uiPreviewHeightPercent}
+        tooltip={{ formatter: null }}
+        onChange={(v) => {
+          setUiPreviewHeightPercent(v as number);
+          debouncedSetDefaultPreviewHeight(v as number);
+        }}
       />
 
       {/** 算法选择 */}

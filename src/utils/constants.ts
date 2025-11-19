@@ -27,6 +27,14 @@ export const DEFAULT_SHOW_PREVIEW_PIXEL_GRID = false;
  */
 export const DEFAULT_MULTI_ALGORITHM_ENABLED = false;
 /**
+ * 预览面板列数
+ */
+export const PREVIEW_COLUMNS = [1, 2, 3] as const;
+/**
+ * 预览面板默认列数
+ */
+export const DEFAULT_PREVIEW_COLUMNS = 1;
+/**
  * 默认多方案选择的算法集合
  */
 export const DEFAULT_SELECTED_ALGORITHMS: string[] = [];
@@ -45,8 +53,8 @@ export const TASK_FACTORS = {
  * 默认批任务排列因子顺序
  */
 export const DEFAULT_TASK_FACTORS_ORDER = [
-  TASK_FACTORS.ALGORITHM,
   TASK_FACTORS.PALETTE,
+  TASK_FACTORS.ALGORITHM,
 ] as const;
 /**
  * 默认预览面板最小高度
@@ -56,6 +64,18 @@ export const MIN_PREVIEW_HEIGHT = 250;
  * 默认预览面板最大高度
  */
 export const MAX_PREVIEW_HEIGHT = 800;
+/**
+ * 默认预览面板初始高度（px）
+ */
+export const DEFAULT_PREVIEW_HEIGHT = 350;
+/**
+ * 最大像素尺寸
+ */
+export const MAX_PIXEL_SIZE = 128;
+/**
+ *  最小像素尺寸
+ */
+export const MIN_PIXEL_SIZE = 1;
 /**
  * 默认主题
  */

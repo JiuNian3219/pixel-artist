@@ -38,6 +38,7 @@ const Creator: React.FC = () => {
           <PreviewPanel
             originalFile={originalFile}
             pixelatedResults={pixelatedResults}
+            setPixelatedResults={setPixelatedResults}
           />
         </div>
         <div className={styles.controlArea}>

@@ -2,7 +2,8 @@
   "common": {
     "show_pixel_grid": "Show Pixel Grid",
     "extend_mode": "Toggle Extend Mode",
-    "save_image": "Save Image"
+    "save_image": "Save Image",
+    "clear_preview": "Clear Preview"
   },
   "image_uploader": {
     "title": "Image Uploader",
@@ -17,6 +18,7 @@
   "control_panel": {
     "title": "Control Panel",
     "to_pixel_button": "Convert to Pixel Art",
+    "preview_height_slider": "Preview Height",
     "pixel_size_slider": "Pixel Size",
     "pixel_algorithm_select": "Pixel Sampling Algorithm",
     "palette_select": "Palette Selection"
@@ -25,7 +27,12 @@
     "title": "Preview",
     "upload_hint": "Please upload an image first",
     "upload_after_hint": "Click the 'Convert to Pixel Art' button to generate pixel art",
-    "save_button": "Save to Local"
+    "save_button": "Save to Local",
+    "columns": {
+      "1": "Single Column",
+      "2": "Double Column",
+      "3": "Triple Column"
+    }
   },
   "multi_algorithm_panel": {
     "title": "Multi-Algorithm Generation",

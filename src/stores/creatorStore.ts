@@ -4,6 +4,8 @@ import {
   DEFAULT_EXTEND_MODE,
   DEFAULT_MULTI_ALGORITHM_ENABLED,
   DEFAULT_PIXEL_SIZE,
+  DEFAULT_PREVIEW_COLUMNS,
+  DEFAULT_PREVIEW_HEIGHT,
   DEFAULT_SELECTED_ALGORITHMS,
   DEFAULT_SELECTED_PALETTES,
   DEFAULT_SHOW_CONTROL_PIXEL_GRID,
@@ -22,10 +24,12 @@ interface CreatorLocalState {
   multiAlgorithmEnabled: boolean;
   selectedAlgorithms: string[];
   selectedPalettes: string[];
-  taskFactorsOrder: ("algorithm" | "palette")[];
+  taskFactorsOrder: (typeof TASK_FACTORS)[keyof typeof TASK_FACTORS][];
   inPixelation: boolean;
   showPreviewPixelGrid: boolean;
   showControlPixelGrid: boolean;
+  previewColumns: number;
+  defaultPreviewHeight: number;
   setPixelAlgorithm: (pixelAlgorithm: string) => void;
   setPaletteName: (paletteName: string) => void;
   setPixelSize: (pixelSize: number) => void;
@@ -39,6 +43,8 @@ interface CreatorLocalState {
   setInPixelation: (inPixelation: boolean) => void;
   setShowPreviewPixelGrid: (showPreviewPixelGrid: boolean) => void;
   setShowControlPixelGrid: (showControlPixelGrid: boolean) => void;
+  setPreviewColumns: (previewColumns: number) => void;
+  setDefaultPreviewHeight: (height: number) => void;
 }
 
 export const useCreatorLocalStore = create<CreatorLocalState>()(
@@ -55,6 +61,8 @@ export const useCreatorLocalStore = create<CreatorLocalState>()(
       inPixelation: false,
       showPreviewPixelGrid: DEFAULT_SHOW_PREVIEW_PIXEL_GRID,
       showControlPixelGrid: DEFAULT_SHOW_CONTROL_PIXEL_GRID,
+      previewColumns: DEFAULT_PREVIEW_COLUMNS,
+      defaultPreviewHeight: DEFAULT_PREVIEW_HEIGHT,
       setPixelAlgorithm: (pixelAlgorithm) => set({ pixelAlgorithm }),
       setPaletteName: (paletteName) => set({ paletteName }),
       setPixelSize: (pixelSize) => set({ pixelSize }),
@@ -70,6 +78,9 @@ export const useCreatorLocalStore = create<CreatorLocalState>()(
         set({ showPreviewPixelGrid }),
       setShowControlPixelGrid: (showControlPixelGrid) =>
         set({ showControlPixelGrid }),
+      setPreviewColumns: (previewColumns) => set({ previewColumns }),
+      setDefaultPreviewHeight: (height) =>
+        set({ defaultPreviewHeight: height }),
     }),
     {
       name: "creator-local-state-storage",
