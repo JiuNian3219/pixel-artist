@@ -27,6 +27,14 @@ export const DEFAULT_SHOW_PREVIEW_PIXEL_GRID = false;
  */
 export const DEFAULT_MULTI_ALGORITHM_ENABLED = false;
 /**
+ * 预览面板列数
+ */
+export const PREVIEW_COLUMNS = [1, 2, 3] as const;
+/**
+ * 预览面板默认列数
+ */
+export const DEFAULT_PREVIEW_COLUMNS = 1;
+/**
  * 默认多方案选择的算法集合
  */
 export const DEFAULT_SELECTED_ALGORITHMS: string[] = [];

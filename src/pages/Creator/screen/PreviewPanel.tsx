@@ -1,37 +1,55 @@
+import CenterSpin from "@/components/CenterSpin";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useCreatorLocalStore } from "@/stores";
 import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
-import { TASK_FACTORS } from "@/utils/constants";
+import { PREVIEW_COLUMNS, TASK_FACTORS } from "@/utils/constants";
 import { getPaletteOptions } from "@/utils/palettes";
 import {
   BorderOutlined,
+  ClearOutlined,
   EyeOutlined,
   FullscreenExitOutlined,
   FullscreenOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Flex, Space, Spin } from "antd";
+import { Button, Card, Col, Flex, Row, Segmented, Space } from "antd";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import PreviewCard from "../components/PreviewCard";
 import styles from "../index.module.less";
 
 interface PreviewPanelProps {
   originalFile: File | null;
-  pixelatedResults?: { url: string; algorithm: string; palette: string }[];
+  pixelatedResults?: {
+    url: string;
+    algorithm: string;
+    palette: string;
+  }[];
+  setPixelatedResults: React.Dispatch<
+    React.SetStateAction<
+      {
+        url: string;
+        algorithm: string;
+        palette: string;
+      }[]
+    >
+  >;
 }
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({
   originalFile,
   pixelatedResults = [],
+  setPixelatedResults,
 }) => {
   const { t } = useTranslation("creator");
   const isMobile = useIsMobile();
+  const previewColumnOptions = PREVIEW_COLUMNS.map((v) => ({
+    label: t(`preview_panel.columns.${v}`),
+    value: v,
+  }));
   const extendMode = useCreatorLocalStore((state) => state.extendMode);
-  const setExtendMode = useCreatorLocalStore((state) => state.setExtendMode);
+  const previewColumns = useCreatorLocalStore((state) => state.previewColumns);
   const showPreviewPixelGrid = useCreatorLocalStore(
     (state) => state.showPreviewPixelGrid
-  );
-  const setShowPreviewPixelGrid = useCreatorLocalStore(
-    (state) => state.setShowPreviewPixelGrid
   );
   const inPixelation = useCreatorLocalStore((state) => state.inPixelation);
   const multiAlgorithmEnabled = useCreatorLocalStore(
@@ -43,10 +61,20 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const selectedPalettes = useCreatorLocalStore(
     (state) => state.selectedPalettes
   );
+  // 预览展示的列数
+  const colSpan = multiAlgorithmEnabled
+    ? Math.floor(24 / Math.max(1, previewColumns))
+    : 24;
   const taskFactorsOrder = useCreatorLocalStore(
     (state) => state.taskFactorsOrder
   );
-
+  const setShowPreviewPixelGrid = useCreatorLocalStore(
+    (state) => state.setShowPreviewPixelGrid
+  );
+  const setExtendMode = useCreatorLocalStore((state) => state.setExtendMode);
+  const setPreviewColumns = useCreatorLocalStore(
+    (state) => state.setPreviewColumns
+  );
   const algoOptions = getPixelAlgorithmsOptions(t);
   const paletteOptions = getPaletteOptions(t);
   const labelOf = (
@@ -62,6 +90,21 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     setShowPreviewPixelGrid(!showPreviewPixelGrid);
   };
 
+  const togglePreviewColumns = (v: number) => {
+    setPreviewColumns(Number(v));
+  };
+
+  const clearPreview = () => {
+    // 清除所有生成的预览图片
+    setPixelatedResults([]);
+  };
+
+  useEffect(() => {
+    if (isMobile) {
+      setPreviewColumns(1);
+    }
+  }, [isMobile]);
+
   return (
     <Card
       title={
@@ -74,6 +117,14 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             {t("preview_panel.title")}
           </Space>
           <Space>
+            {!isMobile && multiAlgorithmEnabled && (
+              <Segmented
+                shape="round"
+                options={previewColumnOptions}
+                value={previewColumns}
+                onChange={togglePreviewColumns}
+              />
+            )}
             {/* 网格显示切换按钮 */}
             {pixelatedResults.length > 0 && (
               <Button
@@ -81,16 +132,12 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 onClick={togglePixelGrid}
                 icon={<BorderOutlined />}
                 type={showPreviewPixelGrid ? "primary" : "default"}
-                size="small"
               />
             )}
             {!isMobile && (
               <Button
                 title={t("common.extend_mode")}
                 onClick={toggleExtendMode}
-                style={{
-                  fontSize: "20px",
-                }}
                 icon={
                   extendMode ? (
                     <FullscreenExitOutlined />
@@ -100,28 +147,38 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 }
               ></Button>
             )}
+            <Button
+              title={t("common.clear_preview")}
+              icon={<ClearOutlined />}
+              disabled={inPixelation}
+              onClick={clearPreview}
+            />
           </Space>
         </Flex>
       }
       className={styles.previewCard}
     >
       {pixelatedResults.length > 0 ? (
-        <>
+        <Row gutter={[12, 12]}>
           {pixelatedResults.map((res, idx) => (
-            <PreviewCard
+            <Col
               key={`${res.algorithm}-${res.palette}-${idx}`}
-              tags={[
-                labelOf(algoOptions, res.algorithm),
-                labelOf(paletteOptions, res.palette),
-              ]}
-              originalFile={originalFile}
-              pixelatedImage={res.url}
-              showPixelGrid={showPreviewPixelGrid}
-              saveButtonPlacement={isMobile ? "bottom" : "top"}
-              showResizeHandle={!isMobile}
-            />
+              span={colSpan}
+            >
+              <PreviewCard
+                tags={[
+                  labelOf(algoOptions, res.algorithm),
+                  labelOf(paletteOptions, res.palette),
+                ]}
+                originalFile={originalFile}
+                pixelatedImage={res.url}
+                showPixelGrid={showPreviewPixelGrid}
+                saveButtonPlacement={isMobile ? "bottom" : "top"}
+                showResizeHandle={!isMobile}
+              />
+            </Col>
           ))}
-          {/** 当多方案生成且生成中，提示加载动画 */}
+          {/** 当多方案生成且生成中，生成占位卡片 */}
           {(() => {
             const expectedCount = multiAlgorithmEnabled
               ? taskFactorsOrder.reduce((prod, dim) => {
@@ -132,16 +189,23 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                   return prod * Math.max(1, len);
                 }, 1)
               : 1;
-            return inPixelation && pixelatedResults.length < expectedCount ? (
-              <Flex
-                justify="center"
-                style={{ marginTop: 12 }}
-              >
-                <Spin tip="生成中..." />
-              </Flex>
-            ) : null;
+            const missingCount = inPixelation
+              ? Math.max(0, expectedCount - pixelatedResults.length)
+              : 0;
+            return missingCount > 0
+              ? Array.from({ length: missingCount }).map((_, i) => (
+                  <Col
+                    key={`empty-${i}`}
+                    span={colSpan}
+                  >
+                    <div className={styles.emptyPreview}>
+                      <CenterSpin />
+                    </div>
+                  </Col>
+                ))
+              : null;
           })()}
-        </>
+        </Row>
       ) : (
         <PreviewCard
           originalFile={originalFile}
