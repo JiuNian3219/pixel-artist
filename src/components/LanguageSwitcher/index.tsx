@@ -1,3 +1,4 @@
+import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   LOCALES,
   parseLocaleFromPath,
@@ -17,7 +18,7 @@ const LanguageSwitcher: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentLocale = parseLocaleFromPath(location.pathname);
-
+  const isMobile = useIsMobile();
   const handleLanguageChange = (language: "zh" | "en") => {
     const basePath = stripLocaleFromPath(location.pathname);
     navigate(withLocalePath(language, basePath) + location.search, {
@@ -44,7 +45,7 @@ const LanguageSwitcher: React.FC = () => {
         icon={<GlobalOutlined />}
         title={t("language.switch")}
       >
-        {t(`language.names.${currentLocale}`)}
+        {!isMobile && t(`language.names.${currentLocale}`)}
       </Button>
     </Dropdown>
   );
