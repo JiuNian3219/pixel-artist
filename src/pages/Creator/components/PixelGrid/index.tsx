@@ -1,5 +1,11 @@
 import { useCreatorLocalStore } from "@/stores";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import styles from "./index.module.less";
 
 interface PixelGridProps {
@@ -22,6 +28,8 @@ const PixelGrid: React.FC<PixelGridProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
+  // 使用延迟值降低快速滑动时的重绘频率
+  const deferredPixelSize = useDeferredValue(pixelSize);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   useLayoutEffect(() => {
@@ -90,8 +98,8 @@ const PixelGrid: React.FC<PixelGridProps> = ({
     const scaleY = displayHeight / imageHeight;
 
     // 每个像素格在画布上的步长
-    const stepX = pixelSize * scaleX;
-    const stepY = pixelSize * scaleY;
+    const stepX = deferredPixelSize * scaleX;
+    const stepY = deferredPixelSize * scaleY;
     if (stepX <= 0 || stepY <= 0) return;
 
     // 设置网格样式
@@ -123,7 +131,7 @@ const PixelGrid: React.FC<PixelGridProps> = ({
     }
   }, [
     visible,
-    pixelSize,
+    deferredPixelSize,
     imageWidth,
     imageHeight,
     containerSize,
