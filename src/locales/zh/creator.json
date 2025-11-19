@@ -25,6 +25,7 @@
   "preview_panel": {
     "title": "预览效果",
     "upload_hint": "请先上传图片",
+    "preview_height_slider": "预览高度",
     "upload_after_hint": "点击“转换为像素画”按钮生成像素画",
     "save_button": "保存到本地",
     "columns": {

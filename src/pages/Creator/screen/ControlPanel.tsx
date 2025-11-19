@@ -1,6 +1,10 @@
 import { useCreatorLocalStore } from "@/stores";
 import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
-import { TASK_FACTORS } from "@/utils/constants";
+import {
+  MAX_PREVIEW_HEIGHT,
+  MIN_PREVIEW_HEIGHT,
+  TASK_FACTORS,
+} from "@/utils/constants";
 import {
   ResultType,
   SendType,
@@ -8,6 +12,7 @@ import {
 } from "@/workers/pixelWorker";
 import {
   BgColorsOutlined,
+  ColumnHeightOutlined,
   DeploymentUnitOutlined,
   HighlightOutlined,
   SearchOutlined,
@@ -46,6 +51,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
   const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
   const setPixelSize = useCreatorLocalStore((state) => state.setPixelSize);
+  const defaultPreviewHeight = useCreatorLocalStore(
+    (state) => state.defaultPreviewHeight
+  );
+  const setDefaultPreviewHeight = useCreatorLocalStore(
+    (state) => state.setDefaultPreviewHeight
+  );
   const pixelAlgorithm = useCreatorLocalStore((state) => state.pixelAlgorithm);
   const multiAlgorithmEnabled = useCreatorLocalStore(
     (state) => state.multiAlgorithmEnabled
@@ -84,6 +95,21 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   const handleChangePixelSize = (value: number) => {
     setPixelSize(value);
+  };
+
+  // 预览高度百分比与像素的互相转换（30% -> 250px，100% -> 800px）
+  const percentToPx = (percent: number): number => {
+    const k = (percent - 30) / 70;
+    const px =
+      MIN_PREVIEW_HEIGHT + k * (MAX_PREVIEW_HEIGHT - MIN_PREVIEW_HEIGHT);
+    return Math.round(px);
+  };
+
+  const pxToPercent = (px: number): number => {
+    const k =
+      (px - MIN_PREVIEW_HEIGHT) / (MAX_PREVIEW_HEIGHT - MIN_PREVIEW_HEIGHT);
+    const percent = 30 + k * 70;
+    return Math.round(percent);
   };
 
   const handlePixelAlgorithmChange = (value: string) => {
@@ -266,6 +292,43 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             />
           </Popover>
 
+          {/* 预览高度设置（30% - 100%，对应 250px - 800px） */}
+          <Popover
+            content={
+              <div style={{ width: "200px" }}>
+                <Flex
+                  justify="space-between"
+                  align="center"
+                >
+                  <Space>
+                    <ColumnHeightOutlined />
+                    <span>{t("control_panel.preview_height_slider")}</span>
+                  </Space>
+                  <Typography className={styles.pixelSize}>
+                    {pxToPercent(defaultPreviewHeight)}%
+                  </Typography>
+                </Flex>
+
+                <Slider
+                  min={30}
+                  max={100}
+                  value={pxToPercent(defaultPreviewHeight)}
+                  tooltip={{ formatter: null }}
+                  onChange={(v) => setDefaultPreviewHeight(percentToPx(v))}
+                />
+              </div>
+            }
+            placement="left"
+            trigger="click"
+          >
+            <Button
+              title={t("control_panel.preview_height_slider")}
+              shape="circle"
+              icon={<ColumnHeightOutlined />}
+              className={styles.settingButton}
+            />
+          </Popover>
+
           {/** 算法选择 */}
           {!multiAlgorithmEnabled && (
             <Popover
@@ -392,6 +455,28 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         value={pixelSize}
         tooltip={{ formatter: null }}
         onChange={handleChangePixelSize}
+      />
+
+      {/** 预览高度设置（30% - 100%，对应 250px - 800px） */}
+      <Flex
+        justify="space-between"
+        align="center"
+      >
+        <Space className={styles.settingLabel}>
+          <ColumnHeightOutlined />
+          <span>{t("control_panel.preview_height_slider")}</span>
+        </Space>
+        <Typography className={styles.pixelSize}>
+          {pxToPercent(defaultPreviewHeight)}%
+        </Typography>
+      </Flex>
+
+      <Slider
+        min={30}
+        max={100}
+        value={pxToPercent(defaultPreviewHeight)}
+        tooltip={{ formatter: null }}
+        onChange={(v) => setDefaultPreviewHeight(percentToPx(v))}
       />
 
       {/** 算法选择 */}

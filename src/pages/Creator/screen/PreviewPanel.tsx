@@ -55,6 +55,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const multiAlgorithmEnabled = useCreatorLocalStore(
     (state) => state.multiAlgorithmEnabled
   );
+  const defaultPreviewHeight = useCreatorLocalStore(
+    (state) => state.defaultPreviewHeight
+  );
   const selectedAlgorithms = useCreatorLocalStore(
     (state) => state.selectedAlgorithms
   );
@@ -134,6 +137,12 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 type={showPreviewPixelGrid ? "primary" : "default"}
               />
             )}
+            <Button
+              title={t("common.clear_preview")}
+              icon={<ClearOutlined />}
+              disabled={inPixelation}
+              onClick={clearPreview}
+            />
             {!isMobile && (
               <Button
                 title={t("common.extend_mode")}
@@ -147,12 +156,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 }
               ></Button>
             )}
-            <Button
-              title={t("common.clear_preview")}
-              icon={<ClearOutlined />}
-              disabled={inPixelation}
-              onClick={clearPreview}
-            />
           </Space>
         </Flex>
       }
@@ -175,6 +178,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 showPixelGrid={showPreviewPixelGrid}
                 saveButtonPlacement={isMobile ? "bottom" : "top"}
                 showResizeHandle={!isMobile}
+                defaultPreviewHeight={defaultPreviewHeight}
               />
             </Col>
           ))}
@@ -198,7 +202,12 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     key={`empty-${i}`}
                     span={colSpan}
                   >
-                    <div className={styles.emptyPreview}>
+                    <div
+                      className={styles.emptyPreview}
+                      style={{
+                        height: `${defaultPreviewHeight}px`,
+                      }}
+                    >
                       <CenterSpin />
                     </div>
                   </Col>
@@ -213,6 +222,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           showPixelGrid={showPreviewPixelGrid}
           saveButtonPlacement={isMobile ? "bottom" : "top"}
           showResizeHandle={!isMobile}
+          defaultPreviewHeight={defaultPreviewHeight}
         />
       )}
     </Card>

@@ -18,6 +18,7 @@
   "control_panel": {
     "title": "Control Panel",
     "to_pixel_button": "Convert to Pixel Art",
+    "preview_height_slider": "Preview Height",
     "pixel_size_slider": "Pixel Size",
     "pixel_algorithm_select": "Pixel Sampling Algorithm",
     "palette_select": "Palette Selection"

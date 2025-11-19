@@ -65,6 +65,10 @@ export const MIN_PREVIEW_HEIGHT = 250;
  */
 export const MAX_PREVIEW_HEIGHT = 800;
 /**
+ * 默认预览面板初始高度（px）
+ */
+export const DEFAULT_PREVIEW_HEIGHT = 350;
+/**
  * 默认主题
  */
 export const DEFAULT_THEME = "light";
