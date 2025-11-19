@@ -90,10 +90,7 @@ const Layout: React.FC = () => {
           <Outlet />
         </Content>
         <Footer className={styles.footer}>
-          <span>
-            Pixel Artist
-            是一款在线像素画创作工具，图片处理完全在浏览器本地完成，无需服务器支持
-          </span>
+          <span>{t("footer.description")}</span>
           <span>
             <span>Pixel Artist ©{new Date().getFullYear()}</span>
             <span className={styles.separator}> · </span>

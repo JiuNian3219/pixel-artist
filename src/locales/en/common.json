@@ -15,5 +15,8 @@
       "zh": "中文",
       "en": "English"
     }
+  },
+  "footer": {
+    "description": "Pixel Artist is an online pixel art creator that processes images entirely in the browser, without server support."
   }
 }
