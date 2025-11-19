@@ -1,6 +1,6 @@
+import CenterSpin from "@/components/CenterSpin";
 import Layout from "@/components/Layout";
 import { DEFAULT_LOCALE, LOCALES } from "@/utils/locale";
-import { Spin } from "antd";
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import RootRedirect from "./RootRedirect";
@@ -13,7 +13,7 @@ const localeRoutes = LOCALES.map((lng) => ({
   path: `/${lng}`,
   element: <Layout />,
   errorElement: (
-    <Suspense fallback={<Spin style={{ marginTop: "24px" }} />}>
+    <Suspense fallback={<CenterSpin style={{ marginTop: "100px" }} />}>
       <NotFound />
     </Suspense>
   ),
@@ -21,7 +21,7 @@ const localeRoutes = LOCALES.map((lng) => ({
     {
       index: true,
       element: (
-        <Suspense fallback={<Spin style={{ marginTop: "24px" }} />}>
+        <Suspense fallback={<CenterSpin style={{ marginTop: "100px" }} />}>
           <Home />
         </Suspense>
       ),
@@ -29,7 +29,7 @@ const localeRoutes = LOCALES.map((lng) => ({
     {
       path: "creator",
       element: (
-        <Suspense fallback={<Spin style={{ marginTop: "24px" }} />}>
+        <Suspense fallback={<CenterSpin style={{ marginTop: "100px" }} />}>
           <Creator />
         </Suspense>
       ),
@@ -37,7 +37,7 @@ const localeRoutes = LOCALES.map((lng) => ({
     {
       path: "404",
       element: (
-        <Suspense fallback={<Spin style={{ marginTop: "24px" }} />}>
+        <Suspense fallback={<CenterSpin style={{ marginTop: "100px" }} />}>
           <NotFound />
         </Suspense>
       ),
