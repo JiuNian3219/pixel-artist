@@ -53,8 +53,8 @@ export const TASK_FACTORS = {
  * 默认批任务排列因子顺序
  */
 export const DEFAULT_TASK_FACTORS_ORDER = [
-  TASK_FACTORS.ALGORITHM,
   TASK_FACTORS.PALETTE,
+  TASK_FACTORS.ALGORITHM,
 ] as const;
 /**
  * 默认预览面板最小高度
