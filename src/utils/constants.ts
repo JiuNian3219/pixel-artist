@@ -69,6 +69,14 @@ export const MAX_PREVIEW_HEIGHT = 800;
  */
 export const DEFAULT_PREVIEW_HEIGHT = 350;
 /**
+ * 最大像素尺寸
+ */
+export const MAX_PIXEL_SIZE = 128;
+/**
+ *  最小像素尺寸
+ */
+export const MIN_PIXEL_SIZE = 1;
+/**
  * 默认主题
  */
 export const DEFAULT_THEME = "light";
