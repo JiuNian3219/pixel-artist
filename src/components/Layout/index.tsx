@@ -90,19 +90,25 @@ const Layout: React.FC = () => {
           <Outlet />
         </Content>
         <Footer className={styles.footer}>
-          <span>Pixel Artist ©{new Date().getFullYear()}</span>
-          <span className={styles.separator}> · </span>
-          <Space>
-            <GithubOutlined />
-            <a
-              href="https://github.com/JiuNian3219/pixel-artist"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.footerLink}
-            >
-              GitHub
-            </a>
-          </Space>
+          <span>
+            Pixel Artist
+            是一款在线像素画创作工具，图片处理完全在浏览器本地完成，无需服务器支持
+          </span>
+          <span>
+            <span>Pixel Artist ©{new Date().getFullYear()}</span>
+            <span className={styles.separator}> · </span>
+            <Space>
+              <GithubOutlined />
+              <a
+                href="https://github.com/JiuNian3219/pixel-artist"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.footerLink}
+              >
+                GitHub
+              </a>
+            </Space>
+          </span>
         </Footer>
       </AntdLayout>
     </>
