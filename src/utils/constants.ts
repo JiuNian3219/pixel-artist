@@ -13,7 +13,7 @@ export const DEFAULT_COLOR_PALETTE = "All-Colors";
 /**
  * 默认是否开启扩展模式
  */
-export const DEFAULT_EXTEND_MODE = true;
+export const DEFAULT_EXTEND_MODE = false;
 /**
  * 默认是否开启控制像素网格
  */
