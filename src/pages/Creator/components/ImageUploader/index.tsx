@@ -18,6 +18,7 @@ import styles from "./index.module.less";
 interface ImageUploaderProps {
   onImageChange: (file: File | null, originalImage: string) => void;
   mode?: "dragger" | "button";
+  disabled?: boolean;
   originalImage?: string;
 }
 
@@ -38,6 +39,7 @@ const baseUploadProps = {
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   onImageChange,
   mode = "dragger",
+  disabled = false,
   originalImage,
 }) => {
   const [uploading, setUploading] = useState<boolean>(false);
@@ -58,6 +60,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const isMobile = useIsMobile();
   const { t } = useTranslation("creator");
   const customRequest = ({ file, onSuccess, onProgress }: any) => {
+    if (disabled) {
+      message.warning(t("common.pixelation_in_progress"));
+      return;
+    }
     const rawFile = file as File;
     if (!isImageFile(rawFile)) {
       message.error(t("image_uploader.type_error_message"));
@@ -166,6 +172,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             shape="circle"
             type="dashed"
             icon={<UploadOutlined />}
+            disabled={disabled}
             className={styles.uploadButton}
           ></Button>
         </Upload>

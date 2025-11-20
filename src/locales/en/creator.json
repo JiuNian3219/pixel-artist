@@ -3,7 +3,8 @@
     "show_pixel_grid": "Show Pixel Grid",
     "extend_mode": "Toggle Extend Mode",
     "save_image": "Save Image",
-    "clear_preview": "Clear Preview"
+    "clear_preview": "Clear Preview",
+    "pixelation_in_progress": "Pixelation is in progress. Please wait."
   },
   "image_uploader": {
     "title": "Image Uploader",

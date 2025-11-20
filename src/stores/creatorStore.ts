@@ -16,7 +16,7 @@ import {
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-interface CreatorLocalState {
+interface CreatorLocalStates {
   pixelAlgorithm: string;
   paletteName: string;
   pixelSize: number;
@@ -25,11 +25,13 @@ interface CreatorLocalState {
   selectedAlgorithms: string[];
   selectedPalettes: string[];
   taskFactorsOrder: (typeof TASK_FACTORS)[keyof typeof TASK_FACTORS][];
-  inPixelation: boolean;
   showPreviewPixelGrid: boolean;
   showControlPixelGrid: boolean;
   previewColumns: number;
   defaultPreviewHeight: number;
+}
+
+interface CreatorLocalActions {
   setPixelAlgorithm: (pixelAlgorithm: string) => void;
   setPaletteName: (paletteName: string) => void;
   setPixelSize: (pixelSize: number) => void;
@@ -40,14 +42,15 @@ interface CreatorLocalState {
   setTaskFactorsOrder: (
     order: (typeof TASK_FACTORS)[keyof typeof TASK_FACTORS][]
   ) => void;
-  setInPixelation: (inPixelation: boolean) => void;
   setShowPreviewPixelGrid: (showPreviewPixelGrid: boolean) => void;
   setShowControlPixelGrid: (showControlPixelGrid: boolean) => void;
   setPreviewColumns: (previewColumns: number) => void;
   setDefaultPreviewHeight: (height: number) => void;
 }
 
-export const useCreatorLocalStore = create<CreatorLocalState>()(
+export const useCreatorLocalStore = create<
+  CreatorLocalStates & CreatorLocalActions
+>()(
   persist(
     (set) => ({
       pixelAlgorithm: DEFAULT_ALGORITHM,
@@ -58,7 +61,6 @@ export const useCreatorLocalStore = create<CreatorLocalState>()(
       selectedAlgorithms: DEFAULT_SELECTED_ALGORITHMS,
       selectedPalettes: DEFAULT_SELECTED_PALETTES,
       taskFactorsOrder: Array.from(DEFAULT_TASK_FACTORS_ORDER),
-      inPixelation: false,
       showPreviewPixelGrid: DEFAULT_SHOW_PREVIEW_PIXEL_GRID,
       showControlPixelGrid: DEFAULT_SHOW_CONTROL_PIXEL_GRID,
       previewColumns: DEFAULT_PREVIEW_COLUMNS,
@@ -73,7 +75,6 @@ export const useCreatorLocalStore = create<CreatorLocalState>()(
         set({ selectedAlgorithms }),
       setSelectedPalettes: (selectedPalettes) => set({ selectedPalettes }),
       setTaskFactorsOrder: (order) => set({ taskFactorsOrder: order }),
-      setInPixelation: (inPixelation) => set({ inPixelation }),
       setShowPreviewPixelGrid: (showPreviewPixelGrid) =>
         set({ showPreviewPixelGrid }),
       setShowControlPixelGrid: (showControlPixelGrid) =>
@@ -87,4 +88,19 @@ export const useCreatorLocalStore = create<CreatorLocalState>()(
       storage: createJSONStorage(() => localStorage),
     }
   )
+);
+
+interface CreatorStates {
+  inPixelation: boolean;
+}
+
+interface CreatorActions {
+  setInPixelation: (inPixelation: boolean) => void;
+}
+
+export const useCreatorStore = create<CreatorStates & CreatorActions>()(
+  (set) => ({
+    inPixelation: false,
+    setInPixelation: (inPixelation) => set({ inPixelation }),
+  })
 );
