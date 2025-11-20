@@ -1,6 +1,7 @@
 import CenterSpin from "@/components/CenterSpin";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useCreatorLocalStore } from "@/stores";
+import { useCreatorStore } from "@/stores/creatorStore";
 import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
 import { PREVIEW_COLUMNS, TASK_FACTORS } from "@/utils/constants";
 import { getPaletteOptions } from "@/utils/palettes";
@@ -51,7 +52,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const showPreviewPixelGrid = useCreatorLocalStore(
     (state) => state.showPreviewPixelGrid
   );
-  const inPixelation = useCreatorLocalStore((state) => state.inPixelation);
+  const inPixelation = useCreatorStore((state) => state.inPixelation);
   const multiAlgorithmEnabled = useCreatorLocalStore(
     (state) => state.multiAlgorithmEnabled
   );

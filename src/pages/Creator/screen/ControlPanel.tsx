@@ -1,4 +1,5 @@
 import { useCreatorLocalStore } from "@/stores";
+import { useCreatorStore } from "@/stores/creatorStore";
 import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
 import {
   MAX_PIXEL_SIZE,
@@ -92,10 +93,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const taskFactorsOrder = useCreatorLocalStore(
     (state) => state.taskFactorsOrder
   );
-  const inPixelation = useCreatorLocalStore((state) => state.inPixelation);
-  const setInPixelation = useCreatorLocalStore(
-    (state) => state.setInPixelation
-  );
+  const inPixelation = useCreatorStore((state) => state.inPixelation);
+  const setInPixelation = useCreatorStore((state) => state.setInPixelation);
 
   const [originalImage, setOriginalImage] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -274,6 +273,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     <div className={styles.miniControlPanel}>
       <ImageUploader
         onImageChange={handleImageChange}
+        disabled={inPixelation}
         mode="button"
       />
       <Button
@@ -457,6 +457,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       <ImageUploader
         onImageChange={handleImageChange}
         originalImage={originalImage}
+        disabled={inPixelation}
       />
 
       {/** 像素化按钮 */}

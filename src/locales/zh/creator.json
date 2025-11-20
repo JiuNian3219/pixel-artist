@@ -3,7 +3,8 @@
     "show_pixel_grid": "显示像素网格",
     "extend_mode": "切换扩展模式",
     "save_image": "保存图片",
-    "clear_preview": "清除预览"
+    "clear_preview": "清除预览",
+    "pixelation_in_progress": "像素化正在进行中，请稍后。"
   },
   "image_uploader": {
     "title": "图片上传",
