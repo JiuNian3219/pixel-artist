@@ -98,18 +98,20 @@ const CompareSlider: React.FC<CompareSliderProps> = ({
       />
 
       {/** 中间拖动手柄 */}
-      <div
-        className={styles.handle}
-        style={{ left: `${dividerPercent}%` }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          setDragging(true);
-        }}
-        onTouchStart={(e) => {
-          e.stopPropagation();
-          setDragging(true);
-        }}
-      />
+      {!showLoading && (
+        <div
+          className={styles.handle}
+          style={{ left: `${dividerPercent}%` }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setDragging(true);
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            setDragging(true);
+          }}
+        />
+      )}
 
       {showLoading && (
         <div className={styles.loadingMask}>
