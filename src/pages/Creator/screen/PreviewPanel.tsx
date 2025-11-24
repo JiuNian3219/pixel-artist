@@ -42,6 +42,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   setPixelatedResults,
 }) => {
   const { t } = useTranslation("creator");
+  const { t: paletteT } = useTranslation("common");
   const isMobile = useIsMobile();
   const previewColumnOptions = PREVIEW_COLUMNS.map((v) => ({
     label: t(`preview_panel.columns.${v}`),
@@ -80,7 +81,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     (state) => state.setPreviewColumns
   );
   const algoOptions = getPixelAlgorithmsOptions(t);
-  const paletteOptions = getPaletteOptions(t);
+  const paletteOptions = getPaletteOptions(paletteT);
   const labelOf = (
     list: { label: React.ReactNode; value: string | number }[],
     v: string
@@ -179,6 +180,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 showPixelGrid={showPreviewPixelGrid}
                 saveButtonPlacement={isMobile ? "bottom" : "top"}
                 showResizeHandle={!isMobile}
+                editButtonPlacement={isMobile ? "bottom" : "top"}
                 defaultPreviewHeight={defaultPreviewHeight}
               />
             </Col>

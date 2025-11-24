@@ -1,7 +1,8 @@
 {
   "nav": {
     "home": "首页",
-    "creator": "创作"
+    "creator": "创作",
+    "editor": "编辑"
   },
   "actions": {
     "start": "开始创作",
@@ -18,5 +19,14 @@
   },
   "footer": {
     "description": "Pixel Artist 是一款在线像素画创作工具，图片处理完全在浏览器本地完成，无需服务器支持"
+  },
+  "palettes": {
+    "All-Colors": "全色调色板",
+    "16-Bit": "16-bit (16色)",
+    "DawnBringer-16": "DawnBringer 16 (16色)",
+    "DawnBringer-32": "DawnBringer 32 (32色)",
+    "Pico-8": "Pico-8 (16色)",
+    "Arne-16": "Arne 16 (16色)",
+    "NES-54": "NES (54色)"
   }
 }

@@ -6,12 +6,14 @@ import { initReactI18next } from "react-i18next";
 import zh404 from "./zh/404.json";
 import zhCommon from "./zh/common.json";
 import zhCreator from "./zh/creator.json";
+import zhEditor from "./zh/editor.json";
 import zhHome from "./zh/home.json";
 
 // 英文语言包
 import en404 from "./en/404.json";
 import enCommon from "./en/common.json";
 import enCreator from "./en/creator.json";
+import enEditor from "./en/editor.json";
 import enHome from "./en/home.json";
 
 const resources = {
@@ -19,12 +21,14 @@ const resources = {
     common: zhCommon,
     home: zhHome,
     creator: zhCreator,
+    editor: zhEditor,
     "404": zh404,
   },
   en: {
     common: enCommon,
     home: enHome,
     creator: enCreator,
+    editor: enEditor,
     "404": en404,
   },
 };

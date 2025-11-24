@@ -628,7 +628,7 @@ export const getColorHex = (color: Color): string => {
 
 /**
  * 色板选项
- * @param t 翻译函数 const { t } = useTranslation("creator");
+ * @param t 翻译函数 const { t } = useTranslation("common");
  * @returns 色板选项数组
  */
 export const getPaletteOptions = (t: (key: string) => string) =>

@@ -1,7 +1,13 @@
+import type { Tool } from "@/types/editor";
+
 /**
  * 默认像素大小
  */
 export const DEFAULT_PIXEL_SIZE = 16;
+/**
+ * 默认是否自动补全（不截取边缘）
+ */
+export const DEFAULT_AUTO_COMPLETE = false;
 /**
  * 默认使用算法
  */
@@ -80,3 +86,91 @@ export const MIN_PIXEL_SIZE = 1;
  * 默认主题
  */
 export const DEFAULT_THEME = "light";
+/**
+ * 编辑工具
+ */
+export const TOOLS = {
+  PENCIL: "pencil",
+  ERASER: "eraser",
+  FILL: "fill",
+  PICKER: "picker",
+  DRAG: "drag",
+} as const satisfies Record<string, Tool>;
+/**
+ * 默认编辑工具
+ */
+export const DEFAULT_TOOL: Tool = "pencil";
+/**
+ * 默认编辑颜色
+ */
+export const DEFAULT_COLOR = "#000000";
+/**
+ * 默认笔刷大小
+ */
+export const DEFAULT_PENCIL_SIZE = 1;
+/**
+ * 最小笔刷大小
+ */
+export const MIN_PENCIL_SIZE = 1;
+/**
+ * 最大笔刷大小
+ */
+export const MAX_PENCIL_SIZE = 32;
+/**
+ * 默认网格大小
+ */
+export const DEFAULT_GRID_SIZE = 4;
+/**
+ * 默认行
+ */
+export const DEFAULT_ROWS = 32;
+/**
+ * 默认列
+ */
+export const DEFAULT_COLUMNS = 32;
+/**
+ * 最大行
+ */
+export const MAX_ROWS = 512;
+/**
+ * 最大列
+ */
+export const MAX_COLUMNS = 512;
+/**
+ * 最小行
+ */
+export const MIN_ROWS = 1;
+/**
+ * 最小列
+ */
+export const MIN_COLUMNS = 1;
+/**
+ * 最小的缩放比例
+ */
+export const MIN_ZOOM = 0.1;
+/**
+ * 默认缩放比例
+ */
+export const DEFAULT_ZOOM = 1.0;
+/**
+ * 默认缩放比例范围
+ */
+export const DEFAULT_ZOOM_LIMITS = {
+  min: 1.0,
+  max: 16.0,
+};
+/**
+ * 默认偏移量
+ */
+export const DEFAULT_TRANSLATION = {
+  x: 0,
+  y: 0,
+};
+/**
+ * 最大的填充检查范围格子数
+ */
+export const MAX_FILL_CHECK_PREVIEW_NUMBER = 5000;
+/**
+ * 默认导出文件名
+ */
+export const DEFAULT_FILENAME = "pixel-art";

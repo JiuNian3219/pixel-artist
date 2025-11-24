@@ -1,0 +1,51 @@
+{
+  "canvas_viewport": {},
+  "tools_panel": {
+    "pencil": "画笔",
+    "eraser": "橡皮擦",
+    "fill": "填充",
+    "picker": "拾色器",
+    "drag": "拖动",
+    "color_picker": "颜色选择器",
+    "back": "撤回",
+    "next": "撤销撤回"
+  },
+  "configs_panel": {
+    "canvas_size": "画布尺寸(高 × 宽)",
+    "pencil_size": "笔刷大小",
+    "auto_complete": "边缘填充",
+    "auto_complete_tooltip": "当源图像尺寸不是像素块尺寸的整数倍时，画布边缘会存在未填满的残缺像素块。启用此功能将自动扩展画布，使其与预设的像素网格精确对齐，确保每个像素块都被完整渲染。请注意，这可能会轻微改变输出画面的长宽比",
+    "create_button": "新建画布",
+    "export_config": "导出配置",
+    "save_button": "保存至本地(PNG)",
+    "create_model": {
+      "title": "新建画布",
+      "rows_and_columns": "高度 × 宽度",
+      "rows_required": "请输入高度",
+      "rows_min": "最小高度为 {{min}}",
+      "rows_max": "最大高度为 {{max}}",
+      "columns_required": "请输入宽度",
+      "columns_min": "最小宽度为 {{min}}",
+      "columns_max": "最大宽度为 {{max}}",
+      "filename": "文件名(可选)",
+      "create_button": "创建",
+      "cancel_button": "取消",
+      "filename_placeholder": "例如：pixel-art",
+      "warning": "当前已有画布，创建后将覆盖当前画布内容"
+    }
+  },
+  "palette_selector": {
+    "title": "调色板选择"
+  },
+  "common": {
+    "operation_hint": "画笔: B\n画笔缩放: [ ]\n橡皮擦: E/右键\n填充: G\n拾色器: I\n拖动: V/中键\n撤回: Ctrl + Z\n撤销撤回: Ctrl + Shift + Z",
+    "empty": {
+      "title": "画布为空",
+      "hint": "请先新建画布或者从创作处加载像素画"
+    },
+    "return": {
+      "button": "返回首页",
+      "hint": "移动端暂不支持编辑功能，是否返回首页？"
+    }
+  }
+}

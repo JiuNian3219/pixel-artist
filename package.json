@@ -48,9 +48,11 @@
     "source": "dist",
     "include": [
       "/zh/",
-      "/zh/creator",
       "/en/",
-      "/en/creator"
+      "/zh/creator",
+      "/en/creator",
+      "/zh/editor",
+      "/en/editor"
     ],
     "puppeteerArgs": [
       "--no-sandbox",

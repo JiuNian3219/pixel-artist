@@ -7,4 +7,4 @@ export interface SEOConfig {
   jsonLd?: Record<string, any> | Record<string, any>[];
 }
 
-export type PageKey = "/" | "/creator" | "/404";
+export type PageKey = "/" | "/creator" | "/editor" | "/404";

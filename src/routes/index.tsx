@@ -7,6 +7,7 @@ import RootRedirect from "./RootRedirect";
 const Creator = lazy(() => import("@/pages/Creator"));
 const Home = lazy(() => import("@/pages/Home"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const Editor = lazy(() => import("@/pages/Editor"));
 
 // 基于 LOCALES 自动生成多语言路由分组
 const localeRoutes = LOCALES.map((lng) => ({
@@ -31,6 +32,14 @@ const localeRoutes = LOCALES.map((lng) => ({
       element: (
         <Suspense fallback={<CenterSpin style={{ marginTop: "100px" }} />}>
           <Creator />
+        </Suspense>
+      ),
+    },
+    {
+      path: "editor",
+      element: (
+        <Suspense fallback={<CenterSpin style={{ marginTop: "100px" }} />}>
+          <Editor />
         </Suspense>
       ),
     },

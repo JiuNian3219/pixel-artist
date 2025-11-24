@@ -64,6 +64,35 @@ const localizedSEO: Record<PageKey, Record<Locale, SEOConfig>> = {
       },
     },
   },
+  "/editor": {
+    zh: {
+      title: "Pixel Artist - 像素艺术编辑工具",
+      description:
+        "使用像素编辑器编辑像素艺术作品，简单易用的在线像素画编辑工具。",
+      keywords:
+        "像素编辑器,像素艺术编辑,在线像素编辑器,像素画编辑,pixel editor,pixel art editor",
+      ogImage: `${siteUrl}/editor-page.jpg`,
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        url: `${siteUrl}/editor`,
+        name: "Pixel Artist - Editor",
+      },
+    },
+    en: {
+      title: "Pixel Artist - Pixel Art Editor",
+      description: "Edit pixel art works with a simple, powerful online tool.",
+      keywords:
+        "pixel editor,pixel art editor,online pixel editor,pixel art editing",
+      ogImage: `${siteUrl}/editor-page.jpg`,
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        url: `${siteUrl}/editor`,
+        name: "Pixel Artist - Editor",
+      },
+    },
+  },
   "/404": {
     zh: {
       title: "404 - Pixel Artist",

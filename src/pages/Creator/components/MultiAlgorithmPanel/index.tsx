@@ -19,13 +19,14 @@ const MultiAlgorithmPanel: React.FC<MultiAlgorithmPanelProps> = ({
   onChange,
 }) => {
   const { t } = useTranslation("creator");
+  const { t: paletteT } = useTranslation("common");
   const FACTOR_ORDER_NAME = {
     [TASK_FACTORS.ALGORITHM]: t("multi_algorithm_panel.algorithm"),
     [TASK_FACTORS.PALETTE]: t("multi_algorithm_panel.palette"),
   };
   const isMobile = useIsMobile();
   const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
-  const paletteOptions = getPaletteOptions(t);
+  const paletteOptions = getPaletteOptions(paletteT);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const selectedAlgorithms = useCreatorLocalStore(
     (state) => state.selectedAlgorithms

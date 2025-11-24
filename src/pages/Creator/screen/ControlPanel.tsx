@@ -37,6 +37,7 @@ import debounce from "lodash/debounce";
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type Dispatch,
   type SetStateAction,
@@ -58,6 +59,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   setOriginalFile,
   setPixelatedResults,
 }) => {
+  const worker = useRef<Worker>(
+    new Worker(new URL("../../../workers/pixelWorker.ts", import.meta.url), {
+      type: "module",
+    })
+  );
   const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
   const setPixelSize = useCreatorLocalStore((state) => state.setPixelSize);
   const [uiPixelSize, setUiPixelSize] = useState<number>(pixelSize);
@@ -226,15 +232,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         return;
       }
 
-      const worker = new Worker(
-        new URL("../../../workers/pixelWorker.ts", import.meta.url),
-        { type: "module" }
-      );
-
       // 开始前清空预览结果
       setPixelatedResults?.([]);
 
-      worker.onmessage = (ev) => {
+      worker.current.onmessage = (ev) => {
         const msg = ev.data as PixelateBatchMessageData;
         if (msg.type === ResultType.RESULT) {
           const { data: outData, algorithm, palette } = msg.payload;
@@ -249,11 +250,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           ]);
         } else if (msg.type === ResultType.COMPLETE) {
           setInPixelation(false);
-          worker.terminate();
+          worker.current.terminate();
         }
       };
 
-      worker.postMessage(
+      worker.current.postMessage(
         {
           type: SendType.PIXELATE_BATCH,
           payload: {
@@ -268,6 +269,13 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       );
     };
   };
+
+  useEffect(() => {
+    return () => {
+      worker.current.terminate();
+      setInPixelation(false);
+    };
+  }, []);
 
   return extendMode ? (
     <div className={styles.miniControlPanel}>

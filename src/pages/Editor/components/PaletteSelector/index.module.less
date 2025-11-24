@@ -1,0 +1,36 @@
+.paletteSelect {
+  width: 100%;
+
+  .settingLabel {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .palettePreviewContainer {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 5px;
+    margin-top: 5px;
+  }
+
+  .paletteColor {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid #d9d9d9;
+    cursor: pointer;
+
+    transition: transform 0.1s ease;
+
+    @media (max-width: 768px) {
+      width: 30px;
+      height: 30px;
+    }
+
+    &:active {
+      transform: scale(0.9);
+    }
+  }
+}
