@@ -307,6 +307,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       drawFillPreview(cell);
       return;
     }
+    // 拖动没有预览
+    if (tool === TOOLS.DRAG) return;
 
     const c = previewCanvasRef.current;
     if (!c) return;
@@ -574,6 +576,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       if (changes.length > 0) {
         commitOp({ changes });
       }
+      if (tool === TOOLS.FILL) clearPreview();
       opChangesRef.current.clear();
       opStartedRef.current = false;
     }
@@ -708,7 +711,6 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
 
   // 画笔大小/工具/颜色变化时，若鼠标未移动但存在悬停位置，则主动重绘预览，避免预览方块大小与当前画笔大小不一致
   useEffect(() => {
-    if (tool === TOOLS.DRAG) return;
     if (drawingRef.current) return;
     const cell = hoverCellRef.current;
     if (cell) {
@@ -880,19 +882,10 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
           height={stageSize.height}
           className={styles.pixelCanvas}
           onContextMenu={(e) => e.preventDefault()}
-          onPointerDown={(e) => {
-            clearPreview();
-            handlePointerDown(e);
-          }}
+          onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMoveThrottled}
-          onPointerUp={() => {
-            handlePointerUp();
-            clearPreview();
-          }}
-          onPointerLeave={() => {
-            handlePointerUp();
-            clearPreview();
-          }}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
         />
         {/* 预览层（浅色覆盖） */}
         <canvas
