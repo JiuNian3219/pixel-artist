@@ -35,6 +35,13 @@
       "cancel_button": "Cancel",
       "filename_placeholder": "e.g. pixel-art",
       "warning": "Current canvas will be overwritten. Continue?"
+    },
+    "clear_button": "Clear Canvas",
+    "clear_modal": {
+      "title": "Clear Canvas",
+      "content": "Are you sure you want to clear the current canvas? All pixels on the canvas will be erased, and this action cannot be undone. Do you want to continue?",
+      "ok_text": "Confirm",
+      "cancel_text": "Cancel"
     }
   },
   "palette_selector": {

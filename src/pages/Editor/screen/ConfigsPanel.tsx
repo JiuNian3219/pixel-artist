@@ -45,6 +45,7 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
   const setPencilSize = useEditorStore((s) => s.setPencilSize);
   const hasCanvas = useEditorStore((s) => s.hasCanvas());
   const createCanvas = useEditorStore((s) => s.createCanvas);
+  const clearCanvas = useEditorStore((s) => s.clearCanvas);
   const pickerSwitchToPencil = useEditorStore((s) => s.pickerSwitchToPencil);
   const setPickerSwitchToPencil = useEditorStore(
     (s) => s.setPickerSwitchToPencil
@@ -92,6 +93,17 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
 
   const togglePickerSwitchToPencil = (e: CheckboxChangeEvent) => {
     setPickerSwitchToPencil(e.target.checked);
+  };
+
+  const handleClearCanvas = () => {
+    Modal.confirm({
+      title: t("configs_panel.clear_modal.title"),
+      content: t("configs_panel.clear_modal.content"),
+      okText: t("configs_panel.clear_modal.ok_text"),
+      okType: "danger",
+      cancelText: t("configs_panel.clear_modal.cancel_text"),
+      onOk: clearCanvas,
+    });
   };
 
   return (
@@ -196,6 +208,17 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
       >
         {t("configs_panel.save_button")}
       </Button>
+      <div className={styles.clearButtonContainer}>
+        <Button
+          danger
+          onClick={handleClearCanvas}
+          disabled={!hasCanvas}
+          className={styles.clearButton}
+        >
+          {t("configs_panel.clear_button")}
+        </Button>
+      </div>
+
       <Modal
         open={showSetup}
         title={t("configs_panel.create_model.title")}

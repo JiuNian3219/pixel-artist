@@ -35,6 +35,13 @@
       "cancel_button": "取消",
       "filename_placeholder": "例如：pixel-art",
       "warning": "当前已有画布，创建后将覆盖当前画布内容"
+    },
+    "clear_button": "清空画布",
+    "clear_modal": {
+      "title": "清除画布",
+      "content": "确认清除当前画布？当前画布中的所有像素将被清除，无法恢复，是否继续？",
+      "ok_text": "确认",
+      "cancel_text": "取消"
     }
   },
   "palette_selector": {

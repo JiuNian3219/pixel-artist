@@ -70,6 +70,8 @@ interface EditorLocalStoreActions {
   /** 从像素化结果初始化编辑器 */
   initializeFromPixelated: (p: PrepareEditorFromPixelatedParams) => void;
   hasCanvas: () => boolean;
+  /** 清除画布 */
+  clearCanvas: () => void;
 }
 
 export const useEditorStore = create<
@@ -192,6 +194,21 @@ export const useEditorStore = create<
         const s = get();
         return s.rows > 0 && s.columns > 0;
       },
+      clearCanvas: () =>
+        set(() => ({
+          rows: INITIAL_ROWS,
+          columns: INITIAL_COLUMNS,
+          filename: "",
+          pixelSize: DEFAULT_PIXEL_SIZE,
+          paletteName: DEFAULT_COLOR_PALETTE,
+          originalWidth: 0,
+          originalHeight: 0,
+          pixels: {},
+          // 清空编辑相关状态
+          ops: [],
+          opIndex: -1,
+          color: DEFAULT_COLOR,
+        })),
     }),
     {
       name: "editor-local-store",
