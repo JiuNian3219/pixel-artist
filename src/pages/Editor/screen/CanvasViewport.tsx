@@ -413,7 +413,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   };
 
   /**
-   * 从指针事件中获取像素坐标
+   * 从指针事件中获取像素坐标(会触发强制重排)
    * @param e 指针事件
    * @returns 像素坐标
    */
@@ -591,7 +591,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     () =>
       throttle((e: React.PointerEvent<HTMLCanvasElement>) => {
         // 拖动工具下不绘制预览/轨迹
-        if (tool === TOOLS.DRAG) return;
+        if (tool === TOOLS.DRAG || panning) return;
         const current = getCellFromEvent(e);
         if (!drawingRef.current) {
           hoverCellRef.current = current;
@@ -607,7 +607,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         // 拖拽期间保持预览显示在当前光标位置
         drawHoverPreview(current);
       }, 16),
-    [rows, columns, pencilSize, tool, color, zoom]
+    [rows, columns, pencilSize, tool, color, zoom, panning]
   );
 
   // 导出：将当前像素层按 pixelSize 输出 PNG
