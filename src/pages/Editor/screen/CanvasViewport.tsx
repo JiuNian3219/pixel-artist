@@ -19,6 +19,7 @@ import {
 import { throttle } from "lodash";
 import {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -93,8 +94,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const hoverCellRef = useRef<Point | null>(null);
   // 是否正在绘制
   const drawingRef = useRef(false);
-  // 当前正在使用的工具
-  const dragToolRef = useRef<Tool>(TOOLS.PENCIL);
+  // 当前真正在使用的工具（应对右键橡皮和中键拖拽）
+  const gestureToolRef = useRef<Tool>(TOOLS.PENCIL);
   // 是否正在进行操作
   const opStartedRef = useRef<boolean>(false);
   // 操作变更记录，用于撤销重做
@@ -103,6 +104,21 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   >(new Map());
   // 下一次 store 像素变更触发时是否跳过全量重绘（一次性标记）
   const skipStoreReloadOnceRef = useRef<boolean>(false);
+
+  /**
+   * 获取当前工具状态
+   * @returns 包含当前 UI 工具、手势工具和激活的工具
+   */
+  const getToolCtx = useCallback((): {
+    uiTool: Tool;
+    gestureTool: Tool;
+    effectiveTool: Tool;
+  } => {
+    const uiTool = tool;
+    const gestureTool = gestureToolRef.current;
+    const effectiveTool = drawingRef.current ? gestureTool : uiTool;
+    return { uiTool, gestureTool, effectiveTool };
+  }, [tool, gestureToolRef, drawingRef]);
 
   /**
    * 开始一个操作：清空操作变更记录，标记操作已开始
@@ -118,9 +134,9 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
    */
   const getPreviewFill = () => {
     // 在拖拽绘制时，预览颜色依据本次拖拽使用的工具
-    const effectiveTool = drawingRef.current ? dragToolRef.current : tool;
     const alpha = 0.35;
-    if (effectiveTool === "eraser") return `rgba(255, 255, 255, ${alpha})`;
+    if (getToolCtx().effectiveTool === "eraser")
+      return `rgba(255, 255, 255, ${alpha})`;
     const { r, g, b } = parseColorString(color || "#000000");
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
@@ -256,7 +272,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
    * @returns
    */
   const handleViewportPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    const shouldPan = e.button === 1 || (e.button === 0 && tool === "drag");
+    const shouldPan =
+      e.button === 1 || (e.button === 0 && getToolCtx().uiTool === TOOLS.DRAG);
     if (!shouldPan) return;
     e.preventDefault();
     setPanning(true);
@@ -302,13 +319,14 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
    * @returns
    */
   const drawHoverPreview = (cell: Point) => {
+    const { uiTool } = getToolCtx();
     // 填充工具：预览将被填充的区域边界
-    if (!drawingRef.current && tool === TOOLS.FILL) {
+    if (!drawingRef.current && uiTool === TOOLS.FILL) {
       drawFillPreview(cell);
       return;
     }
     // 拖动没有预览
-    if (tool === TOOLS.DRAG) return;
+    if (uiTool === TOOLS.DRAG) return;
 
     const c = previewCanvasRef.current;
     if (!c) return;
@@ -318,7 +336,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.fillStyle = getPreviewFill();
     // 吸管工具的预览固定为 1×1 的方块，不随 pencilSize 变化
-    const size = tool === TOOLS.PICKER ? 1 : Math.max(1, pencilSize);
+    const size = uiTool === TOOLS.PICKER ? 1 : Math.max(1, pencilSize);
     const half = Math.floor((size - 1) / 2);
     for (let by = 0; by < size; by++) {
       for (let bx = 0; bx < size; bx++) {
@@ -439,12 +457,13 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     if (e.button === 1) return;
     const cell = getCellFromEvent(e);
 
-    if (tool === TOOLS.DRAG) {
+    const { uiTool } = getToolCtx();
+    if (uiTool === TOOLS.DRAG) {
       // 不阻止冒泡，让父容器的 pointerdown 捕获并开始平移
       return;
     }
 
-    if (tool === TOOLS.PICKER) {
+    if (uiTool === TOOLS.PICKER) {
       const pixelCanvas = pixelCanvasRef.current;
       if (!pixelCanvas) return;
       const ctx = pixelCanvas.getContext("2d");
@@ -466,8 +485,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       return;
     }
 
-    // 右键作为“橡皮填充”
-    if (tool === TOOLS.FILL) {
+    if (uiTool === TOOLS.FILL) {
       e.preventDefault();
       const pixelCanvas = pixelCanvasRef.current;
       if (!pixelCanvas) return;
@@ -529,16 +547,16 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       return;
     }
 
-    dragToolRef.current =
+    gestureToolRef.current =
       e.button === 2
         ? TOOLS.ERASER
-        : tool === TOOLS.ERASER
+        : uiTool === TOOLS.ERASER
         ? TOOLS.ERASER
         : TOOLS.PENCIL;
     if (e.button === 2) e.preventDefault();
     beginOp();
     drawingRef.current = true;
-    applyBrush(cell, dragToolRef.current);
+    applyBrush(cell, getToolCtx().effectiveTool);
     lastCellRef.current = cell;
     drawHoverPreview(cell);
   };
@@ -576,7 +594,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       if (changes.length > 0) {
         commitOp({ changes });
       }
-      if (tool === TOOLS.FILL) clearPreview();
+      if (getToolCtx().uiTool === TOOLS.FILL) clearPreview();
       opChangesRef.current.clear();
       opStartedRef.current = false;
     }
@@ -590,8 +608,9 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const handlePointerMoveThrottled = useMemo(
     () =>
       throttle((e: React.PointerEvent<HTMLCanvasElement>) => {
+        const { effectiveTool } = getToolCtx();
         // 拖动工具下不绘制预览/轨迹
-        if (tool === TOOLS.DRAG || panning) return;
+        if (effectiveTool === TOOLS.DRAG || panning) return;
         const current = getCellFromEvent(e);
         if (!drawingRef.current) {
           hoverCellRef.current = current;
@@ -601,13 +620,13 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         const last = lastCellRef.current || current;
         const line = bresenhamLine(last, current);
         for (const p of line) {
-          applyBrush(p, dragToolRef.current);
+          applyBrush(p, getToolCtx().effectiveTool);
         }
         lastCellRef.current = current;
         // 拖拽期间保持预览显示在当前光标位置
         drawHoverPreview(current);
       }, 16),
-    [rows, columns, pencilSize, tool, color, zoom, panning]
+    [rows, columns, pencilSize, color, zoom, panning, getToolCtx]
   );
 
   // 导出：将当前像素层按 pixelSize 输出 PNG
@@ -856,7 +875,11 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       onPointerLeave={handleViewportPointerUp}
       style={{
         cursor:
-          tool === TOOLS.DRAG ? (panning ? "grabbing" : "grab") : undefined,
+          getToolCtx().uiTool === TOOLS.DRAG
+            ? panning
+              ? "grabbing"
+              : "grab"
+            : undefined,
       }}
     >
       <div
