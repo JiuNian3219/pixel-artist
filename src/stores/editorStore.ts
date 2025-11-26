@@ -30,7 +30,6 @@ interface EditorLocalStoreState {
   originalWidth: number;
   originalHeight: number;
   filename?: string;
-  hasCanvas: boolean;
   paletteName: string;
   /** 像素缓存：只保存有颜色的格子，key 为 "x,y"，值为 hex 颜色 */
   pixels: Record<string, string>;
@@ -50,7 +49,6 @@ interface EditorLocalStoreActions {
   setAutoComplete: (autoComplete: boolean) => void;
   setOriginalSize: (width: number, height: number) => void;
   setFilename: (name?: string) => void;
-  setHasCanvas: (has: boolean) => void;
   setPaletteName: (name: string) => void;
   setPixels: (pixels: Record<string, string>) => void;
   updatePixels: (updater: Updater<Record<string, string>>) => void;
@@ -66,13 +64,14 @@ interface EditorLocalStoreActions {
   createCanvas: (rows: number, columns: number, filename?: string) => void;
   /** 从像素化结果初始化编辑器 */
   initializeFromPixelated: (p: PrepareEditorFromPixelatedParams) => void;
+  hasCanvas: () => boolean;
 }
 
 export const useEditorStore = create<
   EditorLocalStoreState & EditorLocalStoreActions
 >()(
   persist(
-    (set) => ({
+    (set, get) => ({
       rows: DEFAULT_ROWS,
       columns: DEFAULT_COLUMNS,
       tool: DEFAULT_TOOL,
@@ -84,7 +83,6 @@ export const useEditorStore = create<
       autoComplete: DEFAULT_AUTO_COMPLETE,
       originalWidth: 0,
       originalHeight: 0,
-      hasCanvas: false,
       pixels: {},
       ops: [],
       opIndex: -1,
@@ -104,7 +102,6 @@ export const useEditorStore = create<
       setOriginalSize: (width, height) =>
         set({ originalWidth: width, originalHeight: height }),
       setFilename: (name) => set({ filename: name }),
-      setHasCanvas: (has) => set({ hasCanvas: has }),
       setPaletteName: (name) => set({ paletteName: name }),
       setPixels: (pixels) => set({ pixels }),
       updatePixels: (updater) =>
@@ -155,7 +152,6 @@ export const useEditorStore = create<
         set({
           rows,
           columns,
-          hasCanvas: true,
           filename,
           // 重置编辑相关状态为默认值
           pencilSize: DEFAULT_PENCIL_SIZE,
@@ -180,11 +176,14 @@ export const useEditorStore = create<
           originalHeight: p.originalHeight,
           pixels: p.pixels || {},
           // 清空编辑相关状态
-          hasCanvas: true,
           ops: [],
           opIndex: -1,
           color: DEFAULT_COLOR,
         })),
+      hasCanvas: () => {
+        const s = get();
+        return s.rows > 0 && s.columns > 0;
+      },
     }),
     {
       name: "editor-local-store",
@@ -196,7 +195,6 @@ export const useEditorStore = create<
         columns: state.columns,
         ops: state.ops,
         opIndex: state.opIndex,
-        hasCanvas: state.hasCanvas,
         color: state.color,
       }),
     }

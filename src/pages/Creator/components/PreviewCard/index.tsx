@@ -46,7 +46,7 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
 }) => {
   const { t } = useTranslation("creator");
   const navigate = useNavigate();
-  const hasCanvas = useEditorStore((s) => s.hasCanvas);
+  const hasCanvas = useEditorStore((s) => s.hasCanvas());
   const initializeFromPixelated = useEditorStore(
     (s) => s.initializeFromPixelated
   );

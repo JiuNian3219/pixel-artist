@@ -15,7 +15,7 @@ const Editor: React.FC = () => {
   const { t } = useTranslation("editor");
   const setTool = useEditorStore((s) => s.setTool);
   const setPencilSize = useEditorStore((s) => s.setPencilSize);
-  const hasCanvas = useEditorStore((s) => s.hasCanvas);
+  const hasCanvas = useEditorStore((s) => s.hasCanvas());
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
   const canvasRef = useRef<CanvasViewportHandle | null>(null);

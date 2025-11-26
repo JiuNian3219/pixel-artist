@@ -42,7 +42,7 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
   const setPaletteName = useEditorStore((s) => s.setPaletteName);
   const pencilSize = useEditorStore((s) => s.pencilSize);
   const setPencilSize = useEditorStore((s) => s.setPencilSize);
-  const hasCanvas = useEditorStore((s) => s.hasCanvas);
+  const hasCanvas = useEditorStore((s) => s.hasCanvas());
   const createCanvas = useEditorStore((s) => s.createCanvas);
 
   const [showSetup, setShowSetup] = useState(false);

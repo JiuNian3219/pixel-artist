@@ -46,7 +46,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const originalWidth = useEditorStore((s) => s.originalWidth);
   const originalHeight = useEditorStore((s) => s.originalHeight);
   const filename = useEditorStore((s) => s.filename);
-  const hasCanvas = useEditorStore((s) => s.hasCanvas);
+  const hasCanvas = useEditorStore((s) => s.hasCanvas());
   const setColor = useEditorStore((s) => s.setColor);
   const storePixels = useEditorStore((s) => s.pixels);
   const updatePixels = useEditorStore((s) => s.updatePixels);
