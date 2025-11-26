@@ -19,7 +19,7 @@
     "export_config": "Export Config",
     "save_button": "Save to Local (PNG)",
     "painting_config": "Painting Config",
-    "picker_switch_to_pencil": "Picker Switch to Pencil",
+    "picker_switch_to_pencil": "Switch to Last Used Tool",
     "picker_switch_to_pencil_tooltip": "When enabled, the picker tool will switch to the last used tool after picking a color, allowing for immediate painting.",
     "create_model": {
       "title": "Create Canvas",
