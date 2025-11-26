@@ -2,6 +2,7 @@ import {
   bresenhamLine,
   clamp,
   getContrastColorForRGBA,
+  MOUSE_BUTTON,
   parseColorString,
   rgbaEqual,
 } from "@/pages/Editor/utils";
@@ -273,7 +274,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
    */
   const handleViewportPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const shouldPan =
-      e.button === 1 || (e.button === 0 && getToolCtx().uiTool === TOOLS.DRAG);
+      e.button === MOUSE_BUTTON.MIDDLE ||
+      (e.button === MOUSE_BUTTON.LEFT && getToolCtx().uiTool === TOOLS.DRAG);
     if (!shouldPan) return;
     e.preventDefault();
     setPanning(true);
@@ -454,7 +456,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
    */
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     // 中键用于平移，不在像素层绘制
-    if (e.button === 1) return;
+    if (e.button === MOUSE_BUTTON.MIDDLE) return;
     const cell = getCellFromEvent(e);
 
     const { uiTool } = getToolCtx();
@@ -500,7 +502,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         1,
         1
       ).data;
-      const isErase = e.button === 2; // 右键擦除填充
+      const isErase = e.button === MOUSE_BUTTON.RIGHT; // 右键擦除填充
       if (isErase) {
         if (start[3] === 0) return; // 已透明，无需填充
       } else {
@@ -548,12 +550,12 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     }
 
     gestureToolRef.current =
-      e.button === 2
+      e.button === MOUSE_BUTTON.RIGHT
         ? TOOLS.ERASER
         : uiTool === TOOLS.ERASER
         ? TOOLS.ERASER
         : TOOLS.PENCIL;
-    if (e.button === 2) e.preventDefault();
+    if (e.button === MOUSE_BUTTON.RIGHT) e.preventDefault();
     beginOp();
     drawingRef.current = true;
     applyBrush(cell, getToolCtx().effectiveTool);

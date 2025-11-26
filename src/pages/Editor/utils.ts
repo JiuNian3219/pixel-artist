@@ -1,5 +1,12 @@
 import type { Point } from "@/types/editor";
 
+// 鼠标键位
+export const MOUSE_BUTTON = {
+  LEFT: 0,
+  MIDDLE: 1,
+  RIGHT: 2,
+} as const;
+
 /**
  *  clamp 函数，用于将一个数值限制在指定的范围内
  * @param v 要限制的数值
