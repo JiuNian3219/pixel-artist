@@ -121,11 +121,19 @@ export const MAX_PENCIL_SIZE = 32;
  */
 export const DEFAULT_GRID_SIZE = 4;
 /**
- * 默认行
+ * 初始行
+ */
+export const INITIAL_ROWS = 0;
+/**
+ * 初始列
+ */
+export const INITIAL_COLUMNS = 0;
+/**
+ * 默认创建行
  */
 export const DEFAULT_ROWS = 32;
 /**
- * 默认列
+ * 默认创建列
  */
 export const DEFAULT_COLUMNS = 32;
 /**

@@ -7,13 +7,13 @@ import {
   DEFAULT_AUTO_COMPLETE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_PALETTE,
-  DEFAULT_COLUMNS,
   DEFAULT_GRID_SIZE,
   DEFAULT_PENCIL_SIZE,
   DEFAULT_PICKER_SWITCH_TO_PENCIL,
   DEFAULT_PIXEL_SIZE,
-  DEFAULT_ROWS,
   DEFAULT_TOOL,
+  INITIAL_COLUMNS,
+  INITIAL_ROWS,
 } from "@/utils/constants";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -77,8 +77,8 @@ export const useEditorStore = create<
 >()(
   persist(
     (set, get) => ({
-      rows: DEFAULT_ROWS,
-      columns: DEFAULT_COLUMNS,
+      rows: INITIAL_ROWS,
+      columns: INITIAL_COLUMNS,
       tool: DEFAULT_TOOL,
       color: DEFAULT_COLOR,
       paletteName: DEFAULT_COLOR_PALETTE,
