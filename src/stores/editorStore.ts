@@ -10,6 +10,7 @@ import {
   DEFAULT_COLUMNS,
   DEFAULT_GRID_SIZE,
   DEFAULT_PENCIL_SIZE,
+  DEFAULT_PICKER_SWITCH_TO_PENCIL,
   DEFAULT_PIXEL_SIZE,
   DEFAULT_ROWS,
   DEFAULT_TOOL,
@@ -31,6 +32,8 @@ interface EditorLocalStoreState {
   originalHeight: number;
   filename?: string;
   paletteName: string;
+  /** 是否启用拾色器工具颜色后切换到画笔工具 */
+  pickerSwitchToPencil: boolean;
   /** 像素缓存：只保存有颜色的格子，key 为 "x,y"，值为 hex 颜色 */
   pixels: Record<string, string>;
   /** 操作历史 */
@@ -54,6 +57,8 @@ interface EditorLocalStoreActions {
   updatePixels: (updater: Updater<Record<string, string>>) => void;
   setOps: (ops: Array<EditorOperation>) => void;
   setOpIndex: (index: number) => void;
+  /** 是否启用拾色器工具颜色后切换到画笔工具 */
+  setPickerSwitchToPencil: (pickerSwitchToPencil: boolean) => void;
   /** 提交一次操作（追加到历史，并将指针移动到末尾） */
   commitOp: (op: EditorOperation) => void;
   /** 撤销到上一步 */
@@ -86,6 +91,7 @@ export const useEditorStore = create<
       pixels: {},
       ops: [],
       opIndex: -1,
+      pickerSwitchToPencil: DEFAULT_PICKER_SWITCH_TO_PENCIL,
       setTool: (tool) => set({ tool }),
       setColor: (color) => set({ color }),
       setPencilSize: (pencilSize) =>
@@ -111,6 +117,8 @@ export const useEditorStore = create<
         })),
       setOps: (ops) => set({ ops }),
       setOpIndex: (index) => set({ opIndex: index }),
+      setPickerSwitchToPencil: (pickerSwitchToPencil) =>
+        set({ pickerSwitchToPencil }),
       commitOp: (op) =>
         set((state) => {
           if (!op || !op.changes || op.changes.length === 0) return state;

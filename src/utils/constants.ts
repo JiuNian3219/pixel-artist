@@ -171,6 +171,10 @@ export const DEFAULT_TRANSLATION = {
  */
 export const MAX_FILL_CHECK_PREVIEW_NUMBER = 5000;
 /**
+ * 默认是否拾色器工具吸取颜色后切换到画笔工具
+ */
+export const DEFAULT_PICKER_SWITCH_TO_PENCIL = true;
+/**
  * 默认导出文件名
  */
 export const DEFAULT_FILENAME = "pixel-art";

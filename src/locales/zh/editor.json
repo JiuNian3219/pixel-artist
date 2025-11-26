@@ -18,6 +18,9 @@
     "create_button": "新建画布",
     "export_config": "导出配置",
     "save_button": "保存至本地(PNG)",
+    "painting_config": "绘画配置",
+    "picker_switch_to_pencil": "拾色切换",
+    "picker_switch_to_pencil_tooltip": "当启用此功能时，拾色器工具吸取颜色后将自动切换到上一次使用的工具，方便绘画。",
     "create_model": {
       "title": "新建画布",
       "rows_and_columns": "高度 × 宽度",

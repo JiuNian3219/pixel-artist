@@ -23,6 +23,7 @@ import {
   Tooltip,
   Typography,
 } from "antd";
+import type { CheckboxChangeEvent } from "antd/lib";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import PaletteSelector from "../components/PaletteSelector";
@@ -44,6 +45,10 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
   const setPencilSize = useEditorStore((s) => s.setPencilSize);
   const hasCanvas = useEditorStore((s) => s.hasCanvas());
   const createCanvas = useEditorStore((s) => s.createCanvas);
+  const pickerSwitchToPencil = useEditorStore((s) => s.pickerSwitchToPencil);
+  const setPickerSwitchToPencil = useEditorStore(
+    (s) => s.setPickerSwitchToPencil
+  );
 
   const [showSetup, setShowSetup] = useState(false);
   const [form] = Form.useForm<{
@@ -79,6 +84,14 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
 
   const handlePaletteChange = (value: string) => {
     setPaletteName(value);
+  };
+
+  const toggleAutoComplete = (e: CheckboxChangeEvent) => {
+    setAutoComplete(e.target.checked);
+  };
+
+  const togglePickerSwitchToPencil = (e: CheckboxChangeEvent) => {
+    setPickerSwitchToPencil(e.target.checked);
   };
 
   return (
@@ -141,13 +154,32 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
         level={5}
         style={{ margin: 0 }}
       >
+        {t("configs_panel.painting_config")}
+      </Typography.Title>
+      {/* 拾色切换 */}
+      <Space>
+        <Checkbox
+          checked={pickerSwitchToPencil}
+          onChange={togglePickerSwitchToPencil}
+        >
+          {t("configs_panel.picker_switch_to_pencil")}
+        </Checkbox>
+        <Tooltip title={t("configs_panel.picker_switch_to_pencil_tooltip")}>
+          <QuestionCircleOutlined />
+        </Tooltip>
+      </Space>
+
+      <Typography.Title
+        level={5}
+        style={{ margin: 0 }}
+      >
         {t("configs_panel.export_config")}
       </Typography.Title>
       {/** 导出时自动填充画布边缘 */}
       <Space>
         <Checkbox
           checked={autoComplete}
-          onChange={(e) => setAutoComplete(e.target.checked)}
+          onChange={toggleAutoComplete}
         >
           {t("configs_panel.auto_complete")}
         </Checkbox>

@@ -51,6 +51,17 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const storePixels = useEditorStore((s) => s.pixels);
   const updatePixels = useEditorStore((s) => s.updatePixels);
   const commitOp = useEditorStore((s) => s.commitOp);
+  const setTool = useEditorStore((s) => s.setTool);
+  const pickerSwitchToPencil = useEditorStore((s) => s.pickerSwitchToPencil);
+
+  const usedToolsRef = useRef<Tool[]>([tool]);
+
+  useEffect(() => {
+    const lastUsedTool = usedToolsRef.current[usedToolsRef.current.length - 1];
+    if (lastUsedTool !== tool) {
+      usedToolsRef.current.push(tool);
+    }
+  }, [tool]);
 
   // CSS transform 进行显示缩放
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
@@ -120,6 +131,15 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     const effectiveTool = drawingRef.current ? gestureTool : uiTool;
     return { uiTool, gestureTool, effectiveTool };
   }, [tool, gestureToolRef, drawingRef]);
+
+  /**
+   * 获取倒数第几次使用的工具
+   * @param n 倒数第几次使用的工具，默认值为 1, 0 表示当前工具
+   * @returns
+   */
+  const getLastUsedTool = (n = 1) => {
+    return usedToolsRef.current[usedToolsRef.current.length - n - 1];
+  };
 
   /**
    * 开始一个操作：清空操作变更记录，标记操作已开始
@@ -596,10 +616,13 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       if (changes.length > 0) {
         commitOp({ changes });
       }
-      if (getToolCtx().uiTool === TOOLS.FILL) clearPreview();
       opChangesRef.current.clear();
       opStartedRef.current = false;
     }
+    const { uiTool } = getToolCtx();
+    if (uiTool === TOOLS.FILL) clearPreview();
+    if (pickerSwitchToPencil && uiTool === TOOLS.PICKER)
+      setTool(getLastUsedTool());
   };
 
   /**
