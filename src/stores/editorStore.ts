@@ -196,6 +196,7 @@ export const useEditorStore = create<
         ops: state.ops,
         opIndex: state.opIndex,
         color: state.color,
+        paletteName: state.paletteName,
       }),
     }
   )
