@@ -59,11 +59,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   setOriginalFile,
   setPixelatedResults,
 }) => {
-  const worker = useRef<Worker>(
-    new Worker(new URL("../../../workers/pixelWorker.ts", import.meta.url), {
-      type: "module",
-    })
-  );
+  const worker = useRef<Worker | null>(null);
+
   const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
   const setPixelSize = useCreatorLocalStore((state) => state.setPixelSize);
   const [uiPixelSize, setUiPixelSize] = useState<number>(pixelSize);
@@ -232,6 +229,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         return;
       }
 
+      if (!worker.current) return;
+
       // 开始前清空预览结果
       setPixelatedResults?.([]);
 
@@ -250,7 +249,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           ]);
         } else if (msg.type === ResultType.COMPLETE) {
           setInPixelation(false);
-          worker.current.terminate();
         }
       };
 
@@ -272,8 +270,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   useEffect(() => {
     return () => {
-      worker.current.terminate();
       setInPixelation(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    worker.current = new Worker(
+      new URL("../../../workers/pixelWorker.ts", import.meta.url),
+      {
+        type: "module",
+      }
+    );
+    return () => {
+      worker.current?.terminate();
     };
   }, []);
 
