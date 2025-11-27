@@ -1,6 +1,6 @@
 import GlobalLoadingOverlay from "@/components/GlobalLoadingOverlay";
 import { useCreatorLocalStore } from "@/stores/creatorStore";
-import { useEditorStore } from "@/stores/editorStore";
+import { useEditorDataStore } from "@/stores/editorDataStore";
 import {
   MAX_COLUMNS,
   MAX_PREVIEW_HEIGHT,
@@ -46,8 +46,8 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
 }) => {
   const { t } = useTranslation("creator");
   const navigate = useNavigate();
-  const hasCanvas = useEditorStore((s) => s.hasCanvas());
-  const initializeFromPixelated = useEditorStore(
+  const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
+  const initializeFromPixelated = useEditorDataStore(
     (s) => s.initializeFromPixelated
   );
   const [processing, setProcessing] = useState(false);
@@ -263,3 +263,4 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
 };
 
 export default PreviewCard;
+

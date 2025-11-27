@@ -1,4 +1,5 @@
-import { useEditorStore } from "@/stores/editorStore";
+import { useEditorDataStore } from "@/stores/editorDataStore";
+import { useEditorUIStore } from "@/stores/editorUIStore";
 import {
   DEFAULT_COLUMNS,
   DEFAULT_ROWS,
@@ -35,19 +36,19 @@ interface ConfigsPanelProps {
 
 const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
   const { t } = useTranslation("editor");
-  const rows = useEditorStore((s) => s.rows);
-  const columns = useEditorStore((s) => s.columns);
-  const autoComplete = useEditorStore((s) => s.autoComplete);
-  const setAutoComplete = useEditorStore((s) => s.setAutoComplete);
-  const paletteName = useEditorStore((s) => s.paletteName);
-  const setPaletteName = useEditorStore((s) => s.setPaletteName);
-  const pencilSize = useEditorStore((s) => s.pencilSize);
-  const setPencilSize = useEditorStore((s) => s.setPencilSize);
-  const hasCanvas = useEditorStore((s) => s.hasCanvas());
-  const createCanvas = useEditorStore((s) => s.createCanvas);
-  const clearCanvas = useEditorStore((s) => s.clearCanvas);
-  const pickerSwitchToPencil = useEditorStore((s) => s.pickerSwitchToPencil);
-  const setPickerSwitchToPencil = useEditorStore(
+  const rows = useEditorDataStore((s) => s.rows);
+  const columns = useEditorDataStore((s) => s.columns);
+  const autoComplete = useEditorUIStore((s) => s.autoComplete);
+  const setAutoComplete = useEditorUIStore((s) => s.setAutoComplete);
+  const paletteName = useEditorUIStore((s) => s.paletteName);
+  const setPaletteName = useEditorUIStore((s) => s.setPaletteName);
+  const pencilSize = useEditorUIStore((s) => s.pencilSize);
+  const setPencilSize = useEditorUIStore((s) => s.setPencilSize);
+  const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
+  const createCanvas = useEditorDataStore((s) => s.createCanvas);
+  const clearCanvas = useEditorDataStore((s) => s.clearCanvas);
+  const pickerSwitchToPencil = useEditorUIStore((s) => s.pickerSwitchToPencil);
+  const setPickerSwitchToPencil = useEditorUIStore(
     (s) => s.setPickerSwitchToPencil
   );
 

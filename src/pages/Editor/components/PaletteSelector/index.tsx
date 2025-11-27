@@ -1,4 +1,4 @@
-import { useEditorStore } from "@/stores/editorStore";
+import { useEditorUIStore } from "@/stores/editorUIStore";
 import { DEFAULT_COLOR_PALETTE } from "@/utils/constants";
 import {
   getColorHex,
@@ -19,8 +19,8 @@ interface PaletteSelectProps {
 const PaletteSelector: React.FC<PaletteSelectProps> = ({ value, onChange }) => {
   const { t } = useTranslation("editor");
   const { t: paletteT } = useTranslation("common");
-  const color = useEditorStore((s) => s.color);
-  const setColor = useEditorStore((state) => state.setColor);
+  const color = useEditorUIStore((s) => s.color);
+  const setColor = useEditorUIStore((state) => state.setColor);
   const currentPalette = getPaletteById(value);
   const paletteOptions = getPaletteOptions(paletteT);
 
@@ -93,3 +93,4 @@ const PaletteSelector: React.FC<PaletteSelectProps> = ({ value, onChange }) => {
 };
 
 export default PaletteSelector;
+

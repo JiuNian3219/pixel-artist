@@ -1,5 +1,6 @@
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { useEditorStore } from "@/stores/editorStore";
+import { useEditorDataStore } from "@/stores/editorDataStore";
+import { useEditorUIStore } from "@/stores/editorUIStore";
 import { MAX_PENCIL_SIZE, MIN_PENCIL_SIZE, TOOLS } from "@/utils/constants";
 import { Typography } from "antd";
 import { useEffect, useRef } from "react";
@@ -13,13 +14,25 @@ import ToolsPanel from "./screen/ToolsPanel";
 
 const Editor: React.FC = () => {
   const { t } = useTranslation("editor");
-  const setTool = useEditorStore((s) => s.setTool);
-  const setPencilSize = useEditorStore((s) => s.setPencilSize);
-  const hasCanvas = useEditorStore((s) => s.hasCanvas());
-  const undo = useEditorStore((s) => s.undo);
-  const redo = useEditorStore((s) => s.redo);
+  const setTool = useEditorUIStore((s) => s.setTool);
+  const setPencilSize = useEditorUIStore((s) => s.setPencilSize);
+  const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
+  const undo = useEditorDataStore((s) => s.undo);
+  const redo = useEditorDataStore((s) => s.redo);
+  const triggerSave = useEditorDataStore((s) => s.triggerSave);
   const canvasRef = useRef<CanvasViewportHandle | null>(null);
   const isMobile = useIsMobile();
+
+  // 确保页面关闭前保存数据
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      triggerSave();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [triggerSave]);
 
   // 快捷键
   useEffect(() => {

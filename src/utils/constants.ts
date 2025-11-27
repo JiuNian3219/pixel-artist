@@ -139,11 +139,11 @@ export const DEFAULT_COLUMNS = 32;
 /**
  * 最大行
  */
-export const MAX_ROWS = 512;
+export const MAX_ROWS = 1024;
 /**
  * 最大列
  */
-export const MAX_COLUMNS = 512;
+export const MAX_COLUMNS = 1024;
 /**
  * 最小行
  */

@@ -6,7 +6,8 @@ import {
   parseColorString,
   rgbaEqual,
 } from "@/pages/Editor/utils";
-import { useEditorStore } from "@/stores/editorStore";
+import { runtimePixels, useEditorDataStore } from "@/stores/editorDataStore";
+import { useEditorUIStore } from "@/stores/editorUIStore";
 import type { Point, Tool } from "@/types/editor";
 import {
   DEFAULT_GRID_SIZE,
@@ -34,25 +35,25 @@ export interface CanvasViewportHandle {
 }
 
 const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
-  const rows = useEditorStore((s) => s.rows);
-  const columns = useEditorStore((s) => s.columns);
+  const rows = useEditorDataStore((s) => s.rows);
+  const columns = useEditorDataStore((s) => s.columns);
   // CELL 随画布尺寸变化而变化
   const [cellSize, setCellSize] = useState<number>(DEFAULT_GRID_SIZE);
-  const tool = useEditorStore((s) => s.tool);
-  const color = useEditorStore((s) => s.color);
-  const pencilSize = useEditorStore((s) => s.pencilSize);
-  const exportPixelSize = useEditorStore((s) => s.pixelSize);
-  const autoComplete = useEditorStore((s) => s.autoComplete);
-  const originalWidth = useEditorStore((s) => s.originalWidth);
-  const originalHeight = useEditorStore((s) => s.originalHeight);
-  const filename = useEditorStore((s) => s.filename);
-  const hasCanvas = useEditorStore((s) => s.hasCanvas());
-  const setColor = useEditorStore((s) => s.setColor);
-  const storePixels = useEditorStore((s) => s.pixels);
-  const updatePixels = useEditorStore((s) => s.updatePixels);
-  const commitOp = useEditorStore((s) => s.commitOp);
-  const setTool = useEditorStore((s) => s.setTool);
-  const pickerSwitchToPencil = useEditorStore((s) => s.pickerSwitchToPencil);
+  const tool = useEditorUIStore((s) => s.tool);
+  const color = useEditorUIStore((s) => s.color);
+  const pencilSize = useEditorUIStore((s) => s.pencilSize);
+  const exportPixelSize = useEditorUIStore((s) => s.pixelSize);
+  const autoComplete = useEditorUIStore((s) => s.autoComplete);
+  const originalWidth = useEditorDataStore((s) => s.originalWidth);
+  const originalHeight = useEditorDataStore((s) => s.originalHeight);
+  const filename = useEditorDataStore((s) => s.filename);
+  const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
+  const setColor = useEditorUIStore((s) => s.setColor);
+  const mutatePixels = useEditorDataStore((s) => s.mutatePixels);
+  const commitOp = useEditorDataStore((s) => s.commitOp);
+  const dataVersion = useEditorDataStore((s) => s.dataVersion);
+  const setTool = useEditorUIStore((s) => s.setTool);
+  const pickerSwitchToPencil = useEditorUIStore((s) => s.pickerSwitchToPencil);
 
   const usedToolsRef = useRef<Tool[]>([tool]);
 
@@ -98,8 +99,6 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
-  // 用于存储当前画布上的像素
-  const pixelsRef = useRef<Map<string, string>>(new Map());
   // 上次绘制的单元格，用于绘制连续线
   const lastCellRef = useRef<Point | null>(null);
   // 当前悬停的单元格，用于绘制连续线
@@ -114,8 +113,54 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const opChangesRef = useRef<
     Map<string, { prev: string | null; next: string | null }>
   >(new Map());
-  // 下一次 store 像素变更触发时是否跳过全量重绘（一次性标记）
-  const skipStoreReloadOnceRef = useRef<boolean>(false);
+
+  // 暴露导出图像的方法
+  useImperativeHandle(ref, () => ({
+    exportImage: () => {
+      const pixelCanvas = pixelCanvasRef.current;
+      if (!pixelCanvas) return;
+      const floorRows = Math.floor((originalHeight || 0) / exportPixelSize);
+      const floorCols = Math.floor((originalWidth || 0) / exportPixelSize);
+      const targetRows = autoComplete
+        ? rows
+        : Math.min(rows, floorRows || rows);
+      const targetCols = autoComplete
+        ? columns
+        : Math.min(columns, floorCols || columns);
+
+      const out = document.createElement("canvas");
+      out.width = targetCols * exportPixelSize;
+      out.height = targetRows * exportPixelSize;
+      const outCtx = out.getContext("2d");
+      if (!outCtx) return;
+      outCtx.imageSmoothingEnabled = false;
+
+      // 从显示层按格裁剪并缩放到导出像素尺寸
+      const srcW = targetCols * cellSize;
+      const srcH = targetRows * cellSize;
+      outCtx.drawImage(
+        pixelCanvas,
+        0,
+        0,
+        srcW,
+        srcH,
+        0,
+        0,
+        out.width,
+        out.height
+      );
+
+      const url = out.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = filename
+        ? `${filename.replace(/\.[^.]+$/, "")}.png`
+        : "pixel-art.png";
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+  }));
 
   /**
    * 获取当前工具状态
@@ -170,7 +215,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
    */
   const getRGBAForCell = (x: number, y: number) => {
     const key = `${x},${y}`;
-    const col = pixelsRef.current.get(key);
+    const col = runtimePixels.get(key);
     if (!col) return { r: 0, g: 0, b: 0, a: 0 };
     return parseColorString(col);
   };
@@ -385,7 +430,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     const key = `${x},${y}`;
     // 记录变更（仅在一次操作期间）
     if (opStartedRef.current) {
-      const prev = pixelsRef.current.get(key) ?? null;
+      const prev = runtimePixels.get(key) ?? null;
       const next = col ?? null;
       if (prev !== next) {
         const existed = opChangesRef.current.get(key);
@@ -396,7 +441,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         }
       }
     }
-    pixelsRef.current.set(key, col);
+    runtimePixels.set(key, col);
     ctx.fillStyle = col;
     ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
   };
@@ -410,7 +455,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const clearCell = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
     const key = `${x},${y}`;
     if (opStartedRef.current) {
-      const prev = pixelsRef.current.get(key) ?? null;
+      const prev = runtimePixels.get(key) ?? null;
       const next = null;
       if (prev !== next) {
         const existed = opChangesRef.current.get(key);
@@ -421,7 +466,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         }
       }
     }
-    pixelsRef.current.delete(key);
+    runtimePixels.delete(key);
     ctx.clearRect(x * cellSize, y * cellSize, cellSize, cellSize);
   };
 
@@ -486,24 +531,11 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     }
 
     if (uiTool === TOOLS.PICKER) {
-      const pixelCanvas = pixelCanvasRef.current;
-      if (!pixelCanvas) return;
-      const ctx = pixelCanvas.getContext("2d");
-      if (!ctx) return;
-      const data = ctx.getImageData(
-        cell.x * cellSize,
-        cell.y * cellSize,
-        1,
-        1
-      ).data;
-      const a = data[3];
-      if (a === 0) {
-        // 透明格不改变当前颜色
-        return;
+      const key = `${cell.x},${cell.y}`;
+      const picked = runtimePixels.get(key);
+      if (picked) {
+        setColor(picked);
       }
-      const toHex = (v: number) => v.toString(16).padStart(2, "0");
-      const picked = `#${toHex(data[0])}${toHex(data[1])}${toHex(data[2])}`;
-      setColor(picked);
       return;
     }
 
@@ -516,45 +548,30 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       beginOp();
 
       // 起始颜色作为区域匹配基准
-      const start = ctx.getImageData(
-        cell.x * cellSize,
-        cell.y * cellSize,
-        1,
-        1
-      ).data;
+      const startKey = `${cell.x},${cell.y}`;
+      const startColor = runtimePixels.get(startKey);
+
       const isErase = e.button === MOUSE_BUTTON.RIGHT; // 右键擦除填充
       if (isErase) {
-        if (start[3] === 0) return; // 已透明，无需填充
+        if (startColor === undefined) return; // 已透明，无需填充
       } else {
-        const { r, g, b } = parseColorString(color || "#000000");
-        if (
-          start[3] === 255 &&
-          start[0] === r &&
-          start[1] === g &&
-          start[2] === b
-        ) {
-          return; // 与目标色相同，跳过
-        }
+        if (startColor === color) return; // 与目标色相同，跳过
       }
 
       const visited = new Uint8Array(rows * columns);
       const stack: Point[] = [cell];
-      const matchStart = (x: number, y: number) => {
-        const d = ctx.getImageData(x * cellSize, y * cellSize, 1, 1).data;
-        return (
-          d[0] === start[0] &&
-          d[1] === start[1] &&
-          d[2] === start[2] &&
-          d[3] === start[3]
-        );
-      };
 
       while (stack.length) {
         const p = stack.pop()!;
         const idx = p.y * columns + p.x;
         if (visited[idx]) continue;
         visited[idx] = 1;
-        if (!matchStart(p.x, p.y)) continue;
+
+        const currentKey = `${p.x},${p.y}`;
+        const currentColor = runtimePixels.get(currentKey);
+
+        if (currentColor !== startColor) continue;
+
         if (isErase) {
           clearCell(ctx, p.x, p.y);
         } else {
@@ -595,19 +612,10 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       // 仅对变更过的单元格进行增量更新
       const entries = Array.from(opChangesRef.current.entries());
       if (entries.length > 0) {
-        updatePixels((prev) => {
-          const next = { ...prev };
-          for (const [key, v] of entries) {
-            if (v.next == null) {
-              delete next[key];
-            } else {
-              next[key] = v.next;
-            }
-          }
-          return next;
-        });
-        // 标记：这次 store 变更来自增量提交，跳过一次全量重绘
-        skipStoreReloadOnceRef.current = true;
+        // 不需要触发 React 更新，所以用的 mutatePixels（不做拷贝）
+        mutatePixels(
+          entries.map(([key, v]) => [key, v.next]) as [string, string | null][]
+        );
       }
       const changes = entries.map(([key, v]) => {
         const [xs, ys] = key.split(",");
@@ -753,7 +761,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     clearPreview();
   }, [stageSize.width, stageSize.height]);
 
-  // 画笔大小/工具/颜色变化时，若鼠标未移动但存在悬停位置，则主动重绘预览，避免预览方块大小与当前画笔大小不一致
+  // 画笔大小/工具/颜色变化时，若鼠标未移动但存在悬停位置，则主动重绘预览，避免预览方块大小颜色与当前画笔大小不一致
   useEffect(() => {
     if (drawingRef.current) return;
     const cell = hoverCellRef.current;
@@ -785,8 +793,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       setZoom(initialZoom);
       // 将缩放后的画布在自身盒内居中
       setTranslate({
-        x: Math.floor((stageW * (1 - initialZoom)) / (2 * initialZoom)),
-        y: Math.floor((stageH * (1 - initialZoom)) / (2 * initialZoom)),
+        x: Math.floor((cw - stageW * initialZoom) / 2),
+        y: Math.floor((ch - stageH * initialZoom) / 2),
       });
     }
   }, [hasCanvas, rows, columns]);
@@ -799,42 +807,87 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     pixelCanvas.height = stageSize.height;
     // 重置最近落点引用，避免尺寸变化后继续连接旧路径
     lastCellRef.current = null;
-  }, [stageSize.width, stageSize.height]);
 
-  // 加载 store 中的像素到画布
-  useEffect(() => {
-    // 若是本次绘制提交触发的像素更新，则跳过全量清空与重绘
-    if (skipStoreReloadOnceRef.current) {
-      skipStoreReloadOnceRef.current = false;
-      return;
-    }
-    const pixelCanvas = pixelCanvasRef.current;
-    if (!pixelCanvas) return;
-    if (
-      pixelCanvas.width !== stageSize.width ||
-      pixelCanvas.height !== stageSize.height
-    )
-      return;
+    // 尺寸变化导致画布清空，需要从 Store 重新绘制
     const ctx = pixelCanvas.getContext("2d");
     if (!ctx) return;
-    // 始终先清空再根据 store 重绘
     ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, pixelCanvas.width, pixelCanvas.height);
-    pixelsRef.current.clear();
-    if (storePixels && Object.keys(storePixels).length > 0) {
-      for (const [key, val] of Object.entries(storePixels)) {
+
+    if (runtimePixels.size > 0) {
+      for (const [key, val] of runtimePixels.entries()) {
         const [xs, ys] = key.split(",");
         const x = Number(xs);
         const y = Number(ys);
         if (Number.isFinite(x) && Number.isFinite(y)) {
-          // 直接同步像素到显示层，避免触发绘制路径的增量 store 写入
-          pixelsRef.current.set(key, val);
           ctx.fillStyle = val;
           ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
         }
       }
     }
-  }, [storePixels, stageSize.width, stageSize.height]);
+  }, [stageSize.width, stageSize.height, cellSize, dataVersion]);
+
+  // 监听 Store 变化，实现增量更新或重置
+  useEffect(() => {
+    const unsub = useEditorDataStore.subscribe((state, prevState) => {
+      const pixelCanvas = pixelCanvasRef.current;
+      if (!pixelCanvas) return;
+      const ctx = pixelCanvas.getContext("2d");
+      if (!ctx) return;
+
+      const paint = (x: number, y: number, color: string | null) => {
+        const key = `${x},${y}`;
+        if (color === null) {
+          runtimePixels.delete(key);
+          ctx.clearRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        } else {
+          runtimePixels.set(key, color);
+          ctx.fillStyle = color;
+          ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+      };
+
+      // 1. 撤销: OpIndex 减小
+      if (state.opIndex < prevState.opIndex) {
+        for (let i = prevState.opIndex; i > state.opIndex; i--) {
+          const op = prevState.ops[i];
+          if (!op) continue;
+          // 反向应用变更
+          for (const c of op.changes) {
+            paint(c.x, c.y, c.prev);
+          }
+        }
+      }
+      // 2. 重做: OpIndex 增加 且 Ops 列表引用未变
+      else if (
+        state.opIndex > prevState.opIndex &&
+        state.ops === prevState.ops
+      ) {
+        // 重做操作
+        for (let i = prevState.opIndex + 1; i <= state.opIndex; i++) {
+          const op = state.ops[i];
+          if (!op) continue;
+          // 正向应用变更
+          for (const c of op.changes) {
+            paint(c.x, c.y, c.next);
+          }
+        }
+      }
+      // 重置/加载创作页绘画 : Ops 列表引用改变且被清空
+      else if (state.ops !== prevState.ops && state.ops.length === 0) {
+        ctx.clearRect(0, 0, pixelCanvas.width, pixelCanvas.height);
+        for (const [key, val] of runtimePixels.entries()) {
+          const [xs, ys] = key.split(",");
+          const x = Number(xs);
+          const y = Number(ys);
+          if (Number.isFinite(x) && Number.isFinite(y)) {
+            ctx.fillStyle = val;
+            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+    });
+    return unsub;
+  }, [cellSize]);
 
   // 背景棋盘：#d9d9d9 与 #ffffff，每个显示格内再细分为 2x2 小方块
   useEffect(() => {

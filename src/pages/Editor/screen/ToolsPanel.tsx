@@ -1,4 +1,5 @@
-import { useEditorStore } from "@/stores/editorStore";
+import { useEditorDataStore } from "@/stores/editorDataStore";
+import { useEditorUIStore } from "@/stores/editorUIStore";
 import { TOOLS } from "@/utils/constants";
 import { Button, ColorPicker } from "antd";
 import type { Color } from "antd/es/color-picker";
@@ -8,14 +9,14 @@ import styles from "../index.module.less";
 
 const ToolsPanel: React.FC = () => {
   const { t } = useTranslation("editor");
-  const tool = useEditorStore((s) => s.tool);
-  const color = useEditorStore((s) => s.color);
-  const setTool = useEditorStore((s) => s.setTool);
-  const setColor = useEditorStore((s) => s.setColor);
-  const opIndex = useEditorStore((s) => s.opIndex);
-  const opsLen = useEditorStore((s) => s.ops.length);
-  const undo = useEditorStore((s) => s.undo);
-  const redo = useEditorStore((s) => s.redo);
+  const tool = useEditorUIStore((s) => s.tool);
+  const color = useEditorUIStore((s) => s.color);
+  const setTool = useEditorUIStore((s) => s.setTool);
+  const setColor = useEditorUIStore((s) => s.setColor);
+  const opIndex = useEditorDataStore((s) => s.opIndex);
+  const opsLen = useEditorDataStore((s) => s.ops.length);
+  const undo = useEditorDataStore((s) => s.undo);
+  const redo = useEditorDataStore((s) => s.redo);
 
   const [localColor, setLocalColor] = useState(color);
 
