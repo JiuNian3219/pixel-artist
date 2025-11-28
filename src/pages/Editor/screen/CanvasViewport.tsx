@@ -838,8 +838,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         }
       };
 
-      // 1. 撤销: OpIndex 减小
-      if (state.opIndex < prevState.opIndex) {
+      // 1. 撤销: OpIndex 减小 且 Ops 列表引用未变
+      if (state.opIndex < prevState.opIndex && state.ops === prevState.ops) {
         for (let i = prevState.opIndex; i > state.opIndex; i--) {
           const op = prevState.ops[i];
           if (!op) continue;

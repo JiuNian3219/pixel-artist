@@ -32,7 +32,6 @@ interface EditorDataStoreActions {
   setColumns: (columns: number) => void;
   setOriginalSize: (width: number, height: number) => void;
   setFilename: (name?: string) => void;
-  setPixels: (pixels: Record<string, string>) => void;
   /** 不触发 React 渲染，自动触发防抖保存 */
   mutatePixels: (entries: [string, string | null][]) => void;
   /** 手动触发一次状态更新以保存数据 */
@@ -63,8 +62,15 @@ export const useEditorDataStore = create<
     (set, get) => {
       // 将 runtimePixels 直接存入 IDB，绕过 Zustand 状态更新，避免触发 React 渲染
       const debouncedSave = debounce(() => {
+        console.log("debouncedSave", runtimePixels);
         setIDB(PIXELS_STORAGE_KEY, runtimePixels);
       }, 1000);
+
+      // 立即保存 runtimePixels 到 IndexedDB
+      const savePixelsNow = () => {
+        debouncedSave.cancel();
+        return setIDB(PIXELS_STORAGE_KEY, runtimePixels);
+      };
 
       return {
         rows: INITIAL_ROWS,
@@ -80,12 +86,6 @@ export const useEditorDataStore = create<
         setOriginalSize: (width, height) =>
           set({ originalWidth: width, originalHeight: height }),
         setFilename: (name) => set({ filename: name }),
-
-        setPixels: (pixels) => {
-          runtimePixels.clear();
-          Object.entries(pixels).forEach(([k, v]) => runtimePixels.set(k, v));
-          debouncedSave();
-        },
 
         mutatePixels: (entries) => {
           for (const [key, val] of entries) {
@@ -145,14 +145,14 @@ export const useEditorDataStore = create<
           }),
         createCanvas: (rows, columns, filename) => {
           runtimePixels.clear();
-          debouncedSave();
+          savePixelsNow();
+
           set((state) => ({
             rows,
             columns,
             filename,
             originalWidth: 0,
             originalHeight: 0,
-            pixels: {},
             ops: [],
             opIndex: -1,
             dataVersion: state.dataVersion + 1,
@@ -165,7 +165,8 @@ export const useEditorDataStore = create<
               runtimePixels.set(k, v)
             );
           }
-          debouncedSave();
+          savePixelsNow();
+
           set((state) => ({
             rows: p.rows,
             columns: p.columns,
@@ -184,7 +185,8 @@ export const useEditorDataStore = create<
         },
         clearCanvas: () => {
           runtimePixels.clear();
-          debouncedSave();
+          savePixelsNow();
+
           set((state) => ({
             rows: INITIAL_ROWS,
             columns: INITIAL_COLUMNS,
