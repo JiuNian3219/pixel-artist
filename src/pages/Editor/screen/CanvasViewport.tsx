@@ -5,6 +5,7 @@ import {
   MOUSE_BUTTON,
   parseColorString,
   rgbaEqual,
+  scanlineFloodFill,
 } from "@/pages/Editor/utils";
 import { runtimePixels, useEditorDataStore } from "@/stores/editorDataStore";
 import { useEditorUIStore } from "@/stores/editorUIStore";
@@ -558,31 +559,22 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         if (startColor === color) return; // 与目标色相同，跳过
       }
 
-      const visited = new Uint8Array(rows * columns);
-      const stack: Point[] = [cell];
+      const match = (x: number, y: number) => {
+        const k = `${x},${y}`;
+        const c = runtimePixels.get(k);
+        return c === startColor;
+      };
 
-      while (stack.length) {
-        const p = stack.pop()!;
-        const idx = p.y * columns + p.x;
-        if (visited[idx]) continue;
-        visited[idx] = 1;
-
-        const currentKey = `${p.x},${p.y}`;
-        const currentColor = runtimePixels.get(currentKey);
-
-        if (currentColor !== startColor) continue;
-
+      const onFill = (x: number, y: number) => {
         if (isErase) {
-          clearCell(ctx, p.x, p.y);
+          clearCell(ctx, x, y);
         } else {
-          paintCell(ctx, p.x, p.y, color || "#000000");
+          paintCell(ctx, x, y, color);
         }
-        // 4-邻域
-        if (p.x + 1 < columns) stack.push({ x: p.x + 1, y: p.y });
-        if (p.x - 1 >= 0) stack.push({ x: p.x - 1, y: p.y });
-        if (p.y + 1 < rows) stack.push({ x: p.x, y: p.y + 1 });
-        if (p.y - 1 >= 0) stack.push({ x: p.x, y: p.y - 1 });
-      }
+      };
+
+      scanlineFloodFill(cell.x, cell.y, columns, rows, match, onFill);
+
       return;
     }
 

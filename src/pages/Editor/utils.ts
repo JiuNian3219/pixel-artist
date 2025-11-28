@@ -142,3 +142,91 @@ export const getContrastColorForRGBA = (rgba: {
   const lum = 0.299 * rgba.r + 0.587 * rgba.g + 0.114 * rgba.b;
   return lum > 128 ? "#000000" : "#ffffff";
 };
+
+/**
+ * 扫描线填充算法
+ * @param startX 起始 X 坐标
+ * @param startY 起始 Y 坐标
+ * @param width 画布宽度
+ * @param height 画布高度
+ * @param match 匹配函数，判断坐标 (x, y) 是否应该被填充
+ * @param onFill 填充回调，当坐标 (x, y) 被确认为需要填充时调用
+ * @param maxPixels 最大填充像素数（可选，防止无限循环或用于预览限制）
+ */
+export function scanlineFloodFill(
+  startX: number,
+  startY: number,
+  width: number,
+  height: number,
+  match: (x: number, y: number) => boolean,
+  onFill: (x: number, y: number) => void,
+  maxPixels?: number
+) {
+  if (startX < 0 || startX >= width || startY < 0 || startY >= height) return;
+  if (!match(startX, startY)) return;
+
+  const visited = new Uint8Array(width * height);
+  const stack: number[] = [startX, startY];
+  let filledCount = 0;
+
+  const getIdx = (x: number, y: number) => y * width + x;
+
+  while (stack.length > 0) {
+    const y = stack.pop()!;
+    let x = stack.pop()!;
+
+    let idx = getIdx(x, y);
+    if (visited[idx]) continue;
+
+    // 向左寻找当前段的起点
+    while (x > 0) {
+      const leftIdx = getIdx(x - 1, y);
+      if (!visited[leftIdx] && match(x - 1, y)) {
+        x--;
+      } else {
+        break;
+      }
+    }
+
+    let spanAbove = false;
+    let spanBelow = false;
+
+    // 向右扫描并填充
+    while (x < width) {
+      idx = getIdx(x, y);
+      if (visited[idx] || !match(x, y)) break;
+
+      // 填充当前点
+      visited[idx] = 1;
+      onFill(x, y);
+      filledCount++;
+      if (maxPixels && filledCount > maxPixels) return;
+
+      // 检查上方行
+      if (y > 0) {
+        const upIdx = getIdx(x, y - 1);
+        const canFillUp = !visited[upIdx] && match(x, y - 1);
+        if (!spanAbove && canFillUp) {
+          stack.push(x, y - 1);
+          spanAbove = true;
+        } else if (spanAbove && !canFillUp) {
+          spanAbove = false;
+        }
+      }
+
+      // 检查下方行
+      if (y < height - 1) {
+        const downIdx = getIdx(x, y + 1);
+        const canFillDown = !visited[downIdx] && match(x, y + 1);
+        if (!spanBelow && canFillDown) {
+          stack.push(x, y + 1);
+          spanBelow = true;
+        } else if (spanBelow && !canFillDown) {
+          spanBelow = false;
+        }
+      }
+
+      x++;
+    }
+  }
+}
