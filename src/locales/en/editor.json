@@ -1,0 +1,61 @@
+{
+  "canvas_viewport": {},
+  "tools_panel": {
+    "pencil": "Pencil",
+    "eraser": "Eraser",
+    "fill": "Fill",
+    "picker": "Picker",
+    "drag": "Drag",
+    "color_picker": "Color Picker",
+    "back": "Back",
+    "next": "Next"
+  },
+  "configs_panel": {
+    "canvas_size": "Canvas Size (H × W)",
+    "pencil_size": "Pencil Size",
+    "auto_complete": "Auto Complete",
+    "auto_complete_tooltip": "When enabled, the canvas will be automatically extended to align with the pixel grid, filling any empty spaces with transparent pixels. This ensures that each pixel block is rendered completely, regardless of the source image's size.",
+    "create_button": "Create Canvas",
+    "export_config": "Export Config",
+    "save_button": "Save to Local (PNG)",
+    "painting_config": "Painting Config",
+    "picker_switch_to_pencil": "Switch to Last Used Tool",
+    "picker_switch_to_pencil_tooltip": "When enabled, the picker tool will switch to the last used tool after picking a color, allowing for immediate painting.",
+    "create_model": {
+      "title": "Create Canvas",
+      "rows_and_columns": "Height × Width",
+      "rows_required": "Please enter height",
+      "rows_min": "Minimum height is {{min}}",
+      "rows_max": "Maximum height is {{max}}",
+      "columns_required": "Please enter width",
+      "columns_min": "Minimum width is {{min}}",
+      "columns_max": "Maximum width is {{max}}",
+      "filename": "Filename (optional)",
+      "create_button": "Create",
+      "cancel_button": "Cancel",
+      "filename_placeholder": "e.g. pixel-art",
+      "warning": "Current canvas will be overwritten. Continue?"
+    },
+    "clear_button": "Clear Canvas",
+    "clear_modal": {
+      "title": "Clear Canvas",
+      "content": "Are you sure you want to clear the current canvas? All pixels on the canvas will be erased, and this action cannot be undone. Do you want to continue?",
+      "ok_text": "Confirm",
+      "cancel_text": "Cancel"
+    }
+  },
+  "palette_selector": {
+    "title": "Palette Selector"
+  },
+  "common": {
+    "operation_hint": "Pencil: B\nPencil Size: [ ]\nEraser: E/Right Click\nFill: G\nPicker: I\nDrag: V/Middle Click\nBack: Ctrl + Z\nNext: Ctrl + Shift + Z",
+    "empty": {
+      "title": "Canvas is Empty",
+      "hint": "Please create a new canvas or load a pixel art from the creator."
+    },
+    "return": {
+      "button": "Back to Home",
+      "hint": "Mobile version does not support editing. Whether to return to the home page?"
+    }
+  }
+}

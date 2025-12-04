@@ -21,9 +21,10 @@ const PaletteSelector: React.FC<PaletteSelectProps> = ({
   previewEnabled = false,
 }) => {
   const { t } = useTranslation("creator");
+  const { t: paletteT } = useTranslation("common");
   const currentPalette = getPaletteById(value);
   const extendMode = useCreatorLocalStore((state) => state.extendMode);
-  const paletteOptions = getPaletteOptions(t);
+  const paletteOptions = getPaletteOptions(paletteT);
 
   return (
     <div

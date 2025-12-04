@@ -29,6 +29,12 @@
     "upload_hint": "请先上传图片",
     "upload_after_hint": "点击“转换为像素画”按钮生成像素画",
     "save_button": "保存到本地",
+    "edit_button": "编辑图片",
+    "overwrite_confirm_title": "覆盖当前画布？",
+    "overwrite_confirm_content": "检测到编辑器已有内容，继续将覆盖当前画布。是否继续？",
+    "overwrite_confirm_ok": "继续",
+    "overwrite_confirm_cancel": "取消",
+    "max_size_hint": "图片尺寸超过最大限制 {{maxRows}} 行 {{maxColumns}} 列。请减小图片尺寸或调整网格尺寸。",
     "columns": {
       "1": "单列",
       "2": "双列",
@@ -50,14 +56,5 @@
     "median": "中值采样",
     "weightedByLuminance": "加权平均（亮度）采样",
     "weightedBySaturation": "加权平均（饱和度）采样"
-  },
-  "palettes": {
-    "All-Colors": "全色调色板",
-    "16-Bit": "16-bit (16色)",
-    "DawnBringer-16": "DawnBringer 16 (16色)",
-    "DawnBringer-32": "DawnBringer 32 (32色)",
-    "Pico-8": "Pico-8 (16色)",
-    "Arne-16": "Arne 16 (16色)",
-    "NES-54": "NES (54色)"
   }
 }

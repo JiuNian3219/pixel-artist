@@ -29,6 +29,12 @@
     "upload_hint": "Please upload an image first",
     "upload_after_hint": "Click the 'Convert to Pixel Art' button to generate pixel art",
     "save_button": "Save to Local",
+    "edit_button": "Edit Image",
+    "overwrite_confirm_title": "Overwrite current canvas?",
+    "overwrite_confirm_content": "Detected existing content in the editor. Continuing will overwrite the current canvas. Proceed?",
+    "overwrite_confirm_ok": "Continue",
+    "overwrite_confirm_cancel": "Cancel",
+    "max_size_hint": "The image size exceeds the maximum limit of {{maxRows}} rows and {{maxColumns}} columns. Please reduce the image size or adjust the grid size.",
     "columns": {
       "1": "Single Column",
       "2": "Double Column",
@@ -50,14 +56,5 @@
     "median": "Median Color",
     "weightedByLuminance": "Weighted (Luminance)",
     "weightedBySaturation": "Weighted (Saturation)"
-  },
-  "palettes": {
-    "All-Colors": "All Colors Palette",
-    "16-Bit": "16-bit (16 Colors)",
-    "DawnBringer-16": "DawnBringer 16 (16 Colors)",
-    "DawnBringer-32": "DawnBringer 32 (32 Colors)",
-    "Pico-8": "Pico-8 (16 Colors)",
-    "Arne-16": "Arne 16 (16 Colors)",
-    "NES-54": "NES (54 Colors)"
   }
 }

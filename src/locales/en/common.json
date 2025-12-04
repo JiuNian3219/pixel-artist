@@ -1,7 +1,8 @@
 {
   "nav": {
     "home": "Home",
-    "creator": "Creator"
+    "creator": "Creator",
+    "editor": "Editor"
   },
   "actions": {
     "start": "Start Creating",
@@ -18,5 +19,14 @@
   },
   "footer": {
     "description": "Pixel Artist is an online pixel art creator that processes images entirely in the browser, without server support."
+  },
+  "palettes": {
+    "All-Colors": "All Colors Palette",
+    "16-Bit": "16-bit (16 Colors)",
+    "DawnBringer-16": "DawnBringer 16 (16 Colors)",
+    "DawnBringer-32": "DawnBringer 32 (32 Colors)",
+    "Pico-8": "Pico-8 (16 Colors)",
+    "Arne-16": "Arne 16 (16 Colors)",
+    "NES-54": "NES (54 Colors)"
   }
 }

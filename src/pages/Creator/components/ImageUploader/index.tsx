@@ -183,7 +183,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           className={styles.preview}
           ref={previewRef}
         >
-          {(!isEmpty(previewUrl) || uploading) && (
+          {!isEmpty(previewUrl) && (
             <PixelGrid
               imageWidth={imageNaturalSize.width}
               imageHeight={imageNaturalSize.height}
@@ -192,13 +192,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
               <Image
                 className={styles.previewImage}
                 src={previewUrl}
-                style={{
-                  filter: uploading ? "blur(2px) brightness(0.8)" : "none",
-                  transition: "filter 0.3s",
-                  height: previewHeight,
-                }}
+                height={previewHeight}
                 onLoad={handleImageLoad}
-                fallback=""
               />
               <Button
                 title={t("common.show_pixel_grid")}
@@ -217,12 +212,20 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             </PixelGrid>
           )}
           {uploading && (
-            <Progress
-              percent={uploadProgress}
-              status="active"
-              className={styles.uploadProgress}
-              showInfo={false}
-            />
+            <>
+              <div
+                className={styles.uploadingPreview}
+                style={{
+                  height: previewHeight,
+                }}
+              ></div>
+              <Progress
+                percent={uploadProgress}
+                status="active"
+                className={styles.uploadProgress}
+                showInfo={false}
+              />
+            </>
           )}
         </div>
       )}

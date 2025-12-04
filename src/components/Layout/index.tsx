@@ -39,6 +39,12 @@ const Layout: React.FC = () => {
         <Link to={withLocalePath(locale, "/creator")}>{t("nav.creator")}</Link>
       ),
     },
+    {
+      key: withLocalePath(locale, "/editor"),
+      label: (
+        <Link to={withLocalePath(locale, "/editor")}>{t("nav.editor")}</Link>
+      ),
+    },
   ];
 
   const handleLogoClick = () => {
@@ -51,6 +57,8 @@ const Layout: React.FC = () => {
       i18n.changeLanguage(locale);
     }
   }, [locale, i18n]);
+
+  const hideFooter = location.pathname.endsWith("/editor");
 
   return (
     <>
@@ -89,24 +97,26 @@ const Layout: React.FC = () => {
         <Content className={styles.content}>
           <Outlet />
         </Content>
-        <Footer className={styles.footer}>
-          <span>{t("footer.description")}</span>
-          <span>
-            <span>Pixel Artist ©{new Date().getFullYear()}</span>
-            <span className={styles.separator}> · </span>
-            <Space>
-              <GithubOutlined />
-              <a
-                href="https://github.com/JiuNian3219/pixel-artist"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.footerLink}
-              >
-                GitHub
-              </a>
-            </Space>
-          </span>
-        </Footer>
+        {!hideFooter && (
+          <Footer className={styles.footer}>
+            <span>{t("footer.description")}</span>
+            <span>
+              <span>Pixel Artist ©{new Date().getFullYear()}</span>
+              <span className={styles.separator}> · </span>
+              <Space>
+                <GithubOutlined />
+                <a
+                  href="https://github.com/JiuNian3219/pixel-artist"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.footerLink}
+                >
+                  GitHub
+                </a>
+              </Space>
+            </span>
+          </Footer>
+        )}
       </AntdLayout>
     </>
   );

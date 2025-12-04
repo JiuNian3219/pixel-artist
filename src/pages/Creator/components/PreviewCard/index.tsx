@@ -1,19 +1,23 @@
-import { MAX_PREVIEW_HEIGHT, MIN_PREVIEW_HEIGHT } from "@/utils/constants";
-import { DownloadOutlined } from "@ant-design/icons";
-import { Button, Image, Row, Tag } from "antd";
+import GlobalLoadingOverlay from "@/components/GlobalLoadingOverlay";
+import { useCreatorLocalStore } from "@/stores/creatorStore";
+import { useEditorDataStore } from "@/stores/editorDataStore";
+import {
+  MAX_COLUMNS,
+  MAX_PREVIEW_HEIGHT,
+  MAX_ROWS,
+  MIN_PREVIEW_HEIGHT,
+} from "@/utils/constants";
+import { parseDataUrlToGridPixels } from "@/utils/image";
+import { DownloadOutlined, EditOutlined } from "@ant-design/icons";
+import { Button, Image, message, Modal, Row, Tag } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { TAG_COLORS } from "../../utils";
 import PixelGrid from "../PixelGrid";
 import styles from "./index.module.less";
 
-// Tags 颜色序列
-const TAG_COLORS = [
-  "rgba(255, 99, 71, 0.8)",
-  "rgba(255, 165, 0, 0.8)",
-  "rgba(0, 128, 0, 0.8)",
-  "rgba(0, 0, 255, 0.8)",
-  "rgba(128, 0, 128, 0.8)",
-];
+type ButtonPlacement = "top" | "bottom";
 
 interface PreviewCardProps {
   originalFile: File | null;
@@ -21,7 +25,9 @@ interface PreviewCardProps {
   defaultPreviewHeight?: number;
   showPixelGrid: boolean;
   showSaveButton?: boolean;
-  saveButtonPlacement?: "top" | "bottom";
+  saveButtonPlacement?: ButtonPlacement;
+  showEditButton?: boolean;
+  editButtonPlacement?: ButtonPlacement;
   showResizeHandle?: boolean;
   tags?: string[];
 }
@@ -33,10 +39,20 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   showPixelGrid,
   showSaveButton = true,
   saveButtonPlacement = "top",
+  showEditButton = true,
+  editButtonPlacement = "top",
   showResizeHandle = false,
   tags = [],
 }) => {
   const { t } = useTranslation("creator");
+  const navigate = useNavigate();
+  const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
+  const initializeFromPixelated = useEditorDataStore(
+    (s) => s.initializeFromPixelated
+  );
+  const [processing, setProcessing] = useState(false);
+  const pixelSize = useCreatorLocalStore((s) => s.pixelSize);
+  const paletteName = useCreatorLocalStore((s) => s.paletteName);
   const [previewHeight, setPreviewHeight] =
     useState<number>(defaultPreviewHeight);
   const [imageNaturalSize, setImageNaturalSize] = useState<{
@@ -86,6 +102,61 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
     );
   };
 
+  const handleEditImage = async () => {
+    if (!pixelatedImage || !originalFile) return;
+    const rows = Math.max(1, Math.ceil(imageNaturalSize.height / pixelSize));
+    const columns = Math.max(1, Math.ceil(imageNaturalSize.width / pixelSize));
+    if (rows > MAX_ROWS || columns > MAX_COLUMNS) {
+      message.error(
+        t("preview_panel.max_size_hint", {
+          maxRows: MAX_ROWS,
+          maxColumns: MAX_COLUMNS,
+        })
+      );
+      return;
+    }
+
+    const proceed = async () => {
+      try {
+        setProcessing(true);
+        const pixels = await parseDataUrlToGridPixels(
+          pixelatedImage,
+          rows,
+          columns,
+          pixelSize
+        );
+        initializeFromPixelated({
+          rows,
+          columns,
+          filename: originalFile.name,
+          pixelSize,
+          paletteName,
+          originalWidth: imageNaturalSize.width,
+          originalHeight: imageNaturalSize.height,
+          pixels,
+        });
+        navigate("../editor");
+      } catch (err) {
+        console.error(err);
+        message.error("解析像素失败，请重试");
+      } finally {
+        setProcessing(false);
+      }
+    };
+
+    if (hasCanvas) {
+      Modal.confirm({
+        title: t("preview_panel.overwrite_confirm_title"),
+        content: t("preview_panel.overwrite_confirm_content"),
+        okText: t("preview_panel.overwrite_confirm_ok"),
+        cancelText: t("preview_panel.overwrite_confirm_cancel"),
+        onOk: proceed,
+      });
+    } else {
+      await proceed();
+    }
+  };
+
   // 获取图片原始尺寸
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.target as HTMLImageElement;
@@ -94,6 +165,7 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
 
   return (
     <>
+      <GlobalLoadingOverlay visible={processing} />
       <div
         className={styles.previewCard}
         onWheel={handlePreviewWheel}
@@ -107,7 +179,6 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
             <Image
               className={styles.previewImage}
               src={pixelatedImage}
-              fallback=""
               style={{ height: previewHeight }}
               onLoad={handleImageLoad}
             />
@@ -126,6 +197,16 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
             className={styles.previewResizeHandle}
             onMouseDown={handleResizerMouseDown}
           />
+        )}
+
+        {showEditButton && editButtonPlacement === "top" && (
+          <Button
+            title={t("preview_panel.edit_button")}
+            className={styles.topEditButton}
+            icon={<EditOutlined />}
+            disabled={!pixelatedImage}
+            onClick={handleEditImage}
+          ></Button>
         )}
 
         {showSaveButton && saveButtonPlacement === "top" && (
@@ -164,8 +245,22 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
           </Button>
         </Row>
       )}
+      {showEditButton && editButtonPlacement === "bottom" && (
+        <Row className={styles.actionRow}>
+          <Button
+            title={t("preview_panel.edit_button")}
+            type="primary"
+            className={styles.editButton}
+            disabled={!pixelatedImage}
+            onClick={handleEditImage}
+          >
+            {t("preview_panel.edit_button")}
+          </Button>
+        </Row>
+      )}
     </>
   );
 };
 
 export default PreviewCard;
+
