@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "prebuild": "node scripts/generate-sitemap.mjs --mode=production && node scripts/generate-robots.mjs --mode=production",
+    "prebuild": "node scripts/generate-sitemap.mjs --mode=production && node scripts/generate-robots.mjs --mode=production && node scripts/generate-bing-auth.mjs --mode=production",
     "postbuild": "react-snap",
     "lint": "eslint .",
     "preview": "vite preview"
