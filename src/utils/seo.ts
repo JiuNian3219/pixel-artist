@@ -169,7 +169,13 @@ export const getDefaultSEO = (): SEOConfig => ({
 
 // 根据当前路径与语言解析 SEO 配置
 export function normalizeBasePath(pathname: string): PageKey | string {
-  return pathname.replace(/^\/(zh|en)(\/|$)/, '/') as PageKey;
+  // 移除语言前缀 (e.g., /zh/editor -> /editor, /en/ -> /)
+  let path = pathname.replace(/^\/(zh|en)(\/|$)/, '/');
+  // 移除尾部斜杠 (e.g., /editor/ -> /editor), 保留根路径 /
+  if (path.length > 1 && path.endsWith('/')) {
+    path = path.slice(0, -1);
+  }
+  return path as PageKey;
 }
 
 export const resolveSEOByPath = (
