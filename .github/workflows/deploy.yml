@@ -78,9 +78,8 @@ jobs:
             echo "Stop & remove old container if exists"
             docker rm -f pixel-artist || true
             echo "Run new container on caddy_net"
-          docker run -d \
-            --name pixel-artist \
-            --restart unless-stopped \
-            --network caddy_net \
-            ${{ env.REGISTRY_IMAGE }}
-
+            docker run -d \
+              --name pixel-artist \
+              --restart unless-stopped \
+              --network caddy_net \
+              ${{ env.REGISTRY_IMAGE }}
