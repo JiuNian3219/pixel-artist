@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "prebuild": "node scripts/generate-sitemap.mjs --mode=production && node scripts/generate-robots.mjs --mode=production && node scripts/generate-bing-auth.mjs --mode=production",
-    "postbuild": "react-snap",
+    "postbuild": "node scripts/prerender.mjs",
     "lint": "eslint .",
     "lint:style": "stylelint \"src/**/*.{css,less}\"",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,md,css,less}\"",
@@ -72,21 +72,6 @@
     ],
     "*.{json,md}": [
       "prettier --write"
-    ]
-  },
-  "reactSnap": {
-    "source": "dist",
-    "include": [
-      "/zh/",
-      "/en/",
-      "/zh/creator",
-      "/en/creator",
-      "/zh/editor",
-      "/en/editor"
-    ],
-    "puppeteerArgs": [
-      "--no-sandbox",
-      "--disable-setuid-sandbox"
     ]
   }
 }
