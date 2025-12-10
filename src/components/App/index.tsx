@@ -1,13 +1,12 @@
 import '@/locales';
 import router from '@/routes';
-import { antdTheme } from '@/utils/theme';
 import { normalizeLocale } from '@/utils/locale';
+import { antdTheme } from '@/utils/theme';
 import { ConfigProvider } from 'antd';
 import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
 import { useTranslation } from 'react-i18next';
 import { RouterProvider } from 'react-router-dom';
-import Analytics from '../Analytics';
 
 const antdLocaleMap = {
   zh: zhCN,
@@ -22,7 +21,6 @@ const App = () => {
 
   return (
     <ConfigProvider theme={antdTheme} locale={antdLocale}>
-      <Analytics />
       <RouterProvider router={router} />
     </ConfigProvider>
   );
