@@ -1,25 +1,25 @@
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   LOCALES,
   parseLocaleFromPath,
   stripLocaleFromPath,
   withLocalePath,
-} from "@/utils/locale";
-import { GlobalOutlined } from "@ant-design/icons";
-import type { MenuProps } from "antd";
-import { Button, Dropdown } from "antd";
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router-dom";
-import styles from "./index.module.less";
+} from '@/utils/locale';
+import { GlobalOutlined } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import { Button, Dropdown } from 'antd';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
+import styles from './index.module.less';
 
 const LanguageSwitcher: React.FC = () => {
-  const { i18n, t } = useTranslation("common");
+  const { i18n, t } = useTranslation('common');
   const navigate = useNavigate();
   const location = useLocation();
   const currentLocale = parseLocaleFromPath(location.pathname);
   const isMobile = useIsMobile();
-  const handleLanguageChange = (language: "zh" | "en") => {
+  const handleLanguageChange = (language: 'zh' | 'en') => {
     const basePath = stripLocaleFromPath(location.pathname);
     navigate(withLocalePath(language, basePath) + location.search, {
       replace: true,
@@ -27,7 +27,7 @@ const LanguageSwitcher: React.FC = () => {
     i18n.changeLanguage(language);
   };
 
-  const items: MenuProps["items"] = LOCALES.map((lng) => ({
+  const items: MenuProps['items'] = LOCALES.map((lng) => ({
     key: lng,
     label: t(`language.names.${lng}`),
     onClick: () => handleLanguageChange(lng),
@@ -37,13 +37,13 @@ const LanguageSwitcher: React.FC = () => {
     <Dropdown
       menu={{ items, selectedKeys: [currentLocale] }}
       placement="bottomRight"
-      trigger={["click"]}
+      trigger={['click']}
       className={styles.languageSwitcher}
     >
       <Button
         type="text"
         icon={<GlobalOutlined />}
-        title={t("language.switch")}
+        title={t('language.switch')}
       >
         {!isMobile && t(`language.names.${currentLocale}`)}
       </Button>

@@ -1,5 +1,5 @@
-import { useEditorDataStore } from "@/stores/editorDataStore";
-import { useEditorUIStore } from "@/stores/editorUIStore";
+import { useEditorDataStore } from '@/stores/editorDataStore';
+import { useEditorUIStore } from '@/stores/editorUIStore';
 import {
   DEFAULT_COLUMNS,
   DEFAULT_ROWS,
@@ -9,8 +9,8 @@ import {
   MIN_COLUMNS,
   MIN_PENCIL_SIZE,
   MIN_ROWS,
-} from "@/utils/constants";
-import { QuestionCircleOutlined } from "@ant-design/icons";
+} from '@/utils/constants';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import {
   Button,
   Checkbox,
@@ -23,19 +23,19 @@ import {
   Space,
   Tooltip,
   Typography,
-} from "antd";
-import type { CheckboxChangeEvent } from "antd/lib";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import PaletteSelector from "../components/PaletteSelector";
-import styles from "../index.module.less";
+} from 'antd';
+import type { CheckboxChangeEvent } from 'antd/lib';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import PaletteSelector from '../components/PaletteSelector';
+import styles from '../index.module.less';
 
 interface ConfigsPanelProps {
   onExport: () => void;
 }
 
 const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
-  const { t } = useTranslation("editor");
+  const { t } = useTranslation('editor');
   const rows = useEditorDataStore((s) => s.rows);
   const columns = useEditorDataStore((s) => s.columns);
   const autoComplete = useEditorUIStore((s) => s.autoComplete);
@@ -63,7 +63,7 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
     form.setFieldsValue({
       rows: DEFAULT_ROWS,
       columns: DEFAULT_COLUMNS,
-      filename: "",
+      filename: '',
     });
     setShowSetup(true);
   };
@@ -98,11 +98,11 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
 
   const handleClearCanvas = () => {
     Modal.confirm({
-      title: t("configs_panel.clear_modal.title"),
-      content: t("configs_panel.clear_modal.content"),
-      okText: t("configs_panel.clear_modal.ok_text"),
-      okType: "danger",
-      cancelText: t("configs_panel.clear_modal.cancel_text"),
+      title: t('configs_panel.clear_modal.title'),
+      content: t('configs_panel.clear_modal.content'),
+      okText: t('configs_panel.clear_modal.ok_text'),
+      okType: 'danger',
+      cancelText: t('configs_panel.clear_modal.cancel_text'),
       onOk: clearCanvas,
     });
   };
@@ -114,7 +114,7 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
         onClick={openCreateCanvasModal}
         className={styles.createButton}
       >
-        {t("configs_panel.create_button")}
+        {t('configs_panel.create_button')}
       </Button>
 
       {/* 画布尺寸 */}
@@ -123,11 +123,8 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
         align="center"
         className={styles.configBase}
       >
-        <Typography.Title
-          level={5}
-          style={{ margin: 0 }}
-        >
-          {t("configs_panel.canvas_size")}
+        <Typography.Title level={5} style={{ margin: 0 }}>
+          {t('configs_panel.canvas_size')}
         </Typography.Title>
         <Typography.Text strong>
           {rows || 0} × {columns || 0}
@@ -140,11 +137,8 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
         align="center"
         className={styles.configBase}
       >
-        <Typography.Title
-          level={5}
-          style={{ margin: 0 }}
-        >
-          {t("configs_panel.pencil_size")}
+        <Typography.Title level={5} style={{ margin: 0 }}>
+          {t('configs_panel.pencil_size')}
         </Typography.Title>
         <Typography.Text strong>{pencilSize}</Typography.Text>
       </Flex>
@@ -158,16 +152,10 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
       </div>
 
       {/* 调色板 */}
-      <PaletteSelector
-        value={paletteName}
-        onChange={handlePaletteChange}
-      />
+      <PaletteSelector value={paletteName} onChange={handlePaletteChange} />
 
-      <Typography.Title
-        level={5}
-        style={{ margin: 0 }}
-      >
-        {t("configs_panel.painting_config")}
+      <Typography.Title level={5} style={{ margin: 0 }}>
+        {t('configs_panel.painting_config')}
       </Typography.Title>
       {/* 拾色切换 */}
       <Space>
@@ -175,28 +163,22 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
           checked={pickerSwitchToPencil}
           onChange={togglePickerSwitchToPencil}
         >
-          {t("configs_panel.picker_switch_to_pencil")}
+          {t('configs_panel.picker_switch_to_pencil')}
         </Checkbox>
-        <Tooltip title={t("configs_panel.picker_switch_to_pencil_tooltip")}>
+        <Tooltip title={t('configs_panel.picker_switch_to_pencil_tooltip')}>
           <QuestionCircleOutlined />
         </Tooltip>
       </Space>
 
-      <Typography.Title
-        level={5}
-        style={{ margin: 0 }}
-      >
-        {t("configs_panel.export_config")}
+      <Typography.Title level={5} style={{ margin: 0 }}>
+        {t('configs_panel.export_config')}
       </Typography.Title>
       {/** 导出时自动填充画布边缘 */}
       <Space>
-        <Checkbox
-          checked={autoComplete}
-          onChange={toggleAutoComplete}
-        >
-          {t("configs_panel.auto_complete")}
+        <Checkbox checked={autoComplete} onChange={toggleAutoComplete}>
+          {t('configs_panel.auto_complete')}
         </Checkbox>
-        <Tooltip title={t("configs_panel.auto_complete_tooltip")}>
+        <Tooltip title={t('configs_panel.auto_complete_tooltip')}>
           <QuestionCircleOutlined />
         </Tooltip>
       </Space>
@@ -207,7 +189,7 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
         disabled={!onExport || !hasCanvas}
         className={styles.saveButton}
       >
-        {t("configs_panel.save_button")}
+        {t('configs_panel.save_button')}
       </Button>
       <div className={styles.clearButtonContainer}>
         <Button
@@ -216,27 +198,24 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
           disabled={!hasCanvas}
           className={styles.clearButton}
         >
-          {t("configs_panel.clear_button")}
+          {t('configs_panel.clear_button')}
         </Button>
       </div>
 
       <Modal
         open={showSetup}
-        title={t("configs_panel.create_model.title")}
-        okText={t("configs_panel.create_model.create_button")}
-        cancelText={t("configs_panel.create_model.cancel_button")}
+        title={t('configs_panel.create_model.title')}
+        okText={t('configs_panel.create_model.create_button')}
+        cancelText={t('configs_panel.create_model.cancel_button')}
         onOk={() => form.submit()}
         onCancel={() => {
           closeCreateCanvasModal();
           form.resetFields();
         }}
       >
-        <Form
-          form={form}
-          onFinish={handleCreateCanvas}
-        >
+        <Form form={form} onFinish={handleCreateCanvas}>
           <Form.Item
-            label={t("configs_panel.create_model.rows_and_columns")}
+            label={t('configs_panel.create_model.rows_and_columns')}
             required
           >
             <Space align="center">
@@ -245,29 +224,26 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
                 rules={[
                   {
                     required: true,
-                    message: t("configs_panel.create_model.rows_required"),
+                    message: t('configs_panel.create_model.rows_required'),
                   },
                   {
-                    type: "number",
+                    type: 'number',
                     min: MIN_ROWS,
-                    message: t("configs_panel.create_model.rows_min", {
+                    message: t('configs_panel.create_model.rows_min', {
                       min: MIN_ROWS,
                     }),
                   },
                   {
-                    type: "number",
+                    type: 'number',
                     max: MAX_ROWS,
-                    message: t("configs_panel.create_model.rows_max", {
+                    message: t('configs_panel.create_model.rows_max', {
                       max: MAX_ROWS,
                     }),
                   },
                 ]}
                 className={styles.rowsInput}
               >
-                <InputNumber
-                  min={MIN_ROWS}
-                  className={styles.numberInput}
-                />
+                <InputNumber min={MIN_ROWS} className={styles.numberInput} />
               </Form.Item>
               <span>x</span>
               <Form.Item
@@ -275,43 +251,40 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
                 rules={[
                   {
                     required: true,
-                    message: t("configs_panel.create_model.columns_required"),
+                    message: t('configs_panel.create_model.columns_required'),
                   },
                   {
-                    type: "number",
+                    type: 'number',
                     min: MIN_COLUMNS,
-                    message: t("configs_panel.create_model.columns_min", {
+                    message: t('configs_panel.create_model.columns_min', {
                       min: MIN_COLUMNS,
                     }),
                   },
                   {
-                    type: "number",
+                    type: 'number',
                     max: MAX_COLUMNS,
-                    message: t("configs_panel.create_model.columns_max", {
+                    message: t('configs_panel.create_model.columns_max', {
                       max: MAX_COLUMNS,
                     }),
                   },
                 ]}
                 className={styles.rowsInput}
               >
-                <InputNumber
-                  min={MIN_COLUMNS}
-                  className={styles.numberInput}
-                />
+                <InputNumber min={MIN_COLUMNS} className={styles.numberInput} />
               </Form.Item>
             </Space>
           </Form.Item>
           <Form.Item
-            label={t("configs_panel.create_model.filename")}
+            label={t('configs_panel.create_model.filename')}
             name="filename"
           >
             <Input
-              placeholder={t("configs_panel.create_model.filename_placeholder")}
+              placeholder={t('configs_panel.create_model.filename_placeholder')}
             />
           </Form.Item>
           {hasCanvas ? (
             <Typography.Text type="warning">
-              {t("configs_panel.create_model.warning")}
+              {t('configs_panel.create_model.warning')}
             </Typography.Text>
           ) : null}
         </Form>

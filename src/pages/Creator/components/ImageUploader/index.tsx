@@ -1,30 +1,30 @@
-import { useIsMobile } from "@/hooks/useIsMobile";
-import { useCreatorLocalStore } from "@/stores";
-import { MAX_PREVIEW_HEIGHT, MIN_PREVIEW_HEIGHT } from "@/utils/constants";
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useCreatorLocalStore } from '@/stores';
+import { MAX_PREVIEW_HEIGHT, MIN_PREVIEW_HEIGHT } from '@/utils/constants';
 import {
   BorderOutlined,
   InboxOutlined,
   UploadOutlined,
-} from "@ant-design/icons";
-import { Button, Image, Progress, Upload, message } from "antd";
-import Dragger from "antd/es/upload/Dragger";
-import { isEmpty } from "lodash";
-import { useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { isImageFile } from "../../utils";
-import PixelGrid from "../PixelGrid";
-import styles from "./index.module.less";
+} from '@ant-design/icons';
+import { Button, Image, Progress, Upload, message } from 'antd';
+import Dragger from 'antd/es/upload/Dragger';
+import { isEmpty } from 'lodash';
+import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { isImageFile } from '../../utils';
+import PixelGrid from '../PixelGrid';
+import styles from './index.module.less';
 
 interface ImageUploaderProps {
   onImageChange: (file: File | null, originalImage: string) => void;
-  mode?: "dragger" | "button";
+  mode?: 'dragger' | 'button';
   disabled?: boolean;
   originalImage?: string;
 }
 
 const baseUploadProps = {
   maxCount: 1,
-  accept: ".jpg,.jpeg,.png,.webp",
+  accept: '.jpg,.jpeg,.png,.webp',
   showUploadList: false,
 };
 
@@ -38,7 +38,7 @@ const baseUploadProps = {
  */
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   onImageChange,
-  mode = "dragger",
+  mode = 'dragger',
   disabled = false,
   originalImage,
 }) => {
@@ -56,17 +56,17 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     (state) => state.setShowControlPixelGrid
   );
   const previewRef = useRef<HTMLDivElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(originalImage || "");
+  const [previewUrl, setPreviewUrl] = useState<string>(originalImage || '');
   const isMobile = useIsMobile();
-  const { t } = useTranslation("creator");
+  const { t } = useTranslation('creator');
   const customRequest = ({ file, onSuccess, onProgress }: any) => {
     if (disabled) {
-      message.warning(t("common.pixelation_in_progress"));
+      message.warning(t('common.pixelation_in_progress'));
       return;
     }
     const rawFile = file as File;
     if (!isImageFile(rawFile)) {
-      message.error(t("image_uploader.type_error_message"));
+      message.error(t('image_uploader.type_error_message'));
       return;
     }
     setUploading(true);
@@ -105,7 +105,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     reader.onerror = () => {
       setUploading(false);
       message.error(
-        t("image_uploader.upload_failed_message", { name: rawFile.name })
+        t('image_uploader.upload_failed_message', { name: rawFile.name })
       );
     };
 
@@ -127,12 +127,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     };
 
     const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
     };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
   };
 
   const togglePixelGrid = () => {
@@ -147,28 +147,22 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   return (
     <>
-      {mode === "dragger" && (
-        <Dragger
-          {...baseUploadProps}
-          customRequest={customRequest}
-        >
+      {mode === 'dragger' && (
+        <Dragger {...baseUploadProps} customRequest={customRequest}>
           <div className={styles.uploadDragger}>
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
-            <p className="ant-upload-text">{t("image_uploader.hint")}</p>
-            <p className="ant-upload-hint">{t("image_uploader.tip")}</p>
+            <p className="ant-upload-text">{t('image_uploader.hint')}</p>
+            <p className="ant-upload-hint">{t('image_uploader.tip')}</p>
           </div>
         </Dragger>
       )}
 
-      {mode === "button" && (
-        <Upload
-          {...baseUploadProps}
-          customRequest={customRequest}
-        >
+      {mode === 'button' && (
+        <Upload {...baseUploadProps} customRequest={customRequest}>
           <Button
-            title={t("image_uploader.title")}
+            title={t('image_uploader.title')}
             shape="circle"
             type="dashed"
             icon={<UploadOutlined />}
@@ -178,11 +172,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         </Upload>
       )}
 
-      {mode === "dragger" && (
-        <div
-          className={styles.preview}
-          ref={previewRef}
-        >
+      {mode === 'dragger' && (
+        <div className={styles.preview} ref={previewRef}>
           {!isEmpty(previewUrl) && (
             <PixelGrid
               imageWidth={imageNaturalSize.width}
@@ -196,10 +187,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 onLoad={handleImageLoad}
               />
               <Button
-                title={t("common.show_pixel_grid")}
+                title={t('common.show_pixel_grid')}
                 onClick={togglePixelGrid}
                 icon={<BorderOutlined />}
-                type={showControlPixelGrid ? "primary" : "default"}
+                type={showControlPixelGrid ? 'primary' : 'default'}
                 size="small"
                 className={styles.previewGridButton}
               />

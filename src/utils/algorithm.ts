@@ -378,18 +378,18 @@ export const getPixelAlgorithm = (algorithm: string) => {
  */
 export const getPixelAlgorithmsOptions = (t: (key: string) => string) => [
   {
-    label: t("algorithms.contrastAwareDominant"),
-    value: "contrastAwareDominant",
+    label: t('algorithms.contrastAwareDominant'),
+    value: 'contrastAwareDominant',
   },
-  { label: t("algorithms.dominant"), value: "dominant" },
-  { label: t("algorithms.average"), value: "average" },
-  { label: t("algorithms.median"), value: "median" },
+  { label: t('algorithms.dominant'), value: 'dominant' },
+  { label: t('algorithms.average'), value: 'average' },
+  { label: t('algorithms.median'), value: 'median' },
   {
-    label: t("algorithms.weightedByLuminance"),
-    value: "weightedByLuminance",
+    label: t('algorithms.weightedByLuminance'),
+    value: 'weightedByLuminance',
   },
   {
-    label: t("algorithms.weightedBySaturation"),
-    value: "weightedBySaturation",
+    label: t('algorithms.weightedBySaturation'),
+    value: 'weightedBySaturation',
   },
 ];

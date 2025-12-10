@@ -1,22 +1,22 @@
-import CenterSpin from "@/components/CenterSpin";
-import { useIsMobile } from "@/hooks/useIsMobile";
-import { useCreatorLocalStore } from "@/stores";
-import { useCreatorStore } from "@/stores/creatorStore";
-import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
-import { PREVIEW_COLUMNS, TASK_FACTORS } from "@/utils/constants";
-import { getPaletteOptions } from "@/utils/palettes";
+import CenterSpin from '@/components/CenterSpin';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useCreatorLocalStore } from '@/stores';
+import { useCreatorStore } from '@/stores/creatorStore';
+import { getPixelAlgorithmsOptions } from '@/utils/algorithm';
+import { PREVIEW_COLUMNS, TASK_FACTORS } from '@/utils/constants';
+import { getPaletteOptions } from '@/utils/palettes';
 import {
   BorderOutlined,
   ClearOutlined,
   EyeOutlined,
   FullscreenExitOutlined,
   FullscreenOutlined,
-} from "@ant-design/icons";
-import { Button, Card, Col, Flex, Row, Segmented, Space } from "antd";
-import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import PreviewCard from "../components/PreviewCard";
-import styles from "../index.module.less";
+} from '@ant-design/icons';
+import { Button, Card, Col, Flex, Row, Segmented, Space } from 'antd';
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import PreviewCard from '../components/PreviewCard';
+import styles from '../index.module.less';
 
 interface PreviewPanelProps {
   originalFile: File | null;
@@ -41,8 +41,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   pixelatedResults = [],
   setPixelatedResults,
 }) => {
-  const { t } = useTranslation("creator");
-  const { t: paletteT } = useTranslation("common");
+  const { t } = useTranslation('creator');
+  const { t: paletteT } = useTranslation('common');
   const isMobile = useIsMobile();
   const previewColumnOptions = PREVIEW_COLUMNS.map((v) => ({
     label: t(`preview_panel.columns.${v}`),
@@ -113,13 +113,10 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   return (
     <Card
       title={
-        <Flex
-          justify="space-between"
-          align="center"
-        >
+        <Flex justify="space-between" align="center">
           <Space>
             <EyeOutlined />
-            {t("preview_panel.title")}
+            {t('preview_panel.title')}
           </Space>
           <Space>
             {!isMobile && multiAlgorithmEnabled && (
@@ -133,21 +130,21 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             {/* 网格显示切换按钮 */}
             {pixelatedResults.length > 0 && (
               <Button
-                title={t("common.show_pixel_grid")}
+                title={t('common.show_pixel_grid')}
                 onClick={togglePixelGrid}
                 icon={<BorderOutlined />}
-                type={showPreviewPixelGrid ? "primary" : "default"}
+                type={showPreviewPixelGrid ? 'primary' : 'default'}
               />
             )}
             <Button
-              title={t("common.clear_preview")}
+              title={t('common.clear_preview')}
               icon={<ClearOutlined />}
               disabled={inPixelation}
               onClick={clearPreview}
             />
             {!isMobile && (
               <Button
-                title={t("common.extend_mode")}
+                title={t('common.extend_mode')}
                 onClick={toggleExtendMode}
                 icon={
                   extendMode ? (
@@ -166,10 +163,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       {pixelatedResults.length > 0 ? (
         <Row gutter={[12, 12]}>
           {pixelatedResults.map((res, idx) => (
-            <Col
-              key={`${res.algorithm}-${res.palette}-${idx}`}
-              span={colSpan}
-            >
+            <Col key={`${res.algorithm}-${res.palette}-${idx}`} span={colSpan}>
               <PreviewCard
                 tags={[
                   labelOf(algoOptions, res.algorithm),
@@ -178,9 +172,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 originalFile={originalFile}
                 pixelatedImage={res.url}
                 showPixelGrid={showPreviewPixelGrid}
-                saveButtonPlacement={isMobile ? "bottom" : "top"}
+                saveButtonPlacement={isMobile ? 'bottom' : 'top'}
                 showResizeHandle={!isMobile}
-                editButtonPlacement={isMobile ? "bottom" : "top"}
+                editButtonPlacement={isMobile ? 'bottom' : 'top'}
                 defaultPreviewHeight={defaultPreviewHeight}
               />
             </Col>
@@ -201,10 +195,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
               : 0;
             return missingCount > 0
               ? Array.from({ length: missingCount }).map((_, i) => (
-                  <Col
-                    key={`empty-${i}`}
-                    span={colSpan}
-                  >
+                  <Col key={`empty-${i}`} span={colSpan}>
                     <div
                       className={styles.emptyPreview}
                       style={{
@@ -221,9 +212,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       ) : (
         <PreviewCard
           originalFile={originalFile}
-          pixelatedImage={""}
+          pixelatedImage={''}
           showPixelGrid={showPreviewPixelGrid}
-          saveButtonPlacement={isMobile ? "bottom" : "top"}
+          saveButtonPlacement={isMobile ? 'bottom' : 'top'}
           showResizeHandle={!isMobile}
           defaultPreviewHeight={defaultPreviewHeight}
         />

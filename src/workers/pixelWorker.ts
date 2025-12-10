@@ -1,4 +1,4 @@
-import { pixelateImage } from "@/utils/pixelate";
+import { pixelateImage } from '@/utils/pixelate';
 
 type PixelateTask = { algorithm: string; palette: string };
 
@@ -24,12 +24,12 @@ export type PixelateBatchMessageData =
   | { type: typeof ResultType.COMPLETE };
 
 export const SendType = {
-  PIXELATE_BATCH: "pixelate-batch",
+  PIXELATE_BATCH: 'pixelate-batch',
 } as const;
 
 export const ResultType = {
-  RESULT: "result",
-  COMPLETE: "complete",
+  RESULT: 'result',
+  COMPLETE: 'complete',
 } as const;
 
 self.onmessage = async (ev: MessageEvent) => {

@@ -12,8 +12,8 @@ export interface Palette {
 
 // 16位机色板
 const sixteenBitPalette: Palette = {
-  id: "16-Bit",
-  name: "16-Bit 16色",
+  id: '16-Bit',
+  name: '16-Bit 16色',
   colors: [
     // 黑色
     { r: 0, g: 0, b: 0 },
@@ -52,8 +52,8 @@ const sixteenBitPalette: Palette = {
 
 // DawnBringer's 16色板
 const dawnBringer16Palette: Palette = {
-  id: "DawnBringer-16",
-  name: "DawnBringer 16色",
+  id: 'DawnBringer-16',
+  name: 'DawnBringer 16色',
   colors: [
     // 深紫黑
     { r: 20, g: 12, b: 28 },
@@ -92,8 +92,8 @@ const dawnBringer16Palette: Palette = {
 
 // DawnBringer's 32色板
 const dawnBringer32Palette: Palette = {
-  id: "DawnBringer-32",
-  name: "DawnBringer 32色",
+  id: 'DawnBringer-32',
+  name: 'DawnBringer 32色',
   colors: [
     // 黑色
     { r: 0, g: 0, b: 0 },
@@ -164,8 +164,8 @@ const dawnBringer32Palette: Palette = {
 
 // PICO-8色板
 const pico8Palette: Palette = {
-  id: "Pico-8",
-  name: "PICO-8 16色",
+  id: 'Pico-8',
+  name: 'PICO-8 16色',
   colors: [
     // 黑色
     { r: 0, g: 0, b: 0 },
@@ -204,8 +204,8 @@ const pico8Palette: Palette = {
 
 // Arne’s 16 色板
 const arne16Palette: Palette = {
-  id: "Arne-16",
-  name: "Arne 16色",
+  id: 'Arne-16',
+  name: 'Arne 16色',
   colors: [
     // 黑色
     { r: 0, g: 0, b: 0 },
@@ -244,8 +244,8 @@ const arne16Palette: Palette = {
 
 // NES（红白机）的54色调色板
 const nesPalette: Palette = {
-  id: "NES-54",
-  name: "NES 54色",
+  id: 'NES-54',
+  name: 'NES 54色',
   colors: [
     // 白色
     { r: 255, g: 255, b: 255 },
@@ -360,8 +360,8 @@ const nesPalette: Palette = {
 
 // 全色色板
 const allColorsPalette: Palette = {
-  id: "All-Colors",
-  name: "全色色板",
+  id: 'All-Colors',
+  name: '全色色板',
   colors: [],
 };
 
@@ -621,9 +621,9 @@ export const getPaletteById = (id: string): Palette => {
  * @returns 对应的#FFFFFF格式颜色字符串
  */
 export const getColorHex = (color: Color): string => {
-  return `#${color.r.toString(16).padStart(2, "0")}${color.g
+  return `#${color.r.toString(16).padStart(2, '0')}${color.g
     .toString(16)
-    .padStart(2, "0")}${color.b.toString(16).padStart(2, "0")}`;
+    .padStart(2, '0')}${color.b.toString(16).padStart(2, '0')}`;
 };
 
 /**

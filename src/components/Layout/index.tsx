@@ -1,20 +1,20 @@
-import logo from "@/assets/logo-with-title.svg";
-import mobileLogo from "@/assets/logo.svg";
-import { useIsMobile } from "@/hooks/useIsMobile";
+import logo from '@/assets/logo-with-title.svg';
+import mobileLogo from '@/assets/logo.svg';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   getOgLocale,
   parseLocaleFromPath,
   withLocalePath,
-} from "@/utils/locale";
-import { getDefaultSEO, resolveSEOByPath } from "@/utils/seo";
-import { GithubOutlined } from "@ant-design/icons";
-import { Layout as AntdLayout, Menu, Space } from "antd";
-import React, { useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import LanguageSwitcher from "../LanguageSwitcher";
-import SEO from "../SEO";
-import styles from "./index.module.less";
+} from '@/utils/locale';
+import { getDefaultSEO, resolveSEOByPath } from '@/utils/seo';
+import { GithubOutlined } from '@ant-design/icons';
+import { Layout as AntdLayout, Menu, Space } from 'antd';
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import LanguageSwitcher from '../LanguageSwitcher';
+import SEO from '../SEO';
+import styles from './index.module.less';
 
 const { Header, Content, Footer } = AntdLayout;
 
@@ -22,7 +22,7 @@ const Layout: React.FC = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation("common");
+  const { t, i18n } = useTranslation('common');
   const locale = parseLocaleFromPath(location.pathname);
 
   const currentSEO =
@@ -30,25 +30,25 @@ const Layout: React.FC = () => {
 
   const menuItems = [
     {
-      key: withLocalePath(locale, "/"),
-      label: <Link to={withLocalePath(locale, "/")}>{t("nav.home")}</Link>,
+      key: withLocalePath(locale, '/'),
+      label: <Link to={withLocalePath(locale, '/')}>{t('nav.home')}</Link>,
     },
     {
-      key: withLocalePath(locale, "/creator"),
+      key: withLocalePath(locale, '/creator'),
       label: (
-        <Link to={withLocalePath(locale, "/creator")}>{t("nav.creator")}</Link>
+        <Link to={withLocalePath(locale, '/creator')}>{t('nav.creator')}</Link>
       ),
     },
     {
-      key: withLocalePath(locale, "/editor"),
+      key: withLocalePath(locale, '/editor'),
       label: (
-        <Link to={withLocalePath(locale, "/editor")}>{t("nav.editor")}</Link>
+        <Link to={withLocalePath(locale, '/editor')}>{t('nav.editor')}</Link>
       ),
     },
   ];
 
   const handleLogoClick = () => {
-    navigate(withLocalePath(locale, "/"));
+    navigate(withLocalePath(locale, '/'));
   };
 
   // 保持 i18n 与路由语言同步
@@ -58,7 +58,7 @@ const Layout: React.FC = () => {
     }
   }, [locale, i18n]);
 
-  const hideFooter = location.pathname.endsWith("/editor");
+  const hideFooter = location.pathname.endsWith('/editor');
 
   return (
     <>
@@ -99,7 +99,7 @@ const Layout: React.FC = () => {
         </Content>
         {!hideFooter && (
           <Footer className={styles.footer}>
-            <span>{t("footer.description")}</span>
+            <span>{t('footer.description')}</span>
             <span>
               <span>Pixel Artist ©{new Date().getFullYear()}</span>
               <span className={styles.separator}> · </span>

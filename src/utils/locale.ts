@@ -1,7 +1,7 @@
-import type { Locale, OgLocale } from "@/types/locale";
+import type { Locale, OgLocale } from '@/types/locale';
 
-export const LOCALES: readonly Locale[] = ["zh", "en"] as const;
-export const DEFAULT_LOCALE: Locale = "zh";
+export const LOCALES: readonly Locale[] = ['zh', 'en'] as const;
+export const DEFAULT_LOCALE: Locale = 'zh';
 
 /**
  * 从路径中解析语言码
@@ -9,8 +9,8 @@ export const DEFAULT_LOCALE: Locale = "zh";
  * @returns 解析出的语言码（"zh" 或 "en"）
  */
 export function parseLocaleFromPath(pathname: string): Locale {
-  const first = pathname.split("/").filter(Boolean)[0];
-  return first === "en" ? "en" : "zh";
+  const first = pathname.split('/').filter(Boolean)[0];
+  return first === 'en' ? 'en' : 'zh';
 }
 
 /**
@@ -19,7 +19,7 @@ export function parseLocaleFromPath(pathname: string): Locale {
  * @returns 归一化后的路径（如 /... 或 /...）
  */
 export function stripLocaleFromPath(pathname: string): string {
-  return pathname.replace(/^\/(zh|en)(\/|$)/, "/");
+  return pathname.replace(/^\/(zh|en)(\/|$)/, '/');
 }
 
 /**
@@ -29,8 +29,8 @@ export function stripLocaleFromPath(pathname: string): string {
  * @returns 带语言前缀的路径（如 /zh/... 或 /en/...）
  */
 export function withLocalePath(locale: Locale, basePath: string): string {
-  const normalizedBase = basePath.startsWith("/") ? basePath : `/${basePath}`;
-  if (normalizedBase === "/") return `/${locale}/`;
+  const normalizedBase = basePath.startsWith('/') ? basePath : `/${basePath}`;
+  if (normalizedBase === '/') return `/${locale}/`;
   return `/${locale}${normalizedBase}`;
 }
 
@@ -40,10 +40,10 @@ export function withLocalePath(locale: Locale, basePath: string): string {
  */
 export function detectLocaleByNavigator(): Locale {
   const nav =
-    (navigator.languages && navigator.languages[0]) || navigator.language || "";
+    (navigator.languages && navigator.languages[0]) || navigator.language || '';
   const lower = nav.toLowerCase();
-  if (lower.startsWith("en")) return "en";
-  return "zh";
+  if (lower.startsWith('en')) return 'en';
+  return 'zh';
 }
 
 /**
@@ -54,14 +54,14 @@ export function detectLocaleByNavigator(): Locale {
  * @returns 归一化后的语言码（"zh" 或 "en"）
  */
 export function normalizeLocale(input: string): Locale {
-  const lower = (input || "").toLowerCase();
-  if (lower.startsWith("en")) return "en";
-  return "zh";
+  const lower = (input || '').toLowerCase();
+  if (lower.startsWith('en')) return 'en';
+  return 'zh';
 }
 
 const OG_LOCALE_MAP: Record<Locale, OgLocale> = {
-  zh: "zh_CN",
-  en: "en_US",
+  zh: 'zh_CN',
+  en: 'en_US',
 };
 
 /**

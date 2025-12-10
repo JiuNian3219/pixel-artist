@@ -1,19 +1,19 @@
-import { useIsMobile } from "@/hooks/useIsMobile";
-import { useEditorDataStore } from "@/stores/editorDataStore";
-import { useEditorUIStore } from "@/stores/editorUIStore";
-import { MAX_PENCIL_SIZE, MIN_PENCIL_SIZE, TOOLS } from "@/utils/constants";
-import { Typography } from "antd";
-import { useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import styles from "./index.module.less";
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useEditorDataStore } from '@/stores/editorDataStore';
+import { useEditorUIStore } from '@/stores/editorUIStore';
+import { MAX_PENCIL_SIZE, MIN_PENCIL_SIZE, TOOLS } from '@/utils/constants';
+import { Typography } from 'antd';
+import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import styles from './index.module.less';
 import CanvasViewport, {
   type CanvasViewportHandle,
-} from "./screen/CanvasViewport";
-import ConfigsPanel from "./screen/ConfigsPanel";
-import ToolsPanel from "./screen/ToolsPanel";
+} from './screen/CanvasViewport';
+import ConfigsPanel from './screen/ConfigsPanel';
+import ToolsPanel from './screen/ToolsPanel';
 
 const Editor: React.FC = () => {
-  const { t } = useTranslation("editor");
+  const { t } = useTranslation('editor');
   const setTool = useEditorUIStore((s) => s.setTool);
   const setPencilSize = useEditorUIStore((s) => s.setPencilSize);
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
@@ -28,21 +28,21 @@ const Editor: React.FC = () => {
     const handleBeforeUnload = () => {
       triggerSave();
     };
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [triggerSave]);
 
   // 快捷键
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "s") {
+      if (e.ctrlKey && e.key === 's') {
         e.preventDefault();
         canvasRef.current?.exportImage();
       }
       // 撤销/重做
-      else if (e.ctrlKey && e.key.toLowerCase() === "z") {
+      else if (e.ctrlKey && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (e.shiftKey) {
           redo();
@@ -51,34 +51,34 @@ const Editor: React.FC = () => {
         }
       }
       // 切换工具
-      else if (e.key.toLowerCase() === "b") {
+      else if (e.key.toLowerCase() === 'b') {
         e.preventDefault();
         setTool(TOOLS.PENCIL);
-      } else if (e.key.toLowerCase() === "e") {
+      } else if (e.key.toLowerCase() === 'e') {
         e.preventDefault();
         setTool(TOOLS.ERASER);
-      } else if (e.key.toLowerCase() === "g") {
+      } else if (e.key.toLowerCase() === 'g') {
         e.preventDefault();
         setTool(TOOLS.FILL);
-      } else if (e.key.toLowerCase() === "i") {
+      } else if (e.key.toLowerCase() === 'i') {
         e.preventDefault();
         setTool(TOOLS.PICKER);
-      } else if (e.key.toLowerCase() === "v") {
+      } else if (e.key.toLowerCase() === 'v') {
         e.preventDefault();
         setTool(TOOLS.DRAG);
       }
       // 画笔缩放
-      else if (e.key === "]" || e.key === "】") {
+      else if (e.key === ']' || e.key === '】') {
         e.preventDefault();
         setPencilSize((prev) => Math.min(MAX_PENCIL_SIZE, prev + 1));
-      } else if (e.key === "[" || e.key === "【") {
+      } else if (e.key === '[' || e.key === '【') {
         e.preventDefault();
         setPencilSize((prev) => Math.max(MIN_PENCIL_SIZE, prev - 1));
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -96,10 +96,10 @@ const Editor: React.FC = () => {
         ) : (
           <div className={styles.emptyContainer}>
             <Typography.Title level={4}>
-              {t("common.empty.title")}
+              {t('common.empty.title')}
             </Typography.Title>
             <Typography.Paragraph>
-              {t("common.empty.hint")}
+              {t('common.empty.hint')}
             </Typography.Paragraph>
           </div>
         )}
@@ -116,7 +116,7 @@ const Editor: React.FC = () => {
       {/** 操作提示 */}
       {!isMobile && (
         <Typography.Text className={styles.operationHint}>
-          {t("common.operation_hint")}
+          {t('common.operation_hint')}
         </Typography.Text>
       )}
     </div>

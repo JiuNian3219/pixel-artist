@@ -1,13 +1,13 @@
-import { useCreatorLocalStore } from "@/stores";
+import { useCreatorLocalStore } from '@/stores';
 import {
   getColorHex,
   getPaletteById,
   getPaletteOptions,
-} from "@/utils/palettes";
-import { BgColorsOutlined } from "@ant-design/icons";
-import { Flex, Select, Space } from "antd";
-import { useTranslation } from "react-i18next";
-import styles from "./index.module.less";
+} from '@/utils/palettes';
+import { BgColorsOutlined } from '@ant-design/icons';
+import { Flex, Select, Space } from 'antd';
+import { useTranslation } from 'react-i18next';
+import styles from './index.module.less';
 
 interface PaletteSelectProps {
   value: string;
@@ -20,8 +20,8 @@ const PaletteSelector: React.FC<PaletteSelectProps> = ({
   onChange,
   previewEnabled = false,
 }) => {
-  const { t } = useTranslation("creator");
-  const { t: paletteT } = useTranslation("common");
+  const { t } = useTranslation('creator');
+  const { t: paletteT } = useTranslation('common');
   const currentPalette = getPaletteById(value);
   const extendMode = useCreatorLocalStore((state) => state.extendMode);
   const paletteOptions = getPaletteOptions(paletteT);
@@ -30,20 +30,16 @@ const PaletteSelector: React.FC<PaletteSelectProps> = ({
     <div
       className={styles.paletteSelect}
       style={{
-        maxWidth: extendMode ? "200px" : "",
+        maxWidth: extendMode ? '200px' : '',
       }}
     >
-      <Flex
-        justify="space-between"
-        wrap="wrap"
-        gap={3}
-      >
+      <Flex justify="space-between" wrap="wrap" gap={3}>
         <Space className={styles.settingLabel}>
           <BgColorsOutlined />
           <span>
             {previewEnabled
-              ? t("multi_algorithm_panel.palette_preview")
-              : t("palette_selector.title")}
+              ? t('multi_algorithm_panel.palette_preview')
+              : t('palette_selector.title')}
           </span>
         </Space>
         <Select

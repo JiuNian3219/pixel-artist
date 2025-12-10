@@ -1,18 +1,18 @@
-import { useCreatorLocalStore } from "@/stores";
-import { useCreatorStore } from "@/stores/creatorStore";
-import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
+import { useCreatorLocalStore } from '@/stores';
+import { useCreatorStore } from '@/stores/creatorStore';
+import { getPixelAlgorithmsOptions } from '@/utils/algorithm';
 import {
   MAX_PIXEL_SIZE,
   MAX_PREVIEW_HEIGHT,
   MIN_PIXEL_SIZE,
   MIN_PREVIEW_HEIGHT,
   TASK_FACTORS,
-} from "@/utils/constants";
+} from '@/utils/constants';
 import {
   ResultType,
   SendType,
   type PixelateBatchMessageData,
-} from "@/workers/pixelWorker";
+} from '@/workers/pixelWorker';
 import {
   BgColorsOutlined,
   ColumnHeightOutlined,
@@ -21,7 +21,7 @@ import {
   SearchOutlined,
   SettingOutlined,
   TableOutlined,
-} from "@ant-design/icons";
+} from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -31,9 +31,9 @@ import {
   Select,
   Slider,
   Space,
-} from "antd";
-import { Typography } from "antd/lib";
-import debounce from "lodash/debounce";
+} from 'antd';
+import { Typography } from 'antd/lib';
+import debounce from 'lodash/debounce';
 import {
   useEffect,
   useMemo,
@@ -41,12 +41,12 @@ import {
   useState,
   type Dispatch,
   type SetStateAction,
-} from "react";
-import { useTranslation } from "react-i18next";
-import ImageUploader from "../components/ImageUploader";
-import MultiAlgorithmPanel from "../components/MultiAlgorithmPanel";
-import PaletteSelector from "../components/PaletteSelector";
-import styles from "../index.module.less";
+} from 'react';
+import { useTranslation } from 'react-i18next';
+import ImageUploader from '../components/ImageUploader';
+import MultiAlgorithmPanel from '../components/MultiAlgorithmPanel';
+import PaletteSelector from '../components/PaletteSelector';
+import styles from '../index.module.less';
 
 interface ControlPanelProps {
   setOriginalFile: (file: File | null) => void;
@@ -99,9 +99,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const inPixelation = useCreatorStore((state) => state.inPixelation);
   const setInPixelation = useCreatorStore((state) => state.setInPixelation);
 
-  const [originalImage, setOriginalImage] = useState<string>("");
+  const [originalImage, setOriginalImage] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const { t } = useTranslation("creator");
+  const { t } = useTranslation('creator');
   const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
 
   const handlePaletteChange = (paletteName: string) => {
@@ -177,8 +177,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     img.src = originalImage;
 
     img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
       const width = img.width;
@@ -242,7 +242,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           outArray.set(outData);
           const outImage = new ImageData(outArray, width, height);
           ctx.putImageData(outImage, 0, 0);
-          const url = canvas.toDataURL("image/png");
+          const url = canvas.toDataURL('image/png');
           setPixelatedResults?.((prev) => [
             ...(prev ?? []),
             { url, algorithm, palette },
@@ -276,9 +276,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   useEffect(() => {
     worker.current = new Worker(
-      new URL("../../../workers/pixelWorker.ts", import.meta.url),
+      new URL('../../../workers/pixelWorker.ts', import.meta.url),
       {
-        type: "module",
+        type: 'module',
       }
     );
     return () => {
@@ -294,7 +294,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         mode="button"
       />
       <Button
-        title={t("control_panel.to_pixel_button")}
+        title={t('control_panel.to_pixel_button')}
         type="primary"
         shape="circle"
         icon={<HighlightOutlined />}
@@ -308,14 +308,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/* 像素尺寸设置 */}
           <Popover
             content={
-              <div style={{ width: "200px" }}>
-                <Flex
-                  justify="space-between"
-                  align="center"
-                >
+              <div style={{ width: '200px' }}>
+                <Flex justify="space-between" align="center">
                   <Space>
                     <TableOutlined />
-                    <span>{t("control_panel.pixel_size_slider")}</span>
+                    <span>{t('control_panel.pixel_size_slider')}</span>
                   </Space>
                   <Typography className={styles.pixelSize}>
                     {uiPixelSize}px
@@ -335,7 +332,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             trigger="click"
           >
             <Button
-              title={t("control_panel.pixel_size_slider")}
+              title={t('control_panel.pixel_size_slider')}
               shape="circle"
               icon={<TableOutlined />}
               className={styles.settingButton}
@@ -345,14 +342,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/* 预览高度设置（30% - 100%，对应 250px - 800px） */}
           <Popover
             content={
-              <div style={{ width: "200px" }}>
-                <Flex
-                  justify="space-between"
-                  align="center"
-                >
+              <div style={{ width: '200px' }}>
+                <Flex justify="space-between" align="center">
                   <Space>
                     <ColumnHeightOutlined />
-                    <span>{t("control_panel.preview_height_slider")}</span>
+                    <span>{t('control_panel.preview_height_slider')}</span>
                   </Space>
                   <Typography className={styles.pixelSize}>
                     {uiPreviewHeightPercent}%
@@ -375,7 +369,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             trigger="click"
           >
             <Button
-              title={t("control_panel.preview_height_slider")}
+              title={t('control_panel.preview_height_slider')}
               shape="circle"
               icon={<ColumnHeightOutlined />}
               className={styles.settingButton}
@@ -387,20 +381,16 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             <Popover
               content={
                 <div>
-                  <Flex
-                    vertical
-                    align="flex-start"
-                    gap={8}
-                  >
+                  <Flex vertical align="flex-start" gap={8}>
                     <Space>
                       <SearchOutlined />
-                      <span>{t("control_panel.pixel_algorithm_select")}</span>
+                      <span>{t('control_panel.pixel_algorithm_select')}</span>
                     </Space>
                     <Select
                       value={pixelAlgorithm}
                       options={pixelAlgorithmOptions}
                       onChange={handlePixelAlgorithmChange}
-                      style={{ width: "200px" }}
+                      style={{ width: '200px' }}
                       popupMatchSelectWidth={false}
                     />
                   </Flex>
@@ -411,7 +401,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             >
               <Button
                 shape="circle"
-                title={t("control_panel.pixel_algorithm_select")}
+                title={t('control_panel.pixel_algorithm_select')}
                 icon={<SearchOutlined />}
                 className={styles.settingButton}
               />
@@ -431,7 +421,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             trigger="click"
           >
             <Button
-              title={t("palette_selector.title")}
+              title={t('palette_selector.title')}
               shape="circle"
               icon={<BgColorsOutlined />}
               className={styles.settingButton}
@@ -440,7 +430,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/** 多方案生成 */}
           <Popover
             content={
-              <div style={{ width: "400px" }}>
+              <div style={{ width: '400px' }}>
                 <MultiAlgorithmPanel
                   enabled={multiAlgorithmEnabled}
                   onChange={handleMultiAlgorithmChange}
@@ -452,7 +442,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           >
             <Button
               shape="circle"
-              title={t("multi_algorithm_panel.title")}
+              title={t('multi_algorithm_panel.title')}
               icon={<DeploymentUnitOutlined />}
               className={styles.settingButton}
             />
@@ -465,7 +455,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       title={
         <Space>
           <SettingOutlined />
-          {t("control_panel.title")}
+          {t('control_panel.title')}
         </Space>
       }
       className={styles.controlCard}
@@ -479,7 +469,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/** 像素化按钮 */}
       <Button
-        title={t("control_panel.to_pixel_button")}
+        title={t('control_panel.to_pixel_button')}
         type="primary"
         icon={<HighlightOutlined />}
         disabled={!canPixelate}
@@ -487,18 +477,15 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         loading={inPixelation}
         className={styles.pixelateButton}
       >
-        {t("control_panel.to_pixel_button")}
+        {t('control_panel.to_pixel_button')}
       </Button>
       <Divider />
 
       {/** 像素尺寸设置 */}
-      <Flex
-        justify="space-between"
-        align="center"
-      >
+      <Flex justify="space-between" align="center">
         <Space className={styles.settingLabel}>
           <TableOutlined />
-          <span>{t("control_panel.pixel_size_slider")}</span>
+          <span>{t('control_panel.pixel_size_slider')}</span>
         </Space>
         <Typography className={styles.pixelSize}>{uiPixelSize}px</Typography>
       </Flex>
@@ -512,13 +499,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       />
 
       {/** 预览高度设置（30% - 100%，对应 250px - 800px） */}
-      <Flex
-        justify="space-between"
-        align="center"
-      >
+      <Flex justify="space-between" align="center">
         <Space className={styles.settingLabel}>
           <ColumnHeightOutlined />
-          <span>{t("control_panel.preview_height_slider")}</span>
+          <span>{t('control_panel.preview_height_slider')}</span>
         </Space>
         <Typography className={styles.pixelSize}>
           {uiPreviewHeightPercent}%
@@ -538,14 +522,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/** 算法选择 */}
       {!multiAlgorithmEnabled && (
-        <Flex
-          justify="space-between"
-          wrap="wrap"
-          gap={3}
-        >
+        <Flex justify="space-between" wrap="wrap" gap={3}>
           <Space className={styles.settingLabel}>
             <SearchOutlined />
-            <span>{t("control_panel.pixel_algorithm_select")}</span>
+            <span>{t('control_panel.pixel_algorithm_select')}</span>
           </Space>
           <Select
             value={pixelAlgorithm}
