@@ -67,6 +67,14 @@ VITE_ROBOTS_ALLOW=/
 - 页面内 `SEO` 组件会使用 `VITE_SITE_URL` 来拼接 `canonical`、`og:image` 与 JSON-LD 中的 `url`。
 - 404 页已通过 `robots="noindex,nofollow"` 防止被索引。
 
+## 站长工具验证
+若需要自动生成 `BingSiteAuth.xml` 验证文件，请在 `.env` 中配置：
+
+```env
+BING_SITE_AUTH_USER=**************************
+```
+构建时会自动读取该变量并在 `public/` 目录下生成 `BingSiteAuth.xml`。
+
 ## 多语言：如何添加新语言
 本项目已内置中文（`zh`）与英文（`en`）。若要新增语言（例如法语 `fr`），请按照以下步骤修改相应文件：
 
@@ -117,66 +125,25 @@ VITE_ROBOTS_ALLOW=/
 提示：新增语言时，优先复用现有工具与结构（`LOCALES`、`normalizeLocale`、`antdLocaleMap`、i18n `supportedLngs`、`reactSnap.include` 与 `sitemap locales`）。保持命名、风格与当前项目一致，避免引入额外依赖。
 
 
-## 项目结构（待更新）
+## 项目结构
 ```
 pixel-artist/
-├── public/                  # 静态资源目录
-│   ├── logo.svg             # 应用图标
-│   ├── logo-white.svg       # 白色版本应用图标
-│   ├── favicon.ico          # 网站图标
-│   ├── sitemap.xml          # 自动生成的站点地图（构建时生成）
-│   └── robots.txt           # 自动生成的 robots 文件（构建时生成）
-│
-├── src/                     # 源代码目录
-│   ├── assets/              # 项目资源文件
-│   │   ├── logo.svg         # 应用图标
-│   │   ├── logo.png         # 应用图标(PNG)
-│   │   ├── logo-white.svg   # 白色版本应用图标
-│   │   ├── logo-white.png   # 白色版本应用图标(PNG)
-│   │   ├── logo-with-title.svg  # 带标题的应用图标
-│   │   └── logo-with-title.png  # 带标题的应用图标(PNG)
-│   │
-│   ├── components/          # 公共组件
-│   │   ├── Layout/          # 布局组件
-│   │   │   ├── index.tsx    # 布局组件实现
-│   │   │   └── index.module.less  # 布局组件样式
-│   │   └── SEO/             # SEO 相关组件
-│   │       └── index.tsx    # SEO 组件实现
-│   │
-│   ├── pages/               # 页面组件
-│   │   ├── Home/            # 首页
-│   │   │   ├── index.tsx    # 首页组件
-│   │   │   └── index.module.less  # 首页样式
-│   │   └── NotFound/        # 404 页面
-│   │       ├── index.tsx    # 404 组件
-│   │       └── index.module.less  # 404 样式
-│   │
+├── public/                  # 静态资源（favicon, robots.txt 等）
+├── scripts/                 # 构建脚本（Sitemap, Bing验证等）
+├── src/
+│   ├── assets/              # 图片与图标资源
+│   ├── components/          # 公共组件 (Layout, SEO 等)
+│   ├── hooks/               # 自定义 Hooks
+│   ├── locales/             # 国际化资源 (zh, en)
+│   ├── pages/               # 路由页面 (Home, Editor, Creator)
 │   ├── routes/              # 路由配置
-│   │   └── index.tsx        # 路由定义
-│   │
-│   ├── styles/              # 全局样式
-│   │   ├── global.less      # 全局基础样式
-│   │   ├── ant-design.less  # Ant Design 组件样式覆盖
-│   │   └── index.less       # 样式入口文件
-│   │
-│   ├── utils/               # 工具函数
-│   │   ├── colors.ts        # 颜色工具
-│   │   ├── theme.ts         # 主题配置
-│   │   └── seo.ts           # SEO 辅助函数
-│   │
-│   ├── main.tsx             # 应用入口
-│   └── vite-env.d.ts        # Vite 类型声明
-│
-├── scripts/                 # 构建辅助脚本
-│   └── generate-seo-files.js  # 生成 sitemap.xml 与 robots.txt
-│
-├── .env.example             # 环境变量示例
-├── .gitignore               # Git 忽略文件
-├── eslint.config.js         # ESLint 配置
-├── index.html               # HTML 模板
-├── package.json             # 项目依赖和脚本
-├── tsconfig.json            # TypeScript 配置
-├── tsconfig.app.json        # 应用 TypeScript 配置
-├── tsconfig.node.json       # Node.js TypeScript 配置
+│   ├── stores/              # 全局状态管理 (Zustand)
+│   ├── styles/              # 全局样式与 AntD 主题
+│   ├── types/               # TypeScript 类型定义
+│   ├── utils/               # 工具函数与算法
+│   ├── workers/             # Web Workers (图像处理)
+│   └── main.tsx             # 应用入口
+├── .env                     # 环境变量
+├── package.json             # 依赖与脚本
 └── vite.config.ts           # Vite 配置
 ```

@@ -1,5 +1,5 @@
 // 编辑器工具类型 包含 铅笔、橡皮擦、桶、吸管、拖动
-export type Tool = "pencil" | "eraser" | "fill" | "picker" | "drag";
+export type Tool = 'pencil' | 'eraser' | 'fill' | 'picker' | 'drag';
 
 // 编辑器中的点坐标类型
 export type Point = { x: number; y: number };

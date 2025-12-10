@@ -1,5 +1,5 @@
-import { getPixelAlgorithm } from "./algorithm";
-import { findClosestColor, getPaletteById } from "./palettes";
+import { getPixelAlgorithm } from './algorithm';
+import { findClosestColor, getPaletteById } from './palettes';
 
 /**
  * 像素化图像

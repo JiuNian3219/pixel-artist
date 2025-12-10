@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import CenterSpin from "../CenterSpin";
-import styles from "./index.module.less";
+import { useEffect, useRef, useState } from 'react';
+import CenterSpin from '../CenterSpin';
+import styles from './index.module.less';
 
 interface CompareSliderProps {
   leftSrc: string;
@@ -44,11 +44,11 @@ const CompareSlider: React.FC<CompareSliderProps> = ({
       updateFromClientX(ev.clientX);
     };
     const onUp = () => setDragging(false);
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
     return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
     };
   }, [dragging]);
 

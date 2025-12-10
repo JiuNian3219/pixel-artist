@@ -1,12 +1,12 @@
-import { useCreatorLocalStore } from "@/stores";
+import { useCreatorLocalStore } from '@/stores';
 import {
   useDeferredValue,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
-} from "react";
-import styles from "./index.module.less";
+} from 'react';
+import styles from './index.module.less';
 
 interface PixelGridProps {
   imageWidth: number;
@@ -22,7 +22,7 @@ const PixelGrid: React.FC<PixelGridProps> = ({
   imageHeight,
   visible,
   children,
-  gridColor = "rgba(105, 90, 90, 0.6)",
+  gridColor = 'rgba(105, 90, 90, 0.6)',
   lineWidth = 1,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -66,7 +66,7 @@ const PixelGrid: React.FC<PixelGridProps> = ({
     }
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     canvas.width = containerWidth;
@@ -140,17 +140,9 @@ const PixelGrid: React.FC<PixelGridProps> = ({
   ]);
 
   return (
-    <div
-      ref={wrapperRef}
-      className={styles.pixelGridWrapper}
-    >
+    <div ref={wrapperRef} className={styles.pixelGridWrapper}>
       {children}
-      {visible && (
-        <canvas
-          ref={canvasRef}
-          className={styles.pixelGrid}
-        />
-      )}
+      {visible && <canvas ref={canvasRef} className={styles.pixelGrid} />}
     </div>
   );
 };

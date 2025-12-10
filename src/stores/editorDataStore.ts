@@ -1,15 +1,15 @@
 import type {
   EditorOperation,
   PrepareEditorFromPixelatedParams,
-} from "@/types/editor";
-import { INITIAL_COLUMNS, INITIAL_ROWS } from "@/utils/constants";
-import { del, get, set as setIDB } from "idb-keyval";
-import { debounce } from "lodash";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+} from '@/types/editor';
+import { INITIAL_COLUMNS, INITIAL_ROWS } from '@/utils/constants';
+import { del, get, set as setIDB } from 'idb-keyval';
+import { debounce } from 'lodash';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 export const runtimePixels = new Map<string, string>();
-const PIXELS_STORAGE_KEY = "editor-pixel-data";
+const PIXELS_STORAGE_KEY = 'editor-pixel-data';
 
 export type Updater<T> = T | ((prev: T) => T);
 
@@ -62,7 +62,7 @@ export const useEditorDataStore = create<
     (set, get) => {
       // 将 runtimePixels 直接存入 IDB，绕过 Zustand 状态更新，避免触发 React 渲染
       const debouncedSave = debounce(() => {
-        console.log("debouncedSave", runtimePixels);
+        console.log('debouncedSave', runtimePixels);
         setIDB(PIXELS_STORAGE_KEY, runtimePixels);
       }, 1000);
 
@@ -190,7 +190,7 @@ export const useEditorDataStore = create<
           set((state) => ({
             rows: INITIAL_ROWS,
             columns: INITIAL_COLUMNS,
-            filename: "",
+            filename: '',
             originalWidth: 0,
             originalHeight: 0,
             // 清空编辑相关状态
@@ -204,7 +204,7 @@ export const useEditorDataStore = create<
       };
     },
     {
-      name: "editor-data-store",
+      name: 'editor-data-store',
       storage: createJSONStorage(() => ({
         getItem: async (name: string) => {
           return (await get(name)) || null;

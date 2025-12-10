@@ -1,4 +1,4 @@
-import type { Tool } from "@/types/editor";
+import type { Tool } from '@/types/editor';
 
 /**
  * 默认像素大小
@@ -11,11 +11,11 @@ export const DEFAULT_AUTO_COMPLETE = false;
 /**
  * 默认使用算法
  */
-export const DEFAULT_ALGORITHM = "dominant";
+export const DEFAULT_ALGORITHM = 'dominant';
 /**
  * 默认颜色盘
  */
-export const DEFAULT_COLOR_PALETTE = "All-Colors";
+export const DEFAULT_COLOR_PALETTE = 'All-Colors';
 /**
  * 默认是否开启扩展模式
  */
@@ -52,8 +52,8 @@ export const DEFAULT_SELECTED_PALETTES: string[] = [];
  * 批任务排列因子
  */
 export const TASK_FACTORS = {
-  ALGORITHM: "algorithm",
-  PALETTE: "palette",
+  ALGORITHM: 'algorithm',
+  PALETTE: 'palette',
 } as const;
 /**
  * 默认批任务排列因子顺序
@@ -85,25 +85,25 @@ export const MIN_PIXEL_SIZE = 1;
 /**
  * 默认主题
  */
-export const DEFAULT_THEME = "light";
+export const DEFAULT_THEME = 'light';
 /**
  * 编辑工具
  */
 export const TOOLS = {
-  PENCIL: "pencil",
-  ERASER: "eraser",
-  FILL: "fill",
-  PICKER: "picker",
-  DRAG: "drag",
+  PENCIL: 'pencil',
+  ERASER: 'eraser',
+  FILL: 'fill',
+  PICKER: 'picker',
+  DRAG: 'drag',
 } as const satisfies Record<string, Tool>;
 /**
  * 默认编辑工具
  */
-export const DEFAULT_TOOL: Tool = "pencil";
+export const DEFAULT_TOOL: Tool = 'pencil';
 /**
  * 默认编辑颜色
  */
-export const DEFAULT_COLOR = "#000000";
+export const DEFAULT_COLOR = '#000000';
 /**
  * 默认笔刷大小
  */
@@ -185,4 +185,4 @@ export const DEFAULT_PICKER_SWITCH_TO_PENCIL = true;
 /**
  * 默认导出文件名
  */
-export const DEFAULT_FILENAME = "pixel-art";
+export const DEFAULT_FILENAME = 'pixel-art';

@@ -1,5 +1,5 @@
-import { getAlternateLinks, normalizeBasePath } from "@/utils/seo";
-import React from "react";
+import { getAlternateLinks, normalizeBasePath } from '@/utils/seo';
+import React from 'react';
 
 interface SEOProps {
   /** 页面标题；用于 <title> 与 og:title */
@@ -31,93 +31,44 @@ export const SEO: React.FC<SEOProps> = ({
   ogImage,
   canonicalUrl,
   siteName,
-  locale = "zh_CN",
+  locale = 'zh_CN',
   twitterSite,
   jsonLd,
   robots,
 }) => {
   const siteUrl =
-    (import.meta as any).env?.VITE_SITE_URL?.replace(/\/+$/, "") || "";
+    (import.meta as any).env?.VITE_SITE_URL?.replace(/\/+$/, '') || '';
   const autoCanonical =
-    siteUrl && typeof window !== "undefined"
+    siteUrl && typeof window !== 'undefined'
       ? `${siteUrl}${window.location.pathname}`
       : undefined;
   const finalCanonical = canonicalUrl || autoCanonical;
 
   // 多语言 alternate 链接
   const alternates =
-    typeof window !== "undefined" && siteUrl
+    typeof window !== 'undefined' && siteUrl
       ? getAlternateLinks(siteUrl, normalizeBasePath(window.location.pathname))
       : [];
 
   return (
     <>
       <title>{title}</title>
-      {description && (
-        <meta
-          name="description"
-          content={description}
-        />
-      )}
-      {keywords && (
-        <meta
-          name="keywords"
-          content={keywords}
-        />
-      )}
+      {description && <meta name="description" content={description} />}
+      {keywords && <meta name="keywords" content={keywords} />}
 
-      <meta
-        property="og:type"
-        content="website"
-      />
-      <meta
-        property="og:title"
-        content={title}
-      />
-      {siteName && (
-        <meta
-          property="og:site_name"
-          content={siteName}
-        />
-      )}
-      {locale && (
-        <meta
-          property="og:locale"
-          content={locale}
-        />
-      )}
-      {description && (
-        <meta
-          property="og:description"
-          content={description}
-        />
-      )}
-      {ogImage && (
-        <meta
-          property="og:image"
-          content={ogImage}
-        />
-      )}
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content={title} />
+      {siteName && <meta property="og:site_name" content={siteName} />}
+      {locale && <meta property="og:locale" content={locale} />}
+      {description && <meta property="og:description" content={description} />}
+      {ogImage && <meta property="og:image" content={ogImage} />}
 
       {/* Twitter */}
-      <meta
-        name="twitter:card"
-        content="summary_large_image"
-      />
-      {twitterSite && (
-        <meta
-          name="twitter:site"
-          content={twitterSite}
-        />
-      )}
+      <meta name="twitter:card" content="summary_large_image" />
+      {twitterSite && <meta name="twitter:site" content={twitterSite} />}
 
       {/* Canonical */}
-      {finalCanonical && (
-        <link
-          rel="canonical"
-          href={finalCanonical}
-        />
-      )}
+      {finalCanonical && <link rel="canonical" href={finalCanonical} />}
 
       {/* Alternate hreflang */}
       {alternates.map((a) => (
@@ -130,12 +81,7 @@ export const SEO: React.FC<SEOProps> = ({
       ))}
 
       {/* Robots */}
-      {robots && (
-        <meta
-          name="robots"
-          content={robots}
-        />
-      )}
+      {robots && <meta name="robots" content={robots} />}
 
       {/* JSON-LD */}
       {jsonLd && (

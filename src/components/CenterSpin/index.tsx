@@ -1,4 +1,4 @@
-import { Flex, Spin, type FlexProps } from "antd";
+import { Flex, Spin, type FlexProps } from 'antd';
 
 interface CenterSpinProps extends FlexProps {
   children?: React.ReactNode;
@@ -14,12 +14,7 @@ const CenterSpin: React.FC<CenterSpinProps> = ({
   ...rest
 }) => {
   return (
-    <Flex
-      justify="center"
-      align="center"
-      style={style}
-      {...rest}
-    >
+    <Flex justify="center" align="center" style={style} {...rest}>
       <Spin>{children}</Spin>
     </Flex>
   );

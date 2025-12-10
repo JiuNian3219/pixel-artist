@@ -1,13 +1,13 @@
-import { useIsMobile } from "@/hooks/useIsMobile";
-import { useCreatorLocalStore } from "@/stores";
-import { getPixelAlgorithmsOptions } from "@/utils/algorithm";
-import { TASK_FACTORS } from "@/utils/constants";
-import { getPaletteOptions } from "@/utils/palettes";
-import { DeploymentUnitOutlined } from "@ant-design/icons";
-import { Checkbox, Divider, Flex, Space, Switch } from "antd";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import styles from "./index.module.less";
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useCreatorLocalStore } from '@/stores';
+import { getPixelAlgorithmsOptions } from '@/utils/algorithm';
+import { TASK_FACTORS } from '@/utils/constants';
+import { getPaletteOptions } from '@/utils/palettes';
+import { DeploymentUnitOutlined } from '@ant-design/icons';
+import { Checkbox, Divider, Flex, Space, Switch } from 'antd';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import styles from './index.module.less';
 
 interface MultiAlgorithmPanelProps {
   enabled: boolean;
@@ -18,11 +18,11 @@ const MultiAlgorithmPanel: React.FC<MultiAlgorithmPanelProps> = ({
   enabled,
   onChange,
 }) => {
-  const { t } = useTranslation("creator");
-  const { t: paletteT } = useTranslation("common");
+  const { t } = useTranslation('creator');
+  const { t: paletteT } = useTranslation('common');
   const FACTOR_ORDER_NAME = {
-    [TASK_FACTORS.ALGORITHM]: t("multi_algorithm_panel.algorithm"),
-    [TASK_FACTORS.PALETTE]: t("multi_algorithm_panel.palette"),
+    [TASK_FACTORS.ALGORITHM]: t('multi_algorithm_panel.algorithm'),
+    [TASK_FACTORS.PALETTE]: t('multi_algorithm_panel.palette'),
   };
   const isMobile = useIsMobile();
   const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
@@ -113,33 +113,22 @@ const MultiAlgorithmPanel: React.FC<MultiAlgorithmPanelProps> = ({
 
   return (
     <div className={styles.multiAlgorithmPanel}>
-      <Flex
-        justify="space-between"
-        wrap="wrap"
-        gap={3}
-      >
+      <Flex justify="space-between" wrap="wrap" gap={3}>
         <Space className={styles.settingLabel}>
           <DeploymentUnitOutlined />
-          <span>{t("multi_algorithm_panel.title")}</span>
+          <span>{t('multi_algorithm_panel.title')}</span>
         </Space>
-        <Switch
-          checked={enabled}
-          onChange={handleMultiAlgorithmChange}
-        />
+        <Switch checked={enabled} onChange={handleMultiAlgorithmChange} />
       </Flex>
 
       <div
-        className={`${styles.rollContainer} ${enabled ? styles.rollOpen : ""}`}
+        className={`${styles.rollContainer} ${enabled ? styles.rollOpen : ''}`}
         aria-hidden={!enabled}
       >
         {/* 算法选项 */}
-        <Flex
-          justify="space-between"
-          align="center"
-          style={{ marginTop: 8 }}
-        >
+        <Flex justify="space-between" align="center" style={{ marginTop: 8 }}>
           <span className={styles.miniSettingLabel}>
-            {t("control_panel.pixel_algorithm_select")}
+            {t('control_panel.pixel_algorithm_select')}
           </span>
           <Checkbox
             checked={algCheckedAll}
@@ -149,10 +138,7 @@ const MultiAlgorithmPanel: React.FC<MultiAlgorithmPanelProps> = ({
         </Flex>
 
         <Divider className={styles.divider} />
-        <Flex
-          wrap="wrap"
-          gap={8}
-        >
+        <Flex wrap="wrap" gap={8}>
           {pixelAlgorithmOptions.map((opt) => (
             <Checkbox
               key={opt.value}
@@ -165,13 +151,9 @@ const MultiAlgorithmPanel: React.FC<MultiAlgorithmPanelProps> = ({
           ))}
         </Flex>
         {/* 调色板选项 */}
-        <Flex
-          justify="space-between"
-          align="center"
-          style={{ marginTop: 8 }}
-        >
+        <Flex justify="space-between" align="center" style={{ marginTop: 8 }}>
           <span className={styles.miniSettingLabel}>
-            {t("control_panel.palette_select")}
+            {t('control_panel.palette_select')}
           </span>
           <Checkbox
             checked={palCheckedAll}
@@ -180,10 +162,7 @@ const MultiAlgorithmPanel: React.FC<MultiAlgorithmPanelProps> = ({
           />
         </Flex>
         <Divider className={styles.divider} />
-        <Flex
-          wrap="wrap"
-          gap={8}
-        >
+        <Flex wrap="wrap" gap={8}>
           {paletteOptions.map((opt) => (
             <Checkbox
               key={opt.value}
@@ -197,18 +176,11 @@ const MultiAlgorithmPanel: React.FC<MultiAlgorithmPanelProps> = ({
         </Flex>
         <Divider className={styles.divider} />
         {/* 排列方式 */}
-        <Flex
-          justify="space-between"
-          align="center"
-        >
+        <Flex justify="space-between" align="center">
           <span className={styles.miniSettingLabel}>
-            {t("multi_algorithm_panel.factor_order")}
+            {t('multi_algorithm_panel.factor_order')}
           </span>
-          <Flex
-            gap={8}
-            wrap="wrap"
-            className={styles.factorOrder}
-          >
+          <Flex gap={8} wrap="wrap" className={styles.factorOrder}>
             {taskFactorsOrder.map((f, idx) => (
               <div
                 key={`${f}-${idx}`}
@@ -218,7 +190,7 @@ const MultiAlgorithmPanel: React.FC<MultiAlgorithmPanelProps> = ({
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => handleDrop(idx)}
                 className={styles.factorOrderItem}
-                title={t("multi_algorithm_panel.factor_order_hint")}
+                title={t('multi_algorithm_panel.factor_order_hint')}
               >
                 {FACTOR_ORDER_NAME[f]}
               </div>

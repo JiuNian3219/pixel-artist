@@ -1,4 +1,4 @@
-import type { Tool } from "@/types/editor";
+import type { Tool } from '@/types/editor';
 import {
   DEFAULT_AUTO_COMPLETE,
   DEFAULT_COLOR,
@@ -7,9 +7,9 @@ import {
   DEFAULT_PICKER_SWITCH_TO_PENCIL,
   DEFAULT_PIXEL_SIZE,
   DEFAULT_TOOL,
-} from "@/utils/constants";
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+} from '@/utils/constants';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export type Updater<T> = T | ((prev: T) => T);
 
@@ -56,7 +56,7 @@ export const useEditorUIStore = create<
       setPencilSize: (pencilSize) =>
         set((state) => ({
           pencilSize:
-            typeof pencilSize === "function"
+            typeof pencilSize === 'function'
               ? pencilSize(state.pencilSize)
               : pencilSize,
         })),
@@ -75,7 +75,7 @@ export const useEditorUIStore = create<
         }),
     }),
     {
-      name: "editor-ui-store",
+      name: 'editor-ui-store',
     }
   )
 );

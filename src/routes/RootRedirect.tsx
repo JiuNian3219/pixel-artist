@@ -1,6 +1,6 @@
-import { detectLocaleByNavigator } from "@/utils/locale";
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { detectLocaleByNavigator } from '@/utils/locale';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const RootRedirect: React.FC = () => {
   const navigate = useNavigate();

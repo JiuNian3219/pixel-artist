@@ -17,10 +17,10 @@ export const parseDataUrlToGridPixels = async (
 ): Promise<Record<string, string>> => {
   const img = await loadImage(dataUrl);
 
-  const off = document.createElement("canvas");
+  const off = document.createElement('canvas');
   off.width = img.naturalWidth;
   off.height = img.naturalHeight;
-  const ctx = off.getContext("2d");
+  const ctx = off.getContext('2d');
   if (!ctx) return {};
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(img, 0, 0);
@@ -61,7 +61,7 @@ export const parseDataUrlToGridPixels = async (
  * @param n 数字
  * @returns 十六进制字符串
  */
-export const toHex = (n: number) => n.toString(16).padStart(2, "0");
+export const toHex = (n: number) => n.toString(16).padStart(2, '0');
 
 /**
  * 加载图片并返回 Promise，图片加载完成后解析为 HTMLImageElement
@@ -71,8 +71,8 @@ export const toHex = (n: number) => n.toString(16).padStart(2, "0");
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.decoding = "async";
+    img.crossOrigin = 'anonymous';
+    img.decoding = 'async';
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = src;

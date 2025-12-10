@@ -6,10 +6,10 @@ import {
   parseColorString,
   rgbaEqual,
   scanlineFloodFill,
-} from "@/pages/Editor/utils";
-import { runtimePixels, useEditorDataStore } from "@/stores/editorDataStore";
-import { useEditorUIStore } from "@/stores/editorUIStore";
-import type { Point, Tool } from "@/types/editor";
+} from '@/pages/Editor/utils';
+import { runtimePixels, useEditorDataStore } from '@/stores/editorDataStore';
+import { useEditorUIStore } from '@/stores/editorUIStore';
+import type { Point, Tool } from '@/types/editor';
 import {
   DEFAULT_GRID_SIZE,
   DEFAULT_TRANSLATION,
@@ -18,8 +18,8 @@ import {
   MAX_FILL_CHECK_PREVIEW_NUMBER,
   MIN_ZOOM,
   TOOLS,
-} from "@/utils/constants";
-import { throttle } from "lodash";
+} from '@/utils/constants';
+import { throttle } from 'lodash';
 import {
   forwardRef,
   useCallback,
@@ -28,8 +28,8 @@ import {
   useMemo,
   useRef,
   useState,
-} from "react";
-import styles from "../index.module.less";
+} from 'react';
+import styles from '../index.module.less';
 
 export interface CanvasViewportHandle {
   exportImage: () => void;
@@ -129,10 +129,10 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         ? columns
         : Math.min(columns, floorCols || columns);
 
-      const out = document.createElement("canvas");
+      const out = document.createElement('canvas');
       out.width = targetCols * exportPixelSize;
       out.height = targetRows * exportPixelSize;
-      const outCtx = out.getContext("2d");
+      const outCtx = out.getContext('2d');
       if (!outCtx) return;
       outCtx.imageSmoothingEnabled = false;
 
@@ -151,11 +151,11 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         out.height
       );
 
-      const url = out.toDataURL("image/png");
-      const link = document.createElement("a");
+      const url = out.toDataURL('image/png');
+      const link = document.createElement('a');
       link.download = filename
-        ? `${filename.replace(/\.[^.]+$/, "")}.png`
-        : "pixel-art.png";
+        ? `${filename.replace(/\.[^.]+$/, '')}.png`
+        : 'pixel-art.png';
       link.href = url;
       document.body.appendChild(link);
       link.click();
@@ -202,9 +202,9 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const getPreviewFill = () => {
     // 在拖拽绘制时，预览颜色依据本次拖拽使用的工具
     const alpha = 0.35;
-    if (getToolCtx().effectiveTool === "eraser")
+    if (getToolCtx().effectiveTool === 'eraser')
       return `rgba(255, 255, 255, ${alpha})`;
-    const { r, g, b } = parseColorString(color || "#000000");
+    const { r, g, b } = parseColorString(color || '#000000');
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
 
@@ -228,7 +228,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const drawFillPreview = (cell: Point) => {
     const c = previewCanvasRef.current;
     if (!c) return;
-    const ctx = c.getContext("2d");
+    const ctx = c.getContext('2d');
     if (!ctx) return;
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, c.width, c.height);
@@ -328,7 +328,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const clearPreview = () => {
     const c = previewCanvasRef.current;
     if (!c) return;
-    const ctx = c.getContext("2d");
+    const ctx = c.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, c.width, c.height);
   };
@@ -398,7 +398,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
 
     const c = previewCanvasRef.current;
     if (!c) return;
-    const ctx = c.getContext("2d");
+    const ctx = c.getContext('2d');
     if (!ctx) return;
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, c.width, c.height);
@@ -480,7 +480,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const applyBrush = (cell: Point, activeTool?: Tool) => {
     const pixelCanvas = pixelCanvasRef.current;
     if (!pixelCanvas) return;
-    const ctx = pixelCanvas.getContext("2d");
+    const ctx = pixelCanvas.getContext('2d');
     if (!ctx) return;
     const size = Math.max(1, pencilSize);
     const half = Math.floor((size - 1) / 2);
@@ -544,7 +544,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       e.preventDefault();
       const pixelCanvas = pixelCanvasRef.current;
       if (!pixelCanvas) return;
-      const ctx = pixelCanvas.getContext("2d");
+      const ctx = pixelCanvas.getContext('2d');
       if (!ctx) return;
       beginOp();
 
@@ -582,8 +582,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       e.button === MOUSE_BUTTON.RIGHT
         ? TOOLS.ERASER
         : uiTool === TOOLS.ERASER
-        ? TOOLS.ERASER
-        : TOOLS.PENCIL;
+          ? TOOLS.ERASER
+          : TOOLS.PENCIL;
     if (e.button === MOUSE_BUTTON.RIGHT) e.preventDefault();
     beginOp();
     drawingRef.current = true;
@@ -610,7 +610,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         );
       }
       const changes = entries.map(([key, v]) => {
-        const [xs, ys] = key.split(",");
+        const [xs, ys] = key.split(',');
         return { x: Number(xs), y: Number(ys), prev: v.prev, next: v.next };
       });
       if (changes.length > 0) {
@@ -668,10 +668,10 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         ? columns
         : Math.min(columns, floorCols || columns);
 
-      const out = document.createElement("canvas");
+      const out = document.createElement('canvas');
       out.width = targetCols * exportPixelSize;
       out.height = targetRows * exportPixelSize;
-      const outCtx = out.getContext("2d");
+      const outCtx = out.getContext('2d');
       if (!outCtx) return;
       outCtx.imageSmoothingEnabled = false;
 
@@ -690,11 +690,11 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         out.height
       );
 
-      const url = out.toDataURL("image/png");
-      const link = document.createElement("a");
+      const url = out.toDataURL('image/png');
+      const link = document.createElement('a');
       link.download = filename
-        ? `${filename.replace(/\.[^.]+$/, "")}.png`
-        : "pixel-art.png";
+        ? `${filename.replace(/\.[^.]+$/, '')}.png`
+        : 'pixel-art.png';
       link.href = url;
       document.body.appendChild(link);
       link.click();
@@ -801,13 +801,13 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     lastCellRef.current = null;
 
     // 尺寸变化导致画布清空，需要从 Store 重新绘制
-    const ctx = pixelCanvas.getContext("2d");
+    const ctx = pixelCanvas.getContext('2d');
     if (!ctx) return;
     ctx.imageSmoothingEnabled = false;
 
     if (runtimePixels.size > 0) {
       for (const [key, val] of runtimePixels.entries()) {
-        const [xs, ys] = key.split(",");
+        const [xs, ys] = key.split(',');
         const x = Number(xs);
         const y = Number(ys);
         if (Number.isFinite(x) && Number.isFinite(y)) {
@@ -823,7 +823,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     const unsub = useEditorDataStore.subscribe((state, prevState) => {
       const pixelCanvas = pixelCanvasRef.current;
       if (!pixelCanvas) return;
-      const ctx = pixelCanvas.getContext("2d");
+      const ctx = pixelCanvas.getContext('2d');
       if (!ctx) return;
 
       const paint = (x: number, y: number, color: string | null) => {
@@ -868,7 +868,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       else if (state.ops !== prevState.ops && state.ops.length === 0) {
         ctx.clearRect(0, 0, pixelCanvas.width, pixelCanvas.height);
         for (const [key, val] of runtimePixels.entries()) {
-          const [xs, ys] = key.split(",");
+          const [xs, ys] = key.split(',');
           const x = Number(xs);
           const y = Number(ys);
           if (Number.isFinite(x) && Number.isFinite(y)) {
@@ -885,13 +885,13 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   useEffect(() => {
     const bg = bgCanvasRef.current;
     if (!bg) return;
-    const ctx = bg.getContext("2d");
+    const ctx = bg.getContext('2d');
     if (!ctx) return;
     bg.width = stageSize.width;
     bg.height = stageSize.height;
     ctx.imageSmoothingEnabled = false;
-    const c1 = "#d9d9d9";
-    const c2 = "#ffffff";
+    const c1 = '#d9d9d9';
+    const c2 = '#ffffff';
     const subW = Math.max(1, Math.floor(cellSize / 2));
     const subH = subW;
     for (let y = 0; y < rows; y++) {
@@ -947,8 +947,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         cursor:
           getToolCtx().uiTool === TOOLS.DRAG
             ? panning
-              ? "grabbing"
-              : "grab"
+              ? 'grabbing'
+              : 'grab'
             : undefined,
       }}
     >

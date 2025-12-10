@@ -28,3 +28,6 @@ dist-ssr
 .trae/rules/
 .cursor/
 .cursor/rules/
+
+# Husky
+.husky/_

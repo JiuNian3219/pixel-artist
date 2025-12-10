@@ -1,14 +1,14 @@
-import { useEditorDataStore } from "@/stores/editorDataStore";
-import { useEditorUIStore } from "@/stores/editorUIStore";
-import { TOOLS } from "@/utils/constants";
-import { Button, ColorPicker } from "antd";
-import type { Color } from "antd/es/color-picker";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import styles from "../index.module.less";
+import { useEditorDataStore } from '@/stores/editorDataStore';
+import { useEditorUIStore } from '@/stores/editorUIStore';
+import { TOOLS } from '@/utils/constants';
+import { Button, ColorPicker } from 'antd';
+import type { Color } from 'antd/es/color-picker';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import styles from '../index.module.less';
 
 const ToolsPanel: React.FC = () => {
-  const { t } = useTranslation("editor");
+  const { t } = useTranslation('editor');
   const tool = useEditorUIStore((s) => s.tool);
   const color = useEditorUIStore((s) => s.color);
   const setTool = useEditorUIStore((s) => s.setTool);
@@ -36,38 +36,38 @@ const ToolsPanel: React.FC = () => {
     <div className={styles.toolsPanel}>
       <Button
         className={styles.toolButton}
-        type={tool === TOOLS.PENCIL ? "primary" : "default"}
+        type={tool === TOOLS.PENCIL ? 'primary' : 'default'}
         icon={<span className="iconfont icon-huabi_huaban1"></span>}
         onClick={() => setTool(TOOLS.PENCIL)}
-        title={t("tools_panel.pencil")}
+        title={t('tools_panel.pencil')}
       />
       <Button
         className={styles.toolButton}
-        type={tool === TOOLS.ERASER ? "primary" : "default"}
+        type={tool === TOOLS.ERASER ? 'primary' : 'default'}
         icon={<span className="iconfont icon-xiangpi_huaban1"></span>}
         onClick={() => setTool(TOOLS.ERASER)}
-        title={t("tools_panel.eraser")}
+        title={t('tools_panel.eraser')}
       />
       <Button
         className={styles.toolButton}
-        type={tool === TOOLS.FILL ? "primary" : "default"}
+        type={tool === TOOLS.FILL ? 'primary' : 'default'}
         icon={<span className="iconfont icon-youqitong_huaban1"></span>}
         onClick={() => setTool(TOOLS.FILL)}
-        title={t("tools_panel.fill")}
+        title={t('tools_panel.fill')}
       />
       <Button
         className={styles.toolButton}
-        type={tool === TOOLS.PICKER ? "primary" : "default"}
+        type={tool === TOOLS.PICKER ? 'primary' : 'default'}
         icon={<span className="iconfont icon-xiguan_huaban1"></span>}
         onClick={() => setTool(TOOLS.PICKER)}
-        title={t("tools_panel.picker")}
+        title={t('tools_panel.picker')}
       />
       <Button
         className={styles.toolButton}
-        type={tool === TOOLS.DRAG ? "primary" : "default"}
+        type={tool === TOOLS.DRAG ? 'primary' : 'default'}
         icon={<span className="iconfont icon-yidong_huaban1"></span>}
         onClick={() => setTool(TOOLS.DRAG)}
-        title={t("tools_panel.drag")}
+        title={t('tools_panel.drag')}
       />
 
       <ColorPicker
@@ -80,7 +80,7 @@ const ToolsPanel: React.FC = () => {
       <Button
         className={styles.toolButton}
         icon={<span className="iconfont icon-houtui"></span>}
-        title={t("tools_panel.back")}
+        title={t('tools_panel.back')}
         disabled={opIndex < 0}
         onClick={undo}
       />
@@ -88,7 +88,7 @@ const ToolsPanel: React.FC = () => {
       <Button
         className={styles.toolButton}
         icon={<span className="iconfont icon-qianjin"></span>}
-        title={t("tools_panel.next")}
+        title={t('tools_panel.next')}
         disabled={opIndex >= opsLen - 1}
         onClick={redo}
       />

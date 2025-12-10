@@ -1,4 +1,4 @@
-import type { Point } from "@/types/editor";
+import type { Point } from '@/types/editor';
 
 // 鼠标键位
 export const MOUSE_BUTTON = {
@@ -60,8 +60,8 @@ export const parseColorString = (
   str: string
 ): { r: number; g: number; b: number; a: number } => {
   if (!str) return { r: 0, g: 0, b: 0, a: 0 };
-  if (str.startsWith("#")) {
-    const s = str.replace("#", "");
+  if (str.startsWith('#')) {
+    const s = str.replace('#', '');
     if (s.length === 3) {
       const r = parseInt(s[0] + s[0], 16) || 0;
       const g = parseInt(s[1] + s[1], 16) || 0;
@@ -138,9 +138,9 @@ export const getContrastColorForRGBA = (rgba: {
   a: number;
 }) => {
   // 透明区域用高可见色
-  if (rgba.a < 128) return "#ff00aa";
+  if (rgba.a < 128) return '#ff00aa';
   const lum = 0.299 * rgba.r + 0.587 * rgba.g + 0.114 * rgba.b;
-  return lum > 128 ? "#000000" : "#ffffff";
+  return lum > 128 ? '#000000' : '#ffffff';
 };
 
 /**

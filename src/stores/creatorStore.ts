@@ -12,9 +12,9 @@ import {
   DEFAULT_SHOW_PREVIEW_PIXEL_GRID,
   DEFAULT_TASK_FACTORS_ORDER,
   TASK_FACTORS,
-} from "@/utils/constants";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+} from '@/utils/constants';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface CreatorLocalStates {
   pixelAlgorithm: string;
@@ -84,7 +84,7 @@ export const useCreatorLocalStore = create<
         set({ defaultPreviewHeight: height }),
     }),
     {
-      name: "creator-local-state-storage",
+      name: 'creator-local-state-storage',
       storage: createJSONStorage(() => localStorage),
     }
   )

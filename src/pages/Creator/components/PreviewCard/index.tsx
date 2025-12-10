@@ -1,23 +1,23 @@
-import GlobalLoadingOverlay from "@/components/GlobalLoadingOverlay";
-import { useCreatorLocalStore } from "@/stores/creatorStore";
-import { useEditorDataStore } from "@/stores/editorDataStore";
+import GlobalLoadingOverlay from '@/components/GlobalLoadingOverlay';
+import { useCreatorLocalStore } from '@/stores/creatorStore';
+import { useEditorDataStore } from '@/stores/editorDataStore';
 import {
   MAX_COLUMNS,
   MAX_PREVIEW_HEIGHT,
   MAX_ROWS,
   MIN_PREVIEW_HEIGHT,
-} from "@/utils/constants";
-import { parseDataUrlToGridPixels } from "@/utils/image";
-import { DownloadOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Image, message, Modal, Row, Tag } from "antd";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { TAG_COLORS } from "../../utils";
-import PixelGrid from "../PixelGrid";
-import styles from "./index.module.less";
+} from '@/utils/constants';
+import { parseDataUrlToGridPixels } from '@/utils/image';
+import { DownloadOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Image, message, Modal, Row, Tag } from 'antd';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { TAG_COLORS } from '../../utils';
+import PixelGrid from '../PixelGrid';
+import styles from './index.module.less';
 
-type ButtonPlacement = "top" | "bottom";
+type ButtonPlacement = 'top' | 'bottom';
 
 interface PreviewCardProps {
   originalFile: File | null;
@@ -38,13 +38,13 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   defaultPreviewHeight = 350,
   showPixelGrid,
   showSaveButton = true,
-  saveButtonPlacement = "top",
+  saveButtonPlacement = 'top',
   showEditButton = true,
-  editButtonPlacement = "top",
+  editButtonPlacement = 'top',
   showResizeHandle = false,
   tags = [],
 }) => {
-  const { t } = useTranslation("creator");
+  const { t } = useTranslation('creator');
   const navigate = useNavigate();
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
   const initializeFromPixelated = useEditorDataStore(
@@ -62,7 +62,7 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
 
   const handleSaveImage = () => {
     if (!pixelatedImage || !originalFile) return;
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.download = originalFile.name;
     link.href = pixelatedImage;
     document.body.appendChild(link);
@@ -84,12 +84,12 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
     };
 
     const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
     };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
   };
 
   const handlePreviewWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -108,7 +108,7 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
     const columns = Math.max(1, Math.ceil(imageNaturalSize.width / pixelSize));
     if (rows > MAX_ROWS || columns > MAX_COLUMNS) {
       message.error(
-        t("preview_panel.max_size_hint", {
+        t('preview_panel.max_size_hint', {
           maxRows: MAX_ROWS,
           maxColumns: MAX_COLUMNS,
         })
@@ -135,10 +135,10 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
           originalHeight: imageNaturalSize.height,
           pixels,
         });
-        navigate("../editor");
+        navigate('../editor');
       } catch (err) {
         console.error(err);
-        message.error("解析像素失败，请重试");
+        message.error('解析像素失败，请重试');
       } finally {
         setProcessing(false);
       }
@@ -146,10 +146,10 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
 
     if (hasCanvas) {
       Modal.confirm({
-        title: t("preview_panel.overwrite_confirm_title"),
-        content: t("preview_panel.overwrite_confirm_content"),
-        okText: t("preview_panel.overwrite_confirm_ok"),
-        cancelText: t("preview_panel.overwrite_confirm_cancel"),
+        title: t('preview_panel.overwrite_confirm_title'),
+        content: t('preview_panel.overwrite_confirm_content'),
+        okText: t('preview_panel.overwrite_confirm_ok'),
+        cancelText: t('preview_panel.overwrite_confirm_cancel'),
         onOk: proceed,
       });
     } else {
@@ -166,10 +166,7 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   return (
     <>
       <GlobalLoadingOverlay visible={processing} />
-      <div
-        className={styles.previewCard}
-        onWheel={handlePreviewWheel}
-      >
+      <div className={styles.previewCard} onWheel={handlePreviewWheel}>
         {pixelatedImage ? (
           <PixelGrid
             imageWidth={imageNaturalSize.width}
@@ -186,8 +183,8 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
         ) : (
           <div className={styles.emptyPreview}>
             {originalFile
-              ? t("preview_panel.upload_after_hint")
-              : t("preview_panel.upload_hint")}
+              ? t('preview_panel.upload_after_hint')
+              : t('preview_panel.upload_hint')}
           </div>
         )}
 
@@ -199,9 +196,9 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
           />
         )}
 
-        {showEditButton && editButtonPlacement === "top" && (
+        {showEditButton && editButtonPlacement === 'top' && (
           <Button
-            title={t("preview_panel.edit_button")}
+            title={t('preview_panel.edit_button')}
             className={styles.topEditButton}
             icon={<EditOutlined />}
             disabled={!pixelatedImage}
@@ -209,9 +206,9 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
           ></Button>
         )}
 
-        {showSaveButton && saveButtonPlacement === "top" && (
+        {showSaveButton && saveButtonPlacement === 'top' && (
           <Button
-            title={t("common.save_image")}
+            title={t('common.save_image')}
             className={styles.topSaveButton}
             icon={<DownloadOutlined />}
             disabled={!pixelatedImage}
@@ -222,39 +219,36 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
         {tags?.length > 0 && (
           <div className={styles.tagsGroup}>
             {tags.map((tag, index) => (
-              <Tag
-                key={index}
-                color={TAG_COLORS[index % TAG_COLORS.length]}
-              >
+              <Tag key={index} color={TAG_COLORS[index % TAG_COLORS.length]}>
                 {tag}
               </Tag>
             ))}
           </div>
         )}
       </div>
-      {showSaveButton && saveButtonPlacement === "bottom" && (
+      {showSaveButton && saveButtonPlacement === 'bottom' && (
         <Row className={styles.actionRow}>
           <Button
-            title={t("common.save_image")}
+            title={t('common.save_image')}
             type="primary"
             className={styles.saveButton}
             disabled={!pixelatedImage}
             onClick={handleSaveImage}
           >
-            {t("preview_panel.save_button")}
+            {t('preview_panel.save_button')}
           </Button>
         </Row>
       )}
-      {showEditButton && editButtonPlacement === "bottom" && (
+      {showEditButton && editButtonPlacement === 'bottom' && (
         <Row className={styles.actionRow}>
           <Button
-            title={t("preview_panel.edit_button")}
+            title={t('preview_panel.edit_button')}
             type="primary"
             className={styles.editButton}
             disabled={!pixelatedImage}
             onClick={handleEditImage}
           >
-            {t("preview_panel.edit_button")}
+            {t('preview_panel.edit_button')}
           </Button>
         </Row>
       )}
@@ -263,4 +257,3 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
 };
 
 export default PreviewCard;
-
