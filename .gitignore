@@ -31,3 +31,8 @@ dist-ssr
 
 # Husky
 .husky/_
+
+# SEO
+public/robots.txt
+public/sitemap.xml
+public/BingSiteAuth.xml

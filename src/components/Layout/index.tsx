@@ -25,8 +25,14 @@ const Layout: React.FC = () => {
   const { t, i18n } = useTranslation('common');
   const locale = parseLocaleFromPath(location.pathname);
 
+  // 规范化路径：移除尾部斜杠（除了根路径 /），解决 /zh/editor/ 匹配不到菜单和 SEO 的问题
+  const normalizedPathname =
+    location.pathname.length > 1 && location.pathname.endsWith('/')
+      ? location.pathname.slice(0, -1)
+      : location.pathname;
+
   const currentSEO =
-    resolveSEOByPath(location.pathname, locale) || getDefaultSEO();
+    resolveSEOByPath(normalizedPathname, locale) || getDefaultSEO();
 
   const menuItems = [
     {
@@ -87,7 +93,7 @@ const Layout: React.FC = () => {
             <Menu
               theme="light"
               mode="horizontal"
-              selectedKeys={[location.pathname]}
+              selectedKeys={[normalizedPathname]}
               items={menuItems}
               className={styles.menu}
             />
