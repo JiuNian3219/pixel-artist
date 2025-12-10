@@ -41,6 +41,10 @@ jobs:
           file: Dockerfile
           push: true
           tags: ghcr.io/${{ env.OWNER_LC }}/pixel-artist:latest
+          build-args: |
+            VITE_UMAMI_WEBSITE_ID=${{ secrets.VITE_UMAMI_WEBSITE_ID }}
+            VITE_UMAMI_SCRIPT_URL=${{ secrets.VITE_UMAMI_SCRIPT_URL }}
+            VITE_SITE_URL=${{ secrets.VITE_SITE_URL }}
           # 可选缓存，提升重复构建速度
           cache-to: type=inline
 
@@ -52,6 +56,10 @@ jobs:
           file: Dockerfile
           push: false
           tags: ghcr.io/${{ env.OWNER_LC }}/pixel-artist:pr-${{ github.event.pull_request.number }}
+          build-args: |
+            VITE_UMAMI_WEBSITE_ID=${{ secrets.VITE_UMAMI_WEBSITE_ID }}
+            VITE_UMAMI_SCRIPT_URL=${{ secrets.VITE_UMAMI_SCRIPT_URL }}
+            VITE_SITE_URL=${{ secrets.VITE_SITE_URL }}
           cache-to: type=inline
 
   deploy:
