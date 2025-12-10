@@ -41,6 +41,49 @@ npm run build
 npm run lint
 ```
 
+## CI/CD 工作流
+本项目使用 GitHub Actions 实现自动化构建与部署。工作流文件位于 `.github/workflows/deploy.yml`。
+
+### 触发机制与流程
+- **Push to main**：
+  - 执行 `build-and-push`：构建 Docker 镜像并推送至 GHCR（标签 `:latest`）。
+  - 执行 `deploy`：通过 SSH 连接服务器，拉取最新镜像并重启 `pixel-artist` 容器（部署到 Development 环境）。
+- **Pull Request to main**：
+  - 执行 `Build Image (PR)`：仅验证 Docker 镜像构建是否成功（标签 `:pr-<number>`，不推送、不部署），确保 PR 代码质量。
+
+### 环境与 Secrets
+若要 fork 本项目或自行部署，需在 GitHub 仓库设置中配置以下 Secrets（支持 Environments）：
+- `DEPLOY_HOST`: 服务器 IP 或域名
+- `DEPLOY_USER`: SSH 登录用户名（需加入 docker 用户组）
+- `DEPLOY_SSH_KEY`: SSH 私钥（对应公钥需在服务器 `authorized_keys` 中）
+
+## 代码规范与提交
+本项目配置了 Husky + Commitlint + Lint-staged 以确保代码与提交质量。
+
+### 提交规范 (Conventional Commits)
+提交信息必须遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
+```bash
+<type>(<scope>): <subject>
+```
+常用 type：
+- `feat`: 新功能
+- `fix`: 修复 bug
+- `docs`: 文档变更
+- `style`: 代码格式（不影响功能）
+- `refactor`: 代码重构
+- `chore`: 构建过程或辅助工具变动
+- `ci`: CI 配置文件变动
+
+示例：
+```bash
+git commit -m "feat(editor): add color picker component"
+git commit -m "ci(workflow): split build job for PR and push"
+```
+
+### Git Hooks
+- **pre-commit**: 提交前自动运行 `lint-staged`，对暂存区文件执行 ESLint 与 Prettier 修复。
+- **commit-msg**: 提交时检查 commit message 格式，不符合规范将拒绝提交。
+
 ## 分析配置
 
 本项目使用 Umami 进行网站访问分析（暂时只包含访问分析）。要启用分析功能，请创建一个 `.env` 文件并设置以下变量：

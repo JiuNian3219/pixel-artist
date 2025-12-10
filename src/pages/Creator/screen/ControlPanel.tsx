@@ -275,6 +275,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   }, []);
 
   useEffect(() => {
+    // 预渲染环境下跳过 Worker 创建，避免 Chromium 报错
+    if (navigator.userAgent === 'ReactSnap') return;
+
     worker.current = new Worker(
       new URL('../../../workers/pixelWorker.ts', import.meta.url),
       {

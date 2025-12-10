@@ -30,6 +30,16 @@ RUN apt-get update && apt-get install -y \
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps --no-audit --no-fund
 
+# 接收构建参数
+ARG VITE_UMAMI_WEBSITE_ID
+ARG VITE_UMAMI_SCRIPT_URL
+ARG VITE_SITE_URL
+
+# 设置为环境变量，供 build 过程使用
+ENV VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID
+ENV VITE_UMAMI_SCRIPT_URL=$VITE_UMAMI_SCRIPT_URL
+ENV VITE_SITE_URL=$VITE_SITE_URL
+
 # 复制源码并构建
 COPY . .
 RUN npm run build
