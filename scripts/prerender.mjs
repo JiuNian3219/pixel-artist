@@ -7,8 +7,8 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, '../dist');
 const PORT = 4173;
-const BASE_URL = `http://localhost:${PORT}`;
-const OUTPUT_DIR = path.resolve(__dirname, '../dist');
+// 强制使用 IPv4 127.0.0.1 避免 Node 版本/Docker 环境下的 localhost 解析歧义 (IPv4 vs IPv6)
+const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 // --- 新增：简单的 .env 加载器（用于本地开发） ---
 // 在 CI/Docker 环境中，环境变量通常已经存在于 process.env 中
@@ -44,13 +44,18 @@ const ROUTES = [
 
 async function waitForServer(url, timeout = 30000) {
   const startTime = Date.now();
+  let lastError;
   while (Date.now() - startTime < timeout) {
     try {
       const res = await fetch(url);
       if (res.ok) return true;
     } catch (e) {
+      lastError = e;
     }
     await new Promise((r) => setTimeout(r, 500));
+  }
+  if (lastError) {
+    console.error(`WaitForServer failed. Last error: ${lastError.message}`);
   }
   return false;
 }
@@ -59,8 +64,8 @@ async function main() {
   console.log('🚀 Starting Custom Prerender...');
 
   // 1. 启动 Vite Preview 服务
-  // 使用 shell: true 来解决 Windows 下的 spawn 问题
-  const serverProcess = spawn('npm', ['run', 'preview', '--', '--port', `${PORT}`, '--strictPort'], {
+  // 增加 --host 127.0.0.1 确保绑定到 IPv4
+  const serverProcess = spawn('npm', ['run', 'preview', '--', '--port', `${PORT}`, '--strictPort', '--host', '127.0.0.1'], {
     cwd: path.resolve(__dirname, '..'),
     stdio: 'inherit',
     detached: false,
@@ -201,6 +206,7 @@ async function main() {
 }
 
 main();
+
 
 
 
