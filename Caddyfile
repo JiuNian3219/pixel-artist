@@ -1,0 +1,16 @@
+# 项目内部 Caddy 配置：仅静态服务与 SPA 路由回退，TLS 由网关负责
+
+:80 {
+  # 站点根目录（已在 Dockerfile 中复制 dist）
+  root * /usr/share/caddy
+
+  # 压缩
+  encode gzip
+
+  # SPA 路由：若请求文件不存在，回退到 index.html（支持 React Router）
+  try_files {path} {path}/ /index.html
+
+  # 静态文件服务
+  file_server
+}
+
