@@ -51,7 +51,7 @@ FROM caddy:2.8-alpine
 COPY Caddyfile /etc/caddy/Caddyfile
 
 # 将编译后的静态产物复制到 Caddy 默认站点目录
-COPY --from=builder /app/dist /usr/share/caddy
+COPY --from=builder /app/dist/client /usr/share/caddy
 
 EXPOSE 80
 CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
