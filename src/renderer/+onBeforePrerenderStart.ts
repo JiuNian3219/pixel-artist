@@ -1,6 +1,12 @@
 export { onBeforePrerenderStart };
 
+let hasProvidedUrls = false;
+
 async function onBeforePrerenderStart() {
+  if (hasProvidedUrls) {
+    return [];
+  }
+
   const locales = ['zh', 'en'];
   const urls: string[] = [];
 
@@ -10,5 +16,9 @@ async function onBeforePrerenderStart() {
     urls.push(`/${locale}/editor`);
   });
 
-  return [...new Set(urls)];
+  const uniqueUrls = [...new Set(urls)];
+
+  hasProvidedUrls = true;
+
+  return uniqueUrls;
 }
