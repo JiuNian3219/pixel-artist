@@ -1,3 +1,5 @@
+import CenterSpin from '@/components/CenterSpin';
+import { ClientOnly } from '@/components/ClientOnly';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useEditorDataStore } from '@/stores/editorDataStore';
 import { useEditorUIStore } from '@/stores/editorUIStore';
@@ -83,43 +85,47 @@ const Editor: React.FC = () => {
   }, []);
 
   return (
-    <div className={styles.editorContainer}>
-      {/** 移动端工具栏位于 画布 下方 */}
-      {!isMobile && (
-        <div className={styles.toolsContainer}>
-          <ToolsPanel />
-        </div>
-      )}
-      <div className={styles.CanvasWrapper}>
-        {hasCanvas ? (
-          <CanvasViewport ref={canvasRef} />
-        ) : (
-          <div className={styles.emptyContainer}>
-            <Typography.Title level={4}>
-              {t('common.empty.title')}
-            </Typography.Title>
-            <Typography.Paragraph>
-              {t('common.empty.hint')}
-            </Typography.Paragraph>
+    <ClientOnly fallback={<CenterSpin style={{ height: '100vh' }} />}>
+      <div className={styles.editorContainer}>
+        {/** 移动端工具栏位于 画布 下方 */}
+        {!isMobile && (
+          <div className={styles.toolsContainer}>
+            <ToolsPanel />
           </div>
         )}
-      </div>
-      {isMobile && (
-        <div className={styles.toolsContainer}>
-          <ToolsPanel />
+        <div className={styles.CanvasWrapper}>
+          {hasCanvas ? (
+            <CanvasViewport ref={canvasRef} />
+          ) : (
+            <div className={styles.emptyContainer}>
+              <Typography.Title level={4}>
+                {t('common.empty.title')}
+              </Typography.Title>
+              <Typography.Paragraph type="secondary">
+                {t('common.empty.hint')}
+              </Typography.Paragraph>
+            </div>
+          )}
         </div>
-      )}
-      <div className={styles.configContainer}>
-        <ConfigsPanel onExport={() => canvasRef.current?.exportImage()} />
-      </div>
 
-      {/** 操作提示 */}
-      {!isMobile && (
-        <Typography.Text className={styles.operationHint}>
-          {t('common.operation_hint')}
-        </Typography.Text>
-      )}
-    </div>
+        {isMobile && (
+          <div className={styles.toolsContainer}>
+            <ToolsPanel />
+          </div>
+        )}
+
+        <div className={styles.configContainer}>
+          <ConfigsPanel onExport={() => canvasRef.current?.exportImage()} />
+        </div>
+
+        {/** 操作提示 */}
+        {!isMobile && (
+          <Typography.Text className={styles.operationHint}>
+            {t('common.operation_hint')}
+          </Typography.Text>
+        )}
+      </div>
+    </ClientOnly>
   );
 };
 

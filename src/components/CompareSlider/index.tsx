@@ -1,5 +1,5 @@
+import CenterSpin from '@/components/CenterSpin';
 import { useEffect, useRef, useState } from 'react';
-import CenterSpin from '../CenterSpin';
 import styles from './index.module.less';
 
 interface CompareSliderProps {
@@ -25,7 +25,18 @@ const CompareSlider: React.FC<CompareSliderProps> = ({
   const [dividerPercent, setDividerPercent] = useState<number>(50);
   const [dragging, setDragging] = useState<boolean>(false);
   const [leftLoaded, setLeftLoaded] = useState<boolean>(false);
-  const [rightLoaded, setRightLoaded] = useState<boolean>(false);
+  const [rightLoaded, setRightLoaded] = useState(false);
+  const leftImgRef = useRef<HTMLImageElement>(null);
+  const rightImgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (leftImgRef.current?.complete) {
+      setLeftLoaded(true);
+    }
+    if (rightImgRef.current?.complete) {
+      setRightLoaded(true);
+    }
+  }, []);
 
   const clampPercent = (p: number) => Math.max(0, Math.min(100, p));
 
@@ -76,43 +87,41 @@ const CompareSlider: React.FC<CompareSliderProps> = ({
       onTouchMove={onTouchMove}
       onTouchEnd={() => setDragging(false)}
     >
-      {/** 左侧图 */}
+      {/* 右侧图（背景图） */}
       <img
-        src={leftSrc}
-        loading="lazy"
-        alt={alt}
-        className={styles.compareImage}
-        onLoad={() => setLeftLoaded(true)}
-      />
-      {/** 右侧图 */}
-      <img
+        ref={rightImgRef}
         src={rightSrc}
-        loading="lazy"
         alt={alt}
         className={styles.compareImage}
-        style={{
-          clipPath: `inset(0 0 0 ${dividerPercent}%)`,
-          WebkitClipPath: `inset(0 0 0 ${dividerPercent}%)`,
-        }}
         onLoad={() => setRightLoaded(true)}
       />
 
-      {/** 中间拖动手柄 */}
+      {/* 左侧图 */}
+      <div
+        className={styles.compareImage}
+        style={{
+          clipPath: `inset(0 ${100 - dividerPercent}% 0 0)`,
+          zIndex: 1,
+        }}
+      >
+        <img
+          ref={leftImgRef}
+          src={leftSrc}
+          alt={alt}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          onLoad={() => setLeftLoaded(true)}
+        />
+      </div>
+
+      {/* 滑块 */}
       {!showLoading && (
         <div
           className={styles.handle}
-          style={{ left: `${dividerPercent}%` }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            setDragging(true);
-          }}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            setDragging(true);
-          }}
+          style={{ left: `${dividerPercent}%`, zIndex: 2 }}
         />
       )}
 
+      {/* 加载遮罩 */}
       {showLoading && (
         <div className={styles.loadingMask}>
           <CenterSpin />

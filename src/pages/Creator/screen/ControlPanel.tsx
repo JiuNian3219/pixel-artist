@@ -12,7 +12,7 @@ import {
   ResultType,
   SendType,
   type PixelateBatchMessageData,
-} from '@/workers/pixelWorker';
+} from '@/workers/constants';
 import {
   BgColorsOutlined,
   ColumnHeightOutlined,

@@ -7,13 +7,15 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 import { Button, Image, Progress, Upload, message } from 'antd';
-import Dragger from 'antd/es/upload/Dragger';
-import { isEmpty } from 'lodash';
+import lodash from 'lodash';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isImageFile } from '../../utils';
 import PixelGrid from '../PixelGrid';
 import styles from './index.module.less';
+
+const { Dragger } = Upload;
+const { isEmpty } = lodash;
 
 interface ImageUploaderProps {
   onImageChange: (file: File | null, originalImage: string) => void;

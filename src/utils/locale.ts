@@ -30,7 +30,7 @@ export function stripLocaleFromPath(pathname: string): string {
  */
 export function withLocalePath(locale: Locale, basePath: string): string {
   const normalizedBase = basePath.startsWith('/') ? basePath : `/${basePath}`;
-  if (normalizedBase === '/') return `/${locale}/`;
+  if (normalizedBase === '/') return `/${locale}`;
   return `/${locale}${normalizedBase}`;
 }
 

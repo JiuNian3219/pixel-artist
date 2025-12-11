@@ -4,9 +4,11 @@ import type {
 } from '@/types/editor';
 import { INITIAL_COLUMNS, INITIAL_ROWS } from '@/utils/constants';
 import { del, get, set as setIDB } from 'idb-keyval';
-import { debounce } from 'lodash';
+import lodash from 'lodash';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+
+const { debounce } = lodash;
 
 export const runtimePixels = new Map<string, string>();
 const PIXELS_STORAGE_KEY = 'editor-pixel-data';
@@ -205,17 +207,26 @@ export const useEditorDataStore = create<
     },
     {
       name: 'editor-data-store',
-      storage: createJSONStorage(() => ({
-        getItem: async (name: string) => {
-          return (await get(name)) || null;
-        },
-        setItem: async (name: string, value: string) => {
-          await setIDB(name, value);
-        },
-        removeItem: async (name: string) => {
-          await del(name);
-        },
-      })),
+      storage: createJSONStorage(() => {
+        if (typeof window === 'undefined') {
+          return {
+            getItem: () => Promise.resolve(null),
+            setItem: () => Promise.resolve(),
+            removeItem: () => Promise.resolve(),
+          };
+        }
+        return {
+          getItem: async (name: string) => {
+            return (await get(name)) || null;
+          },
+          setItem: async (name: string, value: string) => {
+            await setIDB(name, value);
+          },
+          removeItem: async (name: string) => {
+            await del(name);
+          },
+        };
+      }),
       partialize: (state) => ({
         filename: state.filename,
         rows: state.rows,
@@ -224,6 +235,7 @@ export const useEditorDataStore = create<
         opIndex: state.opIndex,
       }),
       onRehydrateStorage: () => async (state) => {
+        if (typeof window === 'undefined') return;
         // 从独立存储加载像素数据
         const storedPixels = await get(PIXELS_STORAGE_KEY);
         if (storedPixels && storedPixels instanceof Map) {

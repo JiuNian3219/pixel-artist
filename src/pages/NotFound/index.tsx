@@ -1,12 +1,13 @@
+import { usePageContext } from '@/renderer/usePageContext';
 import { parseLocaleFromPath, withLocalePath } from '@/utils/locale';
 import { Button, Result } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { navigate } from 'vike/client/router';
 
 const NotFound: React.FC = () => {
-  const navigate = useNavigate();
-  const locale = parseLocaleFromPath(window.location.pathname);
+  const pageContext = usePageContext();
+  const locale = parseLocaleFromPath(pageContext.urlPathname);
   const { t } = useTranslation('404');
 
   return (

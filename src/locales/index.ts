@@ -33,29 +33,31 @@ const resources = {
   },
 };
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'zh',
-    defaultNS: 'common',
+// 仅在客户端使用语言检测器
+if (typeof window !== 'undefined') {
+  i18n.use(LanguageDetector);
+}
 
-    detection: {
-      // 优先路径，其次浏览器语言（主要用于以/目录进入时确定网页语言）
-      order: ['path', 'navigator'],
-      lookupFromPathIndex: 0,
-    },
+i18n.use(initReactI18next).init({
+  resources,
+  fallbackLng: 'zh',
+  defaultNS: 'common',
 
-    supportedLngs: ['zh', 'en'],
-    load: 'languageOnly',
+  detection: {
+    // 优先路径，其次浏览器语言（主要用于以/目录进入时确定网页语言）
+    order: ['path', 'navigator'],
+    lookupFromPathIndex: 0,
+  },
 
-    interpolation: {
-      escapeValue: false,
-    },
+  supportedLngs: ['zh', 'en'],
+  load: 'languageOnly',
 
-    // 开发环境显示调试信息
-    debug: import.meta.env.DEV,
-  });
+  interpolation: {
+    escapeValue: false,
+  },
+
+  // 开发环境显示调试信息
+  debug: import.meta.env.DEV,
+});
 
 export default i18n;

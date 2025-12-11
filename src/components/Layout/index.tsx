@@ -1,6 +1,8 @@
 import logo from '@/assets/logo-with-title.svg';
 import mobileLogo from '@/assets/logo.svg';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { Link } from '@/renderer/Link';
+import { usePageContext } from '@/renderer/usePageContext';
 import {
   getOgLocale,
   parseLocaleFromPath,
@@ -11,17 +13,17 @@ import { GithubOutlined } from '@ant-design/icons';
 import { Layout as AntdLayout, Menu, Space } from 'antd';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { navigate } from 'vike/client/router';
 import LanguageSwitcher from '../LanguageSwitcher';
 import SEO from '../SEO';
 import styles from './index.module.less';
 
 const { Header, Content, Footer } = AntdLayout;
 
-const Layout: React.FC = () => {
-  const location = useLocation();
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const pageContext = usePageContext();
+  const location = { pathname: pageContext.urlPathname };
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const { t, i18n } = useTranslation('common');
   const locale = parseLocaleFromPath(location.pathname);
 
@@ -100,9 +102,7 @@ const Layout: React.FC = () => {
             <LanguageSwitcher />
           </div>
         </Header>
-        <Content className={styles.content}>
-          <Outlet />
-        </Content>
+        <Content className={styles.content}>{children}</Content>
         {!hideFooter && (
           <Footer className={styles.footer}>
             <span>{t('footer.description')}</span>

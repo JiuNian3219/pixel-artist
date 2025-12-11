@@ -1,6 +1,7 @@
 import { DEFAULT_THEME } from '@/utils/constants';
+import { getStorage } from '@/utils/storage';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface AppState {
   theme: 'light' | 'dark';
@@ -15,6 +16,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'app-state-storage',
+      storage: createJSONStorage(() => getStorage()),
     }
   )
 );

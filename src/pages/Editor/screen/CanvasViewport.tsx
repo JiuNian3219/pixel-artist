@@ -19,7 +19,7 @@ import {
   MIN_ZOOM,
   TOOLS,
 } from '@/utils/constants';
-import { throttle } from 'lodash';
+import lodash from 'lodash';
 import {
   forwardRef,
   useCallback,
@@ -30,6 +30,8 @@ import {
   useState,
 } from 'react';
 import styles from '../index.module.less';
+
+const { throttle } = lodash;
 
 export interface CanvasViewportHandle {
   exportImage: () => void;
