@@ -77,8 +77,8 @@
   "reactSnap": {
     "source": "dist",
     "include": [
-      "/zh/",
-      "/en/",
+      "/zh",
+      "/en",
       "/zh/creator",
       "/en/creator",
       "/zh/editor",
