@@ -10,5 +10,5 @@ async function onBeforePrerenderStart() {
     urls.push(`/${locale}/editor`);
   });
 
-  return urls;
+  return [...new Set(urls)];
 }
