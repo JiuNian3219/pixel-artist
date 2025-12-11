@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "prebuild": "node scripts/generate-sitemap.mjs --mode=production && node scripts/generate-robots.mjs --mode=production && node scripts/generate-bing-auth.mjs --mode=production",
-    "postbuild": "node scripts/prerender.mjs",
     "lint": "eslint .",
     "lint:style": "stylelint \"src/**/*.{css,less}\"",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,md,css,less}\"",
@@ -28,7 +27,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-i18next": "^16.0.0",
-    "react-router-dom": "^7.9.1",
+    "vike": "^0.4.224",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -50,7 +49,6 @@
     "lint-staged": "^16.2.7",
     "postcss-less": "^6.0.0",
     "prettier": "^3.7.4",
-    "react-snap": "^1.23.0",
     "stylelint": "^16.26.1",
     "stylelint-config-clean-order": "^8.0.0",
     "stylelint-config-recommended-less": "^3.0.1",

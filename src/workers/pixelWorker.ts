@@ -1,36 +1,10 @@
 import { pixelateImage } from '@/utils/pixelate';
-
-type PixelateTask = { algorithm: string; palette: string };
-
-type PixelateBatchPayload = {
-  data: Uint8ClampedArray;
-  width: number;
-  height: number;
-  pixelSize: number;
-  tasks: PixelateTask[];
-};
-
-type PixelateBatchResult = {
-  data: Uint8ClampedArray;
-  algorithm: string;
-  palette: string;
-};
-
-export type PixelateBatchMessageData =
-  | {
-      type: typeof ResultType.RESULT;
-      payload: PixelateBatchResult;
-    }
-  | { type: typeof ResultType.COMPLETE };
-
-export const SendType = {
-  PIXELATE_BATCH: 'pixelate-batch',
-} as const;
-
-export const ResultType = {
-  RESULT: 'result',
-  COMPLETE: 'complete',
-} as const;
+import {
+  ResultType,
+  SendType,
+  type PixelateBatchMessageData,
+  type PixelateBatchPayload,
+} from './constants';
 
 self.onmessage = async (ev: MessageEvent) => {
   const msg = ev.data as { type: string; payload: PixelateBatchPayload };

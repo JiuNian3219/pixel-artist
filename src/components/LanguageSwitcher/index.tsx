@@ -1,4 +1,5 @@
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { usePageContext } from '@/renderer/usePageContext';
 import {
   LOCALES,
   parseLocaleFromPath,
@@ -10,19 +11,20 @@ import type { MenuProps } from 'antd';
 import { Button, Dropdown } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { navigate } from 'vike/client/router';
 import styles from './index.module.less';
 
 const LanguageSwitcher: React.FC = () => {
   const { i18n, t } = useTranslation('common');
-  const navigate = useNavigate();
-  const location = useLocation();
-  const currentLocale = parseLocaleFromPath(location.pathname);
+  const pageContext = usePageContext();
+  const currentLocale = parseLocaleFromPath(pageContext.urlPathname);
   const isMobile = useIsMobile();
+
   const handleLanguageChange = (language: 'zh' | 'en') => {
-    const basePath = stripLocaleFromPath(location.pathname);
-    navigate(withLocalePath(language, basePath) + location.search, {
-      replace: true,
+    const basePath = stripLocaleFromPath(pageContext.urlPathname);
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    navigate(withLocalePath(language, basePath) + search, {
+      overwriteLastHistoryEntry: true,
     });
     i18n.changeLanguage(language);
   };

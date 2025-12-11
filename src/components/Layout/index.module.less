@@ -1,37 +1,41 @@
 .layout {
-  min-height: 100vh;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
+  min-height: 100vh !important;
+  background-color: var(--bg-100) !important;
+  background-image:
+    linear-gradient(rgb(0 0 0 / 10%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 10%) 1px, transparent 1px) !important;
+  background-size: 20px 20px !important;
 }
 
 .header {
   position: sticky;
-  top: 0;
   z-index: 99;
-  width: 100%;
+  top: 0;
+
   display: flex;
   align-items: center;
+
+  width: 100%;
   padding: 0 24px;
 
   .logoImage {
-    margin-right: 40px;
     cursor: pointer;
+    margin-right: 40px;
 
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       margin-right: 20px;
     }
   }
 
   .nav {
     display: flex;
-    width: 100%;
     align-items: center;
+    width: 100%;
 
     .menu {
-      background: transparent;
-      border-bottom: none;
       flex: 1;
+      border-bottom: none;
+      background: transparent;
     }
   }
 }
@@ -42,17 +46,19 @@
 
 .footer {
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
-  text-align: center;
-  background-color: transparent;
   gap: 4px;
-  color: rgba(0, 0, 0, 0.65);
+  align-items: center;
+  justify-content: center;
+
+  color: rgb(0 0 0 / 65%);
+  text-align: center;
+
+  background-color: transparent !important;
 
   .separator {
     margin: 0 8px;
-    color: rgba(0, 0, 0, 0.25);
+    color: rgb(0 0 0 / 25%);
   }
 
   .footerLink {

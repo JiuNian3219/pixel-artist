@@ -8,11 +8,12 @@ import {
   MIN_PREVIEW_HEIGHT,
 } from '@/utils/constants';
 import { parseDataUrlToGridPixels } from '@/utils/image';
+import { parseLocaleFromPath, withLocalePath } from '@/utils/locale';
 import { DownloadOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Image, message, Modal, Row, Tag } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { navigate } from 'vike/client/router';
 import { TAG_COLORS } from '../../utils';
 import PixelGrid from '../PixelGrid';
 import styles from './index.module.less';
@@ -45,7 +46,6 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   tags = [],
 }) => {
   const { t } = useTranslation('creator');
-  const navigate = useNavigate();
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
   const initializeFromPixelated = useEditorDataStore(
     (s) => s.initializeFromPixelated
@@ -135,7 +135,8 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
           originalHeight: imageNaturalSize.height,
           pixels,
         });
-        navigate('../editor');
+        const locale = parseLocaleFromPath(window.location.pathname);
+        navigate(withLocalePath(locale, '/editor'));
       } catch (err) {
         console.error(err);
         message.error('解析像素失败，请重试');

@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import vike from 'vike/plugin';
 import { defineConfig, loadEnv } from 'vite';
 
 // https://vite.dev/config/
@@ -9,6 +10,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      vike(),
       {
         name: 'inject-umami',
         transformIndexHtml(html) {

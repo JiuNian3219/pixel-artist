@@ -13,6 +13,7 @@ import {
   DEFAULT_TASK_FACTORS_ORDER,
   TASK_FACTORS,
 } from '@/utils/constants';
+import { getStorage } from '@/utils/storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -85,7 +86,7 @@ export const useCreatorLocalStore = create<
     }),
     {
       name: 'creator-local-state-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => getStorage()),
     }
   )
 );

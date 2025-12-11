@@ -8,8 +8,9 @@ import {
   DEFAULT_PIXEL_SIZE,
   DEFAULT_TOOL,
 } from '@/utils/constants';
+import { getStorage } from '@/utils/storage';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type Updater<T> = T | ((prev: T) => T);
 
@@ -76,6 +77,7 @@ export const useEditorUIStore = create<
     }),
     {
       name: 'editor-ui-store',
+      storage: createJSONStorage(() => getStorage()),
     }
   )
 );
