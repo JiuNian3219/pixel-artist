@@ -12,8 +12,40 @@ Pixel Artist 是一个简单易用的图片像素化工具，允许用户将普�
 - **开发语言**: TypeScript
 - **构建工具**: Vite 7
 - **UI 组件库**: Ant Design 5
-- **路由管理**: React Router 7
+- **路由管理**: Vike
+- **预渲染/SSG**: Vike (原 vite-plugin-ssr)
 - **样式处理**: Less
+
+## 项目结构
+
+```
+pixel-artist/
+├── public/                  # 静态资源（favicon, robots.txt, 字体等）
+├── scripts/                 # 构建脚本（Sitemap, Bing验证等）
+├── src/
+│   ├── assets/              # 图片与图标资源
+│   ├── components/          # 公共组件 (Layout, SEO, LanguageSwitcher 等)
+│   ├── hooks/               # 自定义 Hooks
+│   ├── locales/             # 国际化资源 (zh, en)
+│   ├── pages/               # 页面文件 (Vike 路由结构)
+│   │   ├── @locale/         # 动态路由参数
+│   │   ├── Creator/         # 创作页
+│   │   ├── Editor/          # 编辑器页
+│   │   ├── Home/            # 首页
+│   │   └── index/           # 根路由重定向
+│   ├── renderer/            # Vike 渲染逻辑 (+onRenderHtml, +onRenderClient)
+│   ├── stores/              # 全局状态管理 (Zustand)
+│   ├── styles/              # 全局样式与 AntD 主题
+│   ├── types/               # TypeScript 类型定义
+│   ├── utils/               # 工具函数与算法
+│   ├── workers/             # Web Workers (图像处理)
+│   └── vite-env.d.ts        # Vite 环境变量定义
+├── .env                     # 环境变量
+├── .github/workflows/       # GitHub Actions 工作流
+├── Dockerfile               # Docker 构建配置
+├── package.json             # 依赖与脚本
+└── vite.config.ts           # Vite 配置
+```
 
 ## 开发指南
 
@@ -42,20 +74,75 @@ npm run lint
 ```
 
 ## CI/CD 工作流
-本项目使用 GitHub Actions 实现自动化构建与部署。工作流文件位于 `.github/workflows/deploy.yml`。
 
-### 触发机制与流程
-- **Push to main**：
-  - 执行 `build-and-push`：构建 Docker 镜像并推送至 GHCR（标签 `:latest`）。
-  - 执行 `deploy`：通过 SSH 连接服务器，拉取最新镜像并重启 `pixel-artist` 容器（部署到 Development 环境）。
-- **Pull Request to main**：
-  - 执行 `Build Image (PR)`：仅验证 Docker 镜像构建是否成功（标签 `:pr-<number>`，不推送、不部署），确保 PR 代码质量。
+本项目使用 GitHub Actions 实现自动化构建与部署，采用 **Main/Preview 双分支策略**，实现生产环境与预览环境的完全隔离。工作流文件位于 `.github/workflows/deploy.yml`。
+
+### 1. 预览环境 (Preview)
+- **触发条件**: Push to `preview` branch
+- **构建行为**:
+  - Docker Tag: `:preview`
+  - Base URL: `/pixel-artist/` (注入 `VITE_BASE_URL` 环境变量)
+- **部署行为**:
+  - 容器名: `pixel-artist-preview`
+  - 网络: 加入 `caddy_net`，不映射宿主机端口
+  - 访问: 通过宿主机 Caddy 网关转发 (内部端口 -> `/pixel-artist/`)
+
+### 2. 生产环境 (Production)
+- **触发条件**: Push to `main` branch
+- **构建行为**:
+  - Docker Tag: `:latest`
+  - Base URL: `/` (默认)
+- **部署行为**:
+  - 容器名: `pixel-artist`
+  - 网络: 加入 `caddy_net`
+  - 访问: 通过宿主机 Caddy 网关转发 (Port 80/443 -> `/`)
+
+### 3. Pull Request
+- **触发条件**: PR to `main` or `preview`
+- **行为**:
+  - 执行 `Build Image` 验证构建是否成功
+  - 生成 Docker Tag: `:pr-<number>`
+  - **不进行推送和部署**，仅作为代码质量检查
 
 ### 环境与 Secrets
-若要 fork 本项目或自行部署，需在 GitHub 仓库设置中配置以下 Secrets（支持 Environments）：
-- `DEPLOY_HOST`: 服务器 IP 或域名
-- `DEPLOY_USER`: SSH 登录用户名（需加入 docker 用户组）
-- `DEPLOY_SSH_KEY`: SSH 私钥（对应公钥需在服务器 `authorized_keys` 中）
+若要 fork 本项目或自行部署，需在 GitHub 仓库设置中配置以下 Secrets：
+
+| Secret 名称 | 必须 | 说明 | 示例值 |
+| :--- | :--- | :--- | :--- |
+| `DEPLOY_HOST` | ✅ | 部署服务器 IP 或域名 | `1.2.3.4` |
+| `DEPLOY_USER` | ✅ | SSH 登录用户名（需有 Docker 权限） | `root` |
+| `DEPLOY_SSH_KEY` | ✅ | SSH 私钥（对应公钥需配置在服务器） | `-----BEGIN OPENSSH PRIVATE KEY...` |
+| `VITE_SITE_URL` | - | 生产环境站点完整 URL (缺省为 `https://example.com`) | `https://pixel.example.com` |
+| `VITE_UMAMI_WEBSITE_ID` | - | Umami 统计 Website ID (不填则不启用统计) | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `VITE_UMAMI_SCRIPT_URL` | - | Umami 统计脚本地址 (不填则不启用统计) | `https://analytics.example.com/script.js` |
+| `BING_SITE_AUTH_USER` | - | Bing Webmaster 验证用户代码 (不填则不生成验证文件) | `D6534387994FC508...` |
+
+> **提示**: 可在 GitHub 仓库的 `Settings` -> `Secrets and variables` -> `Actions` 中添加上述 Secrets。
+> 
+> 此外，如果你需要自定义 `robots.txt` 允许的爬取路径，可以在 **Variables** 中添加 `VITE_ROBOTS_ALLOW`（默认为 `/`）。
+
+## 服务器配置 (Caddy)
+
+为了支持预览环境的子路径访问，需要在服务器的主 Caddyfile 中配置反向代理规则。
+**注意**：预览环境使用内部端口（下文以 `:PREVIEW_PORT` 代替，请根据实际情况配置），不对外直接暴露。
+
+```caddy
+# 生产环境 (Port 80/443)
+your-domain.com {
+    reverse_proxy pixel-artist:80
+}
+
+# 预览环境网关 (自定义端口)
+:PREVIEW_PORT {
+    encode gzip
+    
+    # Pixel Artist 预览版转发
+    # handle_path 会自动去除 /pixel-artist/ 前缀
+    handle_path /pixel-artist/* {
+        reverse_proxy pixel-artist-preview:80
+    }
+}
+```
 
 ## 代码规范与提交
 本项目配置了 Husky + Commitlint + Lint-staged 以确保代码与提交质量。
@@ -86,7 +173,7 @@ git commit -m "ci(workflow): split build job for PR and push"
 
 ## 分析配置
 
-本项目使用 Umami 进行网站访问分析（暂时只包含访问分析）。要启用分析功能，请创建一个 `.env` 文件并设置以下变量：
+本项目使用 Umami 进行网站访问分析。要启用分析功能，请创建一个 `.env` 文件（或在 CI/CD Secrets 中配置）：
 
 ```env
 VITE_UMAMI_WEBSITE_ID=your-website-id
@@ -121,72 +208,28 @@ BING_SITE_AUTH_USER=**************************
 ## 多语言：如何添加新语言
 本项目已内置中文（`zh`）与英文（`en`）。若要新增语言（例如法语 `fr`），请按照以下步骤修改相应文件：
 
-1) 类型与语言常量
+1) **类型与语言常量**
 - 修改 `src/types/locale.ts`：将新语言加入 `Locale` 与（如需）`OgLocale` 联合类型。
   - 例如：加入 `"fr"` 到 `Locale`，并在需要时加入 `"fr_FR"` 到 `OgLocale`。
 - 修改 `src/utils/locale.ts`：
   - 将新语言加入 `LOCALES` 常量数组。
-  - 为 `OG_LOCALE_MAP` 添加映射（如 `fr: "fr_FR"`）。
-  - 更新 `normalizeLocale(input)` 使其识别新语言（按前缀或直接匹配）。
+  - 为 `OG_LOCALE_MAP` 添加映射。
+  - 更新 `normalizeLocale` 逻辑。
 
-2) i18n 资源与支持列表
-- 在 `src/locales/<lang>/` 目录创建翻译文件，至少包含：
-  - `common.json`：需包含 `language.switch` 与 `language.names.<lang>`（用于语言切换器显示），以及通用文案。
-  - `home.json`、`creator.json`、`404.json`：对应各页面的文案。
-- 修改 `src/locales/index.ts`：
-  - 在 `resources` 中注册新语言的各命名空间。
-  - 将新语言加入 `supportedLngs` 列表。
+2) **i18n 资源**
+- 在 `src/locales/<lang>/` 目录创建翻译文件（`common.json`, `home.json` 等）。
+- 修改 `src/locales/index.ts` 注册新语言。
 
-3) Ant Design 语言包
-- 修改 `src/components/App/index.tsx`：
-  - 引入 AntD 对应语言包（如 `import frFR from "antd/locale/fr_FR"`）。
-  - 将 `antdLocaleMap` 扩展为 `{ zh: zhCN, en: enUS, fr: frFR }`。
-  - 若 AntD 暂无该语言包，可先回退到最接近的语言，确保不报错。
+3) **Ant Design 语言包**
+- 修改 `src/renderer/PageShell.tsx` 或相关入口文件，引入并配置 AntD 的 locale。
 
-4) 路由与重定向（通常无需改动）
-- 路由由 `src/routes/index.tsx` 基于 `LOCALES` 自动生成：会产生 `/<lang>/` 与 `/<lang>/creator` 等路径。
-- 根路径重定向使用 `src/routes/RootRedirect.tsx`：会根据浏览器语言跳转到对应 `/<lang>/`。
+4) **路由与预渲染**
+- 路由由 Vike 基于文件系统自动处理（`src/pages/@locale`），通常无需手动修改路由配置。
+- 确保 `src/utils/seo.ts` 中包含新语言的 SEO 元数据。
+- 修改 `scripts/generate-sitemap.mjs` 将新语言加入 `locales` 数组以生成正确的 Sitemap。
 
-5) SEO 与预渲染
-- 修改 `src/utils/seo.ts`：
-  - 在 `localizedSEO` 中为各基础路径（`"/"`、`"/creator"`、`"/404"`）补充新语言的 `title/description/keywords` 等。
-  - 更新 `getAlternateLinks(siteUrl, basePath)` 以包含新语言的 `hreflang`。
-- 修改站点地图生成脚本 `scripts/generate-sitemap.mjs`：
-  - 将新语言加入 `locales` 数组（如 `const locales = ["zh", "en", "fr"];`）。
-- 修改 `package.json` 的 `reactSnap.include`：
-  - 添加新语言需要快照的路由，如 `"/<lang>/"`、`"/<lang>/creator"`。
-
-6) 验证
-- 运行开发服务器并检查新语言页面：
-  - `npm run dev`
-  - 打开 `http://localhost:5173/<lang>/`，检查页面文案与 AntD 组件文案是否为新语言。
-- 构建并预览：
-  - `npm run build`
-  - `npm run preview`
-  - 验证 `public/sitemap.xml` 是否包含新语言路径；预览页面源代码，确认 `og:locale` 与 `link[rel="alternate"]` 已包含新语言。
-
-提示：新增语言时，优先复用现有工具与结构（`LOCALES`、`normalizeLocale`、`antdLocaleMap`、i18n `supportedLngs`、`reactSnap.include` 与 `sitemap locales`）。保持命名、风格与当前项目一致，避免引入额外依赖。
+5) **验证**
+- 运行 `npm run dev` 访问 `/<lang>/` 检查页面。
+- 运行 `npm run build` 检查构建产物（如 sitemap）。
 
 
-## 项目结构
-```
-pixel-artist/
-├── public/                  # 静态资源（favicon, robots.txt 等）
-├── scripts/                 # 构建脚本（Sitemap, Bing验证等）
-├── src/
-│   ├── assets/              # 图片与图标资源
-│   ├── components/          # 公共组件 (Layout, SEO 等)
-│   ├── hooks/               # 自定义 Hooks
-│   ├── locales/             # 国际化资源 (zh, en)
-│   ├── pages/               # 路由页面 (Home, Editor, Creator)
-│   ├── routes/              # 路由配置
-│   ├── stores/              # 全局状态管理 (Zustand)
-│   ├── styles/              # 全局样式与 AntD 主题
-│   ├── types/               # TypeScript 类型定义
-│   ├── utils/               # 工具函数与算法
-│   ├── workers/             # Web Workers (图像处理)
-│   └── main.tsx             # 应用入口
-├── .env                     # 环境变量
-├── package.json             # 依赖与脚本
-└── vite.config.ts           # Vite 配置
-```

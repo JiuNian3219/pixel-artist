@@ -6,23 +6,16 @@ import { defineConfig, loadEnv } from 'vite';
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const base = env.VITE_BASE_URL || '/';
 
   return {
+    base,
     plugins: [
       react(),
-      vike(),
-      {
-        name: 'inject-umami',
-        transformIndexHtml(html) {
-          if (env.VITE_UMAMI_WEBSITE_ID && env.VITE_UMAMI_SCRIPT_URL) {
-            return html.replace(
-              '</head>',
-              `<script defer src="${env.VITE_UMAMI_SCRIPT_URL}" data-website-id="${env.VITE_UMAMI_WEBSITE_ID}"></script>\n  </head>`
-            );
-          }
-          return html;
-        },
-      },
+      vike({
+        baseAssets: base,
+        baseServer: base,
+      }),
     ],
     resolve: {
       alias: {
