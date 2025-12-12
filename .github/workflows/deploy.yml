@@ -81,7 +81,7 @@ jobs:
           else
             echo "❌ Umami script NOT found in index.html"
             echo "Dumping first 500 chars of index.html for debug:"
-            echo "$CONTENT" | head -c 500
+            echo "${CONTENT:0:500}"
           fi
 
   deploy-production:

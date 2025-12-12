@@ -44,6 +44,9 @@ ENV VITE_SITE_URL=$VITE_SITE_URL
 ENV BING_SITE_AUTH_USER=$BING_SITE_AUTH_USER
 ENV VITE_ROBOTS_ALLOW=$VITE_ROBOTS_ALLOW
 
+# 打印调试信息（检查 Umami 参数是否传入）
+RUN if [ -n "$VITE_UMAMI_WEBSITE_ID" ]; then echo "Building with Umami ID: ${VITE_UMAMI_WEBSITE_ID:0:4}***"; else echo "WARNING: VITE_UMAMI_WEBSITE_ID is not set!"; fi
+
 # 复制源码并构建
 COPY . .
 RUN npm run build
