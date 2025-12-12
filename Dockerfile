@@ -30,26 +30,24 @@ RUN apt-get update && apt-get install -y \
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps --no-audit --no-fund
 
-# 接收构建参数
-ARG VITE_UMAMI_WEBSITE_ID
-ARG VITE_UMAMI_SCRIPT_URL
-ARG VITE_SITE_URL
-ARG BING_SITE_AUTH_USER
-ARG VITE_ROBOTS_ALLOW
-
-# 设置为环境变量，供 build 过程使用
-ENV VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID
-ENV VITE_UMAMI_SCRIPT_URL=$VITE_UMAMI_SCRIPT_URL
-ENV VITE_SITE_URL=$VITE_SITE_URL
-ENV BING_SITE_AUTH_USER=$BING_SITE_AUTH_USER
-ENV VITE_ROBOTS_ALLOW=$VITE_ROBOTS_ALLOW
-
-# 打印调试信息（检查 Umami 参数是否传入）
-RUN if [ -n "$VITE_UMAMI_WEBSITE_ID" ]; then echo "Building with Umami ID: $VITE_UMAMI_WEBSITE_ID"; else echo "WARNING: VITE_UMAMI_WEBSITE_ID is not set!"; fi
-
 # 复制源码并构建
 COPY . .
-RUN npm run build
+
+# 使用 Secret Mount 挂载敏感变量并执行构建
+# 注意：Secret 仅在当前 RUN 指令执行期间可用，不会持久化到镜像中
+RUN --mount=type=secret,id=VITE_UMAMI_WEBSITE_ID,required=false \
+    --mount=type=secret,id=VITE_UMAMI_SCRIPT_URL,required=false \
+    --mount=type=secret,id=VITE_SITE_URL,required=false \
+    --mount=type=secret,id=BING_SITE_AUTH_USER,required=false \
+    --mount=type=secret,id=VITE_ROBOTS_ALLOW,required=false \
+    # 将 Secret 读取为环境变量
+    export VITE_UMAMI_WEBSITE_ID=$(cat /run/secrets/VITE_UMAMI_WEBSITE_ID 2>/dev/null || echo "") && \
+    export VITE_UMAMI_SCRIPT_URL=$(cat /run/secrets/VITE_UMAMI_SCRIPT_URL 2>/dev/null || echo "") && \
+    export VITE_SITE_URL=$(cat /run/secrets/VITE_SITE_URL 2>/dev/null || echo "") && \
+    export BING_SITE_AUTH_USER=$(cat /run/secrets/BING_SITE_AUTH_USER 2>/dev/null || echo "") && \
+    export VITE_ROBOTS_ALLOW=$(cat /run/secrets/VITE_ROBOTS_ALLOW 2>/dev/null || echo "") && \
+    # 执行构建
+    npm run build
 
 # Stage 2: 运行静态服务（无 TLS，交由网关 Caddy 处理）
 FROM caddy:2.8-alpine
