@@ -3,10 +3,16 @@ import type { Locale, OgLocale } from '@/types/locale';
 export const LOCALES: readonly Locale[] = ['zh', 'en'] as const;
 export const DEFAULT_LOCALE: Locale = 'zh';
 
-// 获取 Base URL，确保以 / 结尾
-export const BASE_URL = import.meta.env.BASE_URL.endsWith('/')
-  ? import.meta.env.BASE_URL
-  : `${import.meta.env.BASE_URL}/`;
+// 获取 Base URL，优先使用 window.__BASE_URL__ (客户端)，其次使用 import.meta.env.BASE_URL (服务端/构建时)
+const rawBaseUrl =
+  (typeof window !== 'undefined' && (window as any).__BASE_URL__) ||
+  import.meta.env.BASE_URL ||
+  '/';
+
+// 确保以 / 结尾
+export const BASE_URL = rawBaseUrl.endsWith('/')
+  ? rawBaseUrl
+  : `${rawBaseUrl}/`;
 
 /**
  * 从路径中解析语言码
