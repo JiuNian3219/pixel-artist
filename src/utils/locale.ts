@@ -3,6 +3,11 @@ import type { Locale, OgLocale } from '@/types/locale';
 export const LOCALES: readonly Locale[] = ['zh', 'en'] as const;
 export const DEFAULT_LOCALE: Locale = 'zh';
 
+// 获取 Base URL，确保以 / 结尾
+export const BASE_URL = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
 /**
  * 从路径中解析语言码
  * @param pathname 路径名（如 /zh/... 或 /en/...）
@@ -26,12 +31,18 @@ export function stripLocaleFromPath(pathname: string): string {
  * 生成带语言前缀的路径（用于路由跳转、SEO）
  * @param locale 语言码（"zh" 或 "en"）
  * @param basePath 基础路径（如 /... 或 /...）
- * @returns 带语言前缀的路径（如 /zh/... 或 /en/...）
+ * @returns 带语言前缀的路径（如 /zh/... 或 /en/...），包含 Base URL
  */
 export function withLocalePath(locale: Locale, basePath: string): string {
   const normalizedBase = basePath.startsWith('/') ? basePath : `/${basePath}`;
-  if (normalizedBase === '/') return `/${locale}`;
-  return `/${locale}${normalizedBase}`;
+  const path =
+    normalizedBase === '/' ? `/${locale}` : `/${locale}${normalizedBase}`;
+
+  // 如果 Base URL 为根路径，直接返回
+  if (BASE_URL === '/') return path;
+
+  // 拼接 Base URL (BASE_URL 已确保以 / 结尾，path 以 / 开头，需去重)
+  return `${BASE_URL}${path.slice(1)}`;
 }
 
 /**

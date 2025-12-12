@@ -4,6 +4,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { Link } from '@/renderer/Link';
 import { usePageContext } from '@/renderer/usePageContext';
 import {
+  BASE_URL,
   getOgLocale,
   parseLocaleFromPath,
   withLocalePath,
@@ -32,6 +33,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     location.pathname.length > 1 && location.pathname.endsWith('/')
       ? location.pathname.slice(0, -1)
       : location.pathname;
+
+  const currentPathWithBase =
+    BASE_URL === '/'
+      ? normalizedPathname
+      : `${BASE_URL}${normalizedPathname.slice(1)}`;
 
   const currentSEO =
     resolveSEOByPath(normalizedPathname, locale) || getDefaultSEO();
@@ -95,7 +101,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Menu
               theme="light"
               mode="horizontal"
-              selectedKeys={[normalizedPathname]}
+              selectedKeys={[currentPathWithBase]}
               items={menuItems}
               className={styles.menu}
             />
