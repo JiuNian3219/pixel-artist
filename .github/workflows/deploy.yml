@@ -61,6 +61,29 @@ jobs:
             VITE_ROBOTS_ALLOW=${{ vars.VITE_ROBOTS_ALLOW || '/' }}
           cache-to: type=inline
 
+      - name: Verify Umami Script Injection
+        if: github.event_name != 'pull_request'
+        run: |
+          TAG="preview"
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            TAG="latest"
+          fi
+          IMAGE="ghcr.io/${{ env.OWNER_LC }}/pixel-artist:$TAG"
+
+          echo "Verifying Umami in $IMAGE..."
+          docker pull $IMAGE
+
+          # Check index.html for umami script
+          CONTENT=$(docker run --rm $IMAGE cat /usr/share/caddy/index.html)
+          if echo "$CONTENT" | grep -q "umami"; then
+            echo "✅ Umami script found in index.html:"
+            echo "$CONTENT" | grep "umami"
+          else
+            echo "❌ Umami script NOT found in index.html"
+            echo "Dumping first 500 chars of index.html for debug:"
+            echo "$CONTENT" | head -c 500
+          fi
+
   deploy-production:
     runs-on: ubuntu-latest
     needs: build-and-push
