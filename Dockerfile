@@ -39,6 +39,7 @@ ARG VITE_SITE_URL
 ENV VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID
 ENV VITE_UMAMI_SCRIPT_URL=$VITE_UMAMI_SCRIPT_URL
 ENV VITE_SITE_URL=$VITE_SITE_URL
+ENV VITE_BASE_URL=$VITE_BASE_URL
 
 # 复制源码并构建
 COPY . .
@@ -55,4 +56,6 @@ COPY --from=builder /app/dist/client /usr/share/caddy
 
 EXPOSE 80
 CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+
+
 
