@@ -81,7 +81,6 @@ npm run lint
 - **触发条件**: Push to `preview` branch
 - **构建行为**:
   - Docker Tag: `:preview`
-  - Base URL: `/pixel-artist/` (注入 `VITE_BASE_URL` 环境变量)
 - **部署行为**:
   - 容器名: `pixel-artist-preview`
   - 网络: 加入 `caddy_net`，不映射宿主机端口
@@ -91,7 +90,6 @@ npm run lint
 - **触发条件**: Push to `main` branch
 - **构建行为**:
   - Docker Tag: `:latest`
-  - Base URL: `/` (默认)
 - **部署行为**:
   - 容器名: `pixel-artist`
   - 网络: 加入 `caddy_net`
@@ -123,7 +121,7 @@ npm run lint
 
 ## 服务器配置 (Caddy)
 
-为了支持预览环境的子路径访问，需要在服务器的主 Caddyfile 中配置反向代理规则。
+为了支持预览环境访问，需要在服务器的主 Caddyfile 中配置反向代理规则（通常使用独立端口或子域名）。
 **注意**：预览环境使用内部端口（下文以 `:PREVIEW_PORT` 代替，请根据实际情况配置），不对外直接暴露。
 
 ```caddy
@@ -137,10 +135,7 @@ your-domain.com {
     encode gzip
     
     # Pixel Artist 预览版转发
-    # handle_path 会自动去除 /pixel-artist/ 前缀
-    handle_path /pixel-artist/* {
-        reverse_proxy pixel-artist-preview:80
-    }
+    reverse_proxy pixel-artist-preview:80
 }
 ```
 

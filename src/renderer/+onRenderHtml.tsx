@@ -47,7 +47,6 @@ export const onRenderHtml = async (pageContext: PageContextServer) => {
 
   const umamiWebsiteId = import.meta.env.VITE_UMAMI_WEBSITE_ID;
   const umamiScriptUrl = import.meta.env.VITE_UMAMI_SCRIPT_URL;
-  const baseUrl = import.meta.env.BASE_URL;
 
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="${locale}">
@@ -63,7 +62,6 @@ export const onRenderHtml = async (pageContext: PageContextServer) => {
         <meta property="og:description" content="${description}" />
         <meta property="og:locale" content="${getOgLocale(locale)}" />
         ${ogImage ? escapeInject`<meta property="og:image" content="${ogImage}" />` : ''}
-        <script>window.__BASE_URL__ = "${baseUrl}";</script>
         <style>${dangerouslySkipEscape(styleText)}</style>
         ${
           umamiWebsiteId && umamiScriptUrl
