@@ -58,6 +58,8 @@ jobs:
             VITE_UMAMI_SCRIPT_URL=${{ secrets.VITE_UMAMI_SCRIPT_URL }}
             VITE_SITE_URL=${{ secrets.VITE_SITE_URL }}
             VITE_BASE_URL=${{ github.ref == 'refs/heads/preview' && '/pixel-artist/' || '/' }}
+            BING_SITE_AUTH_USER=${{ secrets.BING_SITE_AUTH_USER }}
+            VITE_ROBOTS_ALLOW=${{ vars.VITE_ROBOTS_ALLOW || '/' }}
           cache-to: type=inline
 
   deploy-production:

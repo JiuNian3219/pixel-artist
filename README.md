@@ -106,11 +106,20 @@ npm run lint
 
 ### 环境与 Secrets
 若要 fork 本项目或自行部署，需在 GitHub 仓库设置中配置以下 Secrets：
-- `DEPLOY_HOST`: 服务器 IP 或域名
-- `DEPLOY_USER`: SSH 登录用户名（需加入 docker 用户组）
-- `DEPLOY_SSH_KEY`: SSH 私钥（对应公钥需在服务器 `authorized_keys` 中）
-- `VITE_UMAMI_WEBSITE_ID`: Umami 统计 ID（可选）
-- `VITE_UMAMI_SCRIPT_URL`: Umami 脚本地址（可选）
+
+| Secret 名称 | 必须 | 说明 | 示例值 |
+| :--- | :--- | :--- | :--- |
+| `DEPLOY_HOST` | ✅ | 部署服务器 IP 或域名 | `1.2.3.4` |
+| `DEPLOY_USER` | ✅ | SSH 登录用户名（需有 Docker 权限） | `root` |
+| `DEPLOY_SSH_KEY` | ✅ | SSH 私钥（对应公钥需配置在服务器） | `-----BEGIN OPENSSH PRIVATE KEY...` |
+| `VITE_SITE_URL` | - | 生产环境站点完整 URL (缺省为 `https://example.com`) | `https://pixel.example.com` |
+| `VITE_UMAMI_WEBSITE_ID` | - | Umami 统计 Website ID (不填则不启用统计) | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `VITE_UMAMI_SCRIPT_URL` | - | Umami 统计脚本地址 (不填则不启用统计) | `https://analytics.example.com/script.js` |
+| `BING_SITE_AUTH_USER` | - | Bing Webmaster 验证用户代码 (不填则不生成验证文件) | `D6534387994FC508...` |
+
+> **提示**: 可在 GitHub 仓库的 `Settings` -> `Secrets and variables` -> `Actions` 中添加上述 Secrets。
+> 
+> 此外，如果你需要自定义 `robots.txt` 允许的爬取路径，可以在 **Variables** 中添加 `VITE_ROBOTS_ALLOW`（默认为 `/`）。
 
 ## 服务器配置 (Caddy)
 
@@ -222,3 +231,5 @@ BING_SITE_AUTH_USER=**************************
 5) **验证**
 - 运行 `npm run dev` 访问 `/<lang>/` 检查页面。
 - 运行 `npm run build` 检查构建产物（如 sitemap）。
+
+
