@@ -6,7 +6,7 @@ import {
   InboxOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { Button, Image, Progress, Upload, message } from 'antd';
+import { App, Button, Image, Progress, Upload } from 'antd';
 import lodash from 'lodash';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -61,14 +61,16 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string>(originalImage || '');
   const isMobile = useIsMobile();
   const { t } = useTranslation('creator');
+  const { message: messageApi } = App.useApp();
+
   const customRequest = ({ file, onSuccess, onProgress }: any) => {
     if (disabled) {
-      message.warning(t('common.pixelation_in_progress'));
+      messageApi.warning(t('common.pixelation_in_progress'));
       return;
     }
     const rawFile = file as File;
     if (!isImageFile(rawFile)) {
-      message.error(t('image_uploader.type_error_message'));
+      messageApi.error(t('image_uploader.type_error_message'));
       return;
     }
     setUploading(true);
@@ -106,7 +108,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     // 读取错误
     reader.onerror = () => {
       setUploading(false);
-      message.error(
+      messageApi.error(
         t('image_uploader.upload_failed_message', { name: rawFile.name })
       );
     };
