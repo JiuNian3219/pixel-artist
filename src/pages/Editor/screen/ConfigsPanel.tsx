@@ -23,6 +23,7 @@ import {
   Space,
   Tooltip,
   Typography,
+  App,
 } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/lib';
 import { useState } from 'react';
@@ -51,6 +52,7 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
   const setPickerSwitchToPencil = useEditorUIStore(
     (s) => s.setPickerSwitchToPencil
   );
+  const { modal } = App.useApp();
 
   const [showSetup, setShowSetup] = useState(false);
   const [form] = Form.useForm<{
@@ -97,7 +99,7 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
   };
 
   const handleClearCanvas = () => {
-    Modal.confirm({
+    modal.confirm({
       title: t('configs_panel.clear_modal.title'),
       content: t('configs_panel.clear_modal.content'),
       okText: t('configs_panel.clear_modal.ok_text'),

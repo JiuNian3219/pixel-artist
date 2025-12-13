@@ -3,7 +3,7 @@ import '@/locales';
 import '@/styles/index.less';
 import { normalizeLocale } from '@/utils/locale';
 import { antdTheme } from '@/utils/theme';
-import { ConfigProvider } from 'antd';
+import { App, ConfigProvider } from 'antd';
 import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
 import React from 'react';
@@ -44,7 +44,9 @@ export function PageShell({
   return (
     <PageContextProvider pageContext={pageContext}>
       <ConfigProvider theme={antdTheme} locale={antdLocale}>
-        <Layout>{children}</Layout>
+        <App>
+          <Layout>{children}</Layout>
+        </App>
       </ConfigProvider>
     </PageContextProvider>
   );
