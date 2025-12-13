@@ -8,6 +8,9 @@ export const antdTheme: ThemeConfig = {
     colorInfo: '#5c5ff5',
   },
   components: {
+    Layout: {
+      headerPadding: '0 24px',
+    },
     Menu: {
       itemColor: 'rgb(165,172,179)',
       itemHoverColor: 'rgba(255,255,255,0.88)',
