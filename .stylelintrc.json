@@ -17,5 +17,14 @@
       }
     ]
   },
+  "overrides": [
+    {
+      "files": ["**/*.less"],
+      "customSyntax": "postcss-less",
+      "rules": {
+        "declaration-property-value-no-unknown": null
+      }
+    }
+  ],
   "ignoreFiles": ["dist/**/*", "node_modules/**/*", "public/**/*"]
 }
