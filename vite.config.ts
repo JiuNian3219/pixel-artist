@@ -7,13 +7,7 @@ import { defineConfig } from 'vite';
 export default defineConfig(() => {
   return {
     base: '/',
-    plugins: [
-      react(),
-      vike({
-        baseAssets: '/',
-        baseServer: '/',
-      }),
-    ],
+    plugins: [react(), vike()],
     resolve: {
       alias: {
         '@': path.resolve(process.cwd(), './src'),
