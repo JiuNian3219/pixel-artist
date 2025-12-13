@@ -3,7 +3,10 @@ import type { Config } from 'vike/types';
 export default {
   passToClient: ['pageProps', 'routeParams'],
   clientRouting: true,
+  hydrationCanBeAborted: true,
   prerender: true,
+  baseAssets: '/',
+  baseServer: '/',
   meta: {
     title: {
       env: { server: true, client: true },

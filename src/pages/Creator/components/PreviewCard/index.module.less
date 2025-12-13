@@ -1,93 +1,107 @@
 .previewCard {
+  user-select: none;
   position: relative;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   width: 100%;
+
   background-color: var(--bg-300);
-  position: relative;
+
   transition: all ease 0.3s;
-  user-select: none;
 
   .previewImage {
     height: 350px;
     object-fit: contain;
 
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       height: 250px;
     }
   }
 
   .emptyPreview {
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+
     height: 350px;
     border-radius: 4px;
-    color: #999;
 
-    @media (max-width: 768px) {
+    color: var(--text-300);
+
+    @media (width <= 768px) {
       height: 250px;
     }
   }
 
   .previewResizeHandle {
+    cursor: ns-resize;
+
     position: absolute;
-    left: 0;
     bottom: -8px;
+    left: 0;
+
     width: 100%;
     height: 8px;
-    cursor: ns-resize;
-    background-color: rgba(99, 102, 241, 0.1);
     border-top: 1px solid var(--bg-400);
 
+    background-color: var(--primary-100-alpha-10);
+
     &:hover {
-      background-color: rgba(99, 102, 241, 0.3);
+      background-color: var(--primary-100-alpha-30);
     }
   }
 
   .topSaveButton {
-    font-size: 20px;
     position: absolute;
-    width: 40px;
-    height: 40px;
+    z-index: 11;
     top: 16px;
     right: 16px;
-    z-index: 11;
+
+    width: 40px;
+    height: 40px;
+
+    font-size: 20px;
   }
 
   .topEditButton {
-    font-size: 20px;
     position: absolute;
-    width: 40px;
-    height: 40px;
+    z-index: 11;
     top: 16px;
     right: 64px;
-    z-index: 11;
+
+    width: 40px;
+    height: 40px;
+
+    font-size: 20px;
   }
 
   .tagsGroup {
     position: absolute;
+    z-index: 10;
     top: 16px;
     left: 16px;
+
     display: flex;
-    gap: 3px;
-    z-index: 10;
     flex-wrap: wrap;
+    gap: 3px;
   }
 }
+
 .actionRow {
   margin-top: 16px;
 }
 
 .saveButton {
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     width: 100%;
   }
 }
 
 .editButton {
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     width: 100%;
   }
 }

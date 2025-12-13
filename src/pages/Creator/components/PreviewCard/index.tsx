@@ -10,7 +10,7 @@ import {
 import { parseDataUrlToGridPixels } from '@/utils/image';
 import { parseLocaleFromPath, withLocalePath } from '@/utils/locale';
 import { DownloadOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Image, message, Modal, Row, Tag } from 'antd';
+import { App, Button, Image, message, Row, Tag } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { navigate } from 'vike/client/router';
@@ -46,6 +46,7 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   tags = [],
 }) => {
   const { t } = useTranslation('creator');
+  const { modal } = App.useApp();
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
   const initializeFromPixelated = useEditorDataStore(
     (s) => s.initializeFromPixelated
@@ -146,7 +147,7 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
     };
 
     if (hasCanvas) {
-      Modal.confirm({
+      modal.confirm({
         title: t('preview_panel.overwrite_confirm_title'),
         content: t('preview_panel.overwrite_confirm_content'),
         okText: t('preview_panel.overwrite_confirm_ok'),
