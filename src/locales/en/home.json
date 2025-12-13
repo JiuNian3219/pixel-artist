@@ -1,4 +1,7 @@
 {
-  "title": "Transform your images into <1>\"textured\"</1> pixel art",
-  "start_button": "Start Creating →"
+  "title": "Everyone Can Be a <1>Pixel Artist</1>",
+  "start_button": "Image to Pixel →",
+  "start_button_desc": "Instantly convert photos into textured pixel art with multiple algorithms and real-time tuning, adding a unique pixel aesthetic to your images",
+  "start_editor_button": "Start Drawing →",
+  "start_editor_button_desc": "Use professional tools to create pixel art from scratch and unleash your creativity"
 }
