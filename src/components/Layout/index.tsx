@@ -93,7 +93,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           />
           <div className={styles.nav}>
             <Menu
-              theme="light"
               mode="horizontal"
               selectedKeys={[normalizedPathname]}
               items={menuItems}
