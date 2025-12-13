@@ -64,7 +64,7 @@ export const onRenderHtml = async (pageContext: PageContextServer) => {
         ${ogImage ? escapeInject`<meta property="og:image" content="${ogImage}" />` : ''}
         <style>${dangerouslySkipEscape(styleText)}</style>
         ${
-          umamiWebsiteId && umamiScriptUrl
+          import.meta.env.PROD && umamiWebsiteId && umamiScriptUrl
             ? escapeInject`<script defer src="${umamiScriptUrl}" data-website-id="${umamiWebsiteId}"></script>`
             : ''
         }
