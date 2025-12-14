@@ -170,6 +170,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 saveButtonPlacement={isMobile ? 'bottom' : 'top'}
                 showResizeHandle={!isMobile}
                 editButtonPlacement={isMobile ? 'bottom' : 'top'}
+                // 移动端暂时不提供编辑功能
+                showEditButton={!isMobile}
                 defaultPreviewHeight={defaultPreviewHeight}
               />
             </Col>
@@ -211,6 +213,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           showPixelGrid={showPreviewPixelGrid}
           saveButtonPlacement={isMobile ? 'bottom' : 'top'}
           editButtonPlacement={isMobile ? 'bottom' : 'top'}
+          // 移动端暂时不提供编辑功能
+          showEditButton={!isMobile}
           showResizeHandle={!isMobile}
           defaultPreviewHeight={defaultPreviewHeight}
         />

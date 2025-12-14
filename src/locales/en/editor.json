@@ -57,5 +57,11 @@
       "button": "Back to Home",
       "hint": "Mobile version does not support editing. Whether to return to the home page?"
     }
+  },
+  "mobile_not_supported": {
+    "title": "Mobile Experience Optimizing",
+    "description": "The current editor experience on mobile is not optimal, and we are working hard to improve it. For the best experience, please use a PC.",
+    "back_home": "Back to Home",
+    "go_creator": "Go to Creator"
   }
 }
