@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import { App, Button, Image, Progress, Upload } from 'antd';
 import lodash from 'lodash';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isImageFile } from '../../utils';
 import PixelGrid from '../PixelGrid';
@@ -62,6 +62,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const isMobile = useIsMobile();
   const { t } = useTranslation('creator');
   const { message: messageApi } = App.useApp();
+
+  useEffect(() => {
+    if (originalImage !== undefined) {
+      setPreviewUrl(originalImage);
+    }
+  }, [originalImage]);
 
   const customRequest = ({ file, onSuccess, onProgress }: any) => {
     if (disabled) {

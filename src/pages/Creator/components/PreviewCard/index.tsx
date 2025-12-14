@@ -1,3 +1,4 @@
+import CenterSpin from '@/components/CenterSpin';
 import GlobalLoadingOverlay from '@/components/GlobalLoadingOverlay';
 import { useCreatorLocalStore } from '@/stores/creatorStore';
 import { useEditorDataStore } from '@/stores/editorDataStore';
@@ -10,8 +11,8 @@ import {
 import { parseDataUrlToGridPixels } from '@/utils/image';
 import { parseLocaleFromPath, withLocalePath } from '@/utils/locale';
 import { DownloadOutlined, EditOutlined } from '@ant-design/icons';
-import { App, Button, Image, message, Row, Tag } from 'antd';
-import { useState } from 'react';
+import { App, Button, Image, Row, Tag, message } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { navigate } from 'vike/client/router';
 import { TAG_COLORS } from '../../utils';
@@ -60,6 +61,27 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
     width: number;
     height: number;
   }>({ width: 0, height: 0 });
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '100px' }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleSaveImage = () => {
     if (!pixelatedImage || !originalFile) return;
@@ -168,8 +190,12 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   return (
     <>
       <GlobalLoadingOverlay visible={processing} />
-      <div className={styles.previewCard} onWheel={handlePreviewWheel}>
-        {pixelatedImage ? (
+      <div
+        className={styles.previewCard}
+        onWheel={handlePreviewWheel}
+        ref={cardRef}
+      >
+        {pixelatedImage && isVisible ? (
           <PixelGrid
             imageWidth={imageNaturalSize.width}
             imageHeight={imageNaturalSize.height}
@@ -184,9 +210,13 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
           </PixelGrid>
         ) : (
           <div className={styles.emptyPreview}>
-            {originalFile
-              ? t('preview_panel.upload_after_hint')
-              : t('preview_panel.upload_hint')}
+            {pixelatedImage ? (
+              <CenterSpin />
+            ) : originalFile ? (
+              t('preview_panel.upload_after_hint')
+            ) : (
+              t('preview_panel.upload_hint')
+            )}
           </div>
         )}
 

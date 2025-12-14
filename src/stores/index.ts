@@ -3,3 +3,4 @@
  */
 export { useAppStore } from './appStore';
 export { useCreatorLocalStore } from './creatorStore';
+export { useCreatorDataStore } from './creatorDataStore';

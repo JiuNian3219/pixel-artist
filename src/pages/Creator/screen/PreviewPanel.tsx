@@ -21,25 +21,18 @@ import styles from '../index.module.less';
 interface PreviewPanelProps {
   originalFile: File | null;
   pixelatedResults?: {
+    id: string;
     url: string;
     algorithm: string;
     palette: string;
   }[];
-  setPixelatedResults: React.Dispatch<
-    React.SetStateAction<
-      {
-        url: string;
-        algorithm: string;
-        palette: string;
-      }[]
-    >
-  >;
+  onClearResults: () => Promise<void>;
 }
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({
   originalFile,
   pixelatedResults = [],
-  setPixelatedResults,
+  onClearResults,
 }) => {
   const { t } = useTranslation('creator');
   const { t: paletteT } = useTranslation('common');
@@ -99,9 +92,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     setPreviewColumns(Number(v));
   };
 
-  const clearPreview = () => {
+  const clearPreview = async () => {
     // 清除所有生成的预览图片
-    setPixelatedResults([]);
+    await onClearResults();
   };
 
   useEffect(() => {
@@ -162,8 +155,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     >
       {pixelatedResults.length > 0 ? (
         <Row gutter={[12, 12]}>
-          {pixelatedResults.map((res, idx) => (
-            <Col key={`${res.algorithm}-${res.palette}-${idx}`} span={colSpan}>
+          {pixelatedResults.map((res) => (
+            <Col key={res.id} span={colSpan}>
               <PreviewCard
                 tags={[
                   labelOf(algoOptions, res.algorithm),

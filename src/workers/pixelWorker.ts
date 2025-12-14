@@ -25,6 +25,8 @@ self.onmessage = async (ev: MessageEvent) => {
       type: ResultType.RESULT,
       payload: {
         data: out,
+        width,
+        height,
         algorithm: task.algorithm,
         palette: task.palette,
       },
