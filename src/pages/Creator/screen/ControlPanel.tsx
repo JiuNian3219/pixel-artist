@@ -327,7 +327,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ setOriginalFile }) => {
 
     const unsubscribe = pixelWorkerManager.subscribe(async (msg) => {
       if (msg.type === ResultType.RESULT) {
-        const { data, width, height, algorithm, palette } = msg.payload;
+        const { data, width, height, algorithm, palette, pixelSize } =
+          msg.payload;
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -340,6 +341,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ setOriginalFile }) => {
               await addResult({
                 algorithm,
                 palette,
+                pixelSize,
                 blob,
                 url: URL.createObjectURL(blob),
               });

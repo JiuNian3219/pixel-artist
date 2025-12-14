@@ -1,6 +1,5 @@
 import { type PixelateBatchPayload } from '@/workers/constants';
 import { del, get as getIDB, set as setIDB } from 'idb-keyval';
-import { uniqueId } from 'lodash';
 import { create } from 'zustand';
 
 const CREATOR_IMAGE_KEY = 'creator-original-image';
@@ -13,6 +12,8 @@ export interface PixelatedResult {
   url: string;
   algorithm: string;
   palette: string;
+  /** 生成该结果时使用的像素大小 */
+  pixelSize?: number;
   /** 像素化结果的 Blob 数据 */
   blob?: Blob;
 }
@@ -84,7 +85,7 @@ export const useCreatorDataStore = create<
           if (r.blob) {
             results.push({
               ...r,
-              id: r.id || uniqueId(),
+              id: r.id || crypto.randomUUID(),
               url: URL.createObjectURL(r.blob),
             });
           }
@@ -112,7 +113,7 @@ export const useCreatorDataStore = create<
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { url: _unused, ...rest } = newResult;
-      const resultToStore = { ...rest, id: uniqueId() };
+      const resultToStore = { ...rest, id: crypto.randomUUID() };
 
       const nextResults = [...currentResults, resultToStore];
 

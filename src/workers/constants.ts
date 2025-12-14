@@ -14,6 +14,7 @@ export type PixelateBatchResult = {
   height: number;
   algorithm: string;
   palette: string;
+  pixelSize: number;
 };
 
 export const SendType = {

@@ -31,6 +31,7 @@ interface PreviewCardProps {
   showEditButton?: boolean;
   editButtonPlacement?: ButtonPlacement;
   showResizeHandle?: boolean;
+  pixelSize?: number;
   tags?: string[];
 }
 
@@ -44,6 +45,7 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   showEditButton = true,
   editButtonPlacement = 'top',
   showResizeHandle = false,
+  pixelSize: propPixelSize,
   tags = [],
 }) => {
   const { t } = useTranslation('creator');
@@ -53,7 +55,8 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
     (s) => s.initializeFromPixelated
   );
   const [processing, setProcessing] = useState(false);
-  const pixelSize = useCreatorLocalStore((s) => s.pixelSize);
+  const storePixelSize = useCreatorLocalStore((s) => s.pixelSize);
+  const pixelSize = propPixelSize || storePixelSize;
   const paletteName = useCreatorLocalStore((s) => s.paletteName);
   const [previewHeight, setPreviewHeight] =
     useState<number>(defaultPreviewHeight);

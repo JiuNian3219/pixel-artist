@@ -25,6 +25,7 @@ interface PreviewPanelProps {
     url: string;
     algorithm: string;
     palette: string;
+    pixelSize?: number;
   }[];
   onClearResults: () => Promise<void>;
 }
@@ -164,6 +165,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 ]}
                 originalFile={originalFile}
                 pixelatedImage={res.url}
+                pixelSize={res.pixelSize}
                 showPixelGrid={showPreviewPixelGrid}
                 saveButtonPlacement={isMobile ? 'bottom' : 'top'}
                 showResizeHandle={!isMobile}

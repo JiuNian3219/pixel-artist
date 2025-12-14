@@ -29,6 +29,7 @@ self.onmessage = async (ev: MessageEvent) => {
         height,
         algorithm: task.algorithm,
         palette: task.palette,
+        pixelSize,
       },
     } as PixelateBatchMessageData);
   }
