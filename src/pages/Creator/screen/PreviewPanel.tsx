@@ -210,6 +210,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           pixelatedImage={''}
           showPixelGrid={showPreviewPixelGrid}
           saveButtonPlacement={isMobile ? 'bottom' : 'top'}
+          editButtonPlacement={isMobile ? 'bottom' : 'top'}
           showResizeHandle={!isMobile}
           defaultPreviewHeight={defaultPreviewHeight}
         />
