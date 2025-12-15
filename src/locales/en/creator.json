@@ -25,7 +25,7 @@
     "palette_select": "Palette Selection",
     "generating": "Generating",
     "stop_generation": "Stop Generation",
-    "clear_session": "Clear Uploaded Image and Generated Pixel Art"
+    "clear_workspace": "Clear Uploaded Image and Generated Pixel Art"
   },
   "preview_panel": {
     "title": "Preview",
