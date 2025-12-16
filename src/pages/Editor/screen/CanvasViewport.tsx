@@ -1,24 +1,15 @@
-import {
-  bresenhamLine,
-  clamp,
-  getContrastColorForRGBA,
-  MOUSE_BUTTON,
-  parseColorString,
-  rgbaEqual,
-  scanlineFloodFill,
-} from '@/pages/Editor/utils';
-import { runtimePixels, useEditorDataStore } from '@/stores/editorDataStore';
-import { useEditorUIStore } from '@/stores/editorUIStore';
+import { clamp, getPreviewColor, MOUSE_BUTTON } from '@/pages/Editor/utils';
+import { useEditorDataStore, useEditorUIStore } from '@/stores';
 import type { Point, Tool } from '@/types/editor';
 import {
   DEFAULT_GRID_SIZE,
   DEFAULT_TRANSLATION,
   DEFAULT_ZOOM,
   DEFAULT_ZOOM_LIMITS,
-  MAX_FILL_CHECK_PREVIEW_NUMBER,
   MIN_ZOOM,
   TOOLS,
 } from '@/utils/constants';
+import { pixelBuffer } from '@/utils/pixelBuffer';
 import lodash from 'lodash';
 import {
   forwardRef,
@@ -35,6 +26,7 @@ const { throttle } = lodash;
 
 export interface CanvasViewportHandle {
   exportImage: () => void;
+  resetView: () => void;
 }
 
 const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
@@ -45,10 +37,11 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const tool = useEditorUIStore((s) => s.tool);
   const color = useEditorUIStore((s) => s.color);
   const pencilSize = useEditorUIStore((s) => s.pencilSize);
-  const exportPixelSize = useEditorUIStore((s) => s.pixelSize);
+  const exportPixelSize = useEditorUIStore((s) => s.exportPixelSize);
   const autoComplete = useEditorUIStore((s) => s.autoComplete);
   const originalWidth = useEditorDataStore((s) => s.originalWidth);
   const originalHeight = useEditorDataStore((s) => s.originalHeight);
+  const importPixelSize = useEditorDataStore((s) => s.importPixelSize);
   const filename = useEditorDataStore((s) => s.filename);
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
   const setColor = useEditorUIStore((s) => s.setColor);
@@ -67,28 +60,40 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     }
   }, [tool]);
 
-  // CSS transform 进行显示缩放
-  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
-  const [zoomLimits, setZoomLimits] = useState<{ min: number; max: number }>(
-    DEFAULT_ZOOM_LIMITS
+  /**
+   * {@link panStartRef} 使用ref是因为：只在拖动开始时记录一次鼠标位置，后续计算差值使用，不需要触发重渲染。
+   * {@link baseTranslateRef} 使用ref是因为：只在拖动开始时记录一次画布原始偏移量，作为计算基准，不需要触发重渲染。
+   * {@link panning} 使用state是因为：拖动状态的变化（开始/结束）可能需要触发UI更新（如改变光标样式 `cursor: grabbing`），或者在渲染逻辑中进行条件判断。
+   * {@link translate} 使用state是因为：这是直接控制画布位置的视觉状态（style.transform），每次更新都需要触发组件重渲染以更新DOM。
+   * 关于拖动的生命周期：
+   * 1. 鼠标按下: 设置 panning=true (state), 记录当前鼠标位置到 panStartRef, 记录当前画布偏移到 baseTranslateRef。
+   * 2. 鼠标移动: 检查 panning 若为 true, 计算 (当前鼠标 - panStartRef) 得到增量, 更新 translate (state) = baseTranslateRef + 增量。
+   * 3. 鼠标松开: 设置 panning=false (state), 结束拖动。
+   */
+  // 是否正在平移
+  const [panning, setPanning] = useState(false);
+  const panStartRef = useRef<Point | null>(null);
+  // 拖动开始时的平移偏移量（已经平移过的偏移量），偏移相对浏览器窗口的左上角（源于canvasStage 样式的transform-origin: top left）
+  const baseTranslateRef = useRef<{ x: number; y: number }>(
+    DEFAULT_TRANSLATION
   );
   // 平移偏移量
   const [translate, setTranslate] = useState<{ x: number; y: number }>(
     DEFAULT_TRANSLATION
   );
-  // 是否正在平移
-  const [panning, setPanning] = useState(false);
-  const panStartRef = useRef<Point | null>(null);
-  const baseTranslateRef = useRef<{ x: number; y: number }>(
-    DEFAULT_TRANSLATION
-  );
 
+  // CSS transform 进行显示缩放
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [zoomLimits, setZoomLimits] = useState<{ min: number; max: number }>(
+    DEFAULT_ZOOM_LIMITS
+  );
   // 用于存储当前缩放比例，避免在 useEffect 中依赖 zoom 导致的循环调用
   const zoomRef = useRef(DEFAULT_ZOOM);
   useEffect(() => {
     zoomRef.current = zoom;
   }, [zoom]);
 
+  // 画布尺寸
   const stageSize = useMemo(
     () => ({
       width: columns * cellSize,
@@ -117,40 +122,143 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     Map<string, { prev: string | null; next: string | null }>
   >(new Map());
 
+  /**
+   * 将当前 PixelBuffer 渲染到 Canvas
+   */
+  const renderCanvas = useCallback(() => {
+    const canvas = pixelCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const dims = pixelBuffer.getDimensions();
+    if (dims.width !== columns || dims.height !== rows) {
+      pixelBuffer.init(columns, rows);
+    }
+
+    const u8 = pixelBuffer.getUint8ClampedArray();
+    const imgData = new ImageData(
+      u8 as Uint8ClampedArray<ArrayBuffer>,
+      columns,
+      rows
+    );
+    ctx.putImageData(imgData, 0, 0);
+  }, [columns, rows, dataVersion]);
+
+  const resetView = useCallback(() => {
+    if (!hasCanvas) return;
+    const container = containerRef.current;
+    const cw = container?.clientWidth ?? 0;
+    const ch = container?.clientHeight ?? 0;
+
+    if (cw > 0 && ch > 0 && rows > 0 && columns > 0) {
+      // 计算基础单元格大小
+      // 目的是让整个网格能完整塞进容器里，类似背景图片的contain模式
+      // 例子：容器 1000x500，画布 100x100
+      // 按宽算：1000/100 = 10px/格；按高算：500/100 = 5px/格
+      // 取最小值 5px，才能保证宽高都不溢出容器
+      // 同时设置最小值为 4px，这里是因为背景格子用的是马赛克样式，左上 白 右上 灰 左下 灰 右下 白，所以最小也要4px
+      const baseCell = Math.max(
+        4,
+        Math.floor(Math.min(cw / columns, ch / rows))
+      );
+      setCellSize(baseCell);
+
+      // 计算画布在 基础单元格大小下的实际物理尺寸
+      const stageW = columns * baseCell;
+      const stageH = rows * baseCell;
+
+      // 计算最小缩放比例，这里是保证画布即使在最小缩放时，也能至少占据容器的一半空间（* 0.5）
+      // 避免用户一缩小，画布就变成一个看不见的点
+      const minBound = Math.min(cw / stageW, ch / stageH) * 0.5;
+
+      // 计算最大缩放比例，这里的逻辑是：限制最大放大倍数，防止用户无限放大
+      // 最大只能放大到 屏幕高度的一半只能显示 2 个格子 的程度
+      const maxBound = ch / 2 / baseCell;
+
+      // 结合全局常量 MIN_ZOOM，确定最终的缩放范围
+      // 确保最小缩放不低于 MIN_ZOOM，同时也不大于最大缩放
+      const minLimit = Math.max(MIN_ZOOM, minBound);
+      const maxLimit = Math.max(minLimit, maxBound);
+      setZoomLimits({ min: minLimit, max: maxLimit });
+
+      // 设定初始缩放值，此处是为了消除偏移误差
+      // 因为 baseCell 被强制向下取整（Math.floor），导致 stageW/stageH 会略小于容器尺寸
+      // minBound 计算时用了真实比例 (cw/stageW)，这里的 minLimit*2 其实就是还原了这个比例
+      // 让画布通过微小的放大（比如 1.05x），在视觉上完美撑满容器
+      const initialZoom = minLimit * 2;
+      setZoom(initialZoom);
+
+      // 计算居中偏移量
+      // (容器宽 - 画布实际宽 * 缩放) / 2 = 居中所需的左边距
+      setTranslate({
+        x: Math.floor((cw - stageW * initialZoom) / 2),
+        y: Math.floor((ch - stageH * initialZoom) / 2),
+      });
+    }
+  }, [hasCanvas, rows, columns]);
+
   // 暴露导出图像的方法
   useImperativeHandle(ref, () => ({
     exportImage: () => {
-      const pixelCanvas = pixelCanvasRef.current;
-      if (!pixelCanvas) return;
-      const floorRows = Math.floor((originalHeight || 0) / exportPixelSize);
-      const floorCols = Math.floor((originalWidth || 0) / exportPixelSize);
-      const targetRows = autoComplete
-        ? rows
-        : Math.min(rows, floorRows || rows);
-      const targetCols = autoComplete
-        ? columns
-        : Math.min(columns, floorCols || columns);
+      // 确保 buffer 尺寸与当前画布一致
+      const dims = pixelBuffer.getDimensions();
+      if (dims.width !== columns || dims.height !== rows) {
+        pixelBuffer.init(columns, rows);
+      }
+
+      const u8 = pixelBuffer.getUint8ClampedArray();
+      const imgData = new ImageData(
+        u8 as Uint8ClampedArray<ArrayBuffer>,
+        columns,
+        rows
+      );
+
+      // 创建临时源 Canvas (用于存放 ImageData)
+      // 这里的ImageData 是原始的像素数据, 一个像素点只有1px
+      const srcCanvas = document.createElement('canvas');
+      srcCanvas.width = columns;
+      srcCanvas.height = rows;
+      const srcCtx = srcCanvas.getContext('2d');
+      if (!srcCtx) return;
+      srcCtx.putImageData(imgData, 0, 0);
+
+      // 导出像素块大小
+      const scale = Math.max(1, exportPixelSize || 1);
+
+      // 默认导出完整网格
+      let targetW = columns * scale;
+      let targetH = rows * scale;
+
+      // 如果需要裁切 (autoComplete = false) 且有原始尺寸信息，则还原到原始比例
+      if (
+        !autoComplete &&
+        originalWidth > 0 &&
+        originalHeight > 0 &&
+        importPixelSize &&
+        importPixelSize > 0
+      ) {
+        const ratio = scale / importPixelSize;
+        targetW = Math.floor(originalWidth * ratio);
+        targetH = Math.floor(originalHeight * ratio);
+      }
 
       const out = document.createElement('canvas');
-      out.width = targetCols * exportPixelSize;
-      out.height = targetRows * exportPixelSize;
+      out.width = targetW;
+      out.height = targetH;
       const outCtx = out.getContext('2d');
       if (!outCtx) return;
-      outCtx.imageSmoothingEnabled = false;
 
-      // 从显示层按格裁剪并缩放到导出像素尺寸
-      const srcW = targetCols * cellSize;
-      const srcH = targetRows * cellSize;
+      outCtx.imageSmoothingEnabled = false;
       outCtx.drawImage(
-        pixelCanvas,
+        srcCanvas,
         0,
         0,
-        srcW,
-        srcH,
+        columns,
+        rows,
         0,
         0,
-        out.width,
-        out.height
+        columns * scale,
+        rows * scale
       );
 
       const url = out.toDataURL('image/png');
@@ -163,6 +271,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       link.click();
       document.body.removeChild(link);
     },
+    resetView,
   }));
 
   /**
@@ -198,29 +307,14 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   };
 
   /**
-   * 获取预览填充颜色
+   * 获取预览绘画颜色
    * @returns 预览填充颜色的 rgba 字符串
    */
-  const getPreviewFill = () => {
+  const getPreviewPaint = () => {
     // 在拖拽绘制时，预览颜色依据本次拖拽使用的工具
-    const alpha = 0.35;
-    if (getToolCtx().effectiveTool === 'eraser')
-      return `rgba(255, 255, 255, ${alpha})`;
-    const { r, g, b } = parseColorString(color || '#000000');
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
-
-  /**
-   * 获取指定单元格的 rgba 颜色
-   * @param x 单元格 x 坐标
-   * @param y 单元格 y 坐标
-   * @returns 单元格的 rgba 颜色对象
-   */
-  const getRGBAForCell = (x: number, y: number) => {
-    const key = `${x},${y}`;
-    const col = runtimePixels.get(key);
-    if (!col) return { r: 0, g: 0, b: 0, a: 0 };
-    return parseColorString(col);
+    const { effectiveTool } = getToolCtx();
+    if (effectiveTool === 'eraser') return getPreviewColor('#ffffff').css;
+    return getPreviewColor(color).css;
   };
 
   /**
@@ -232,95 +326,38 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     if (!c) return;
     const ctx = c.getContext('2d');
     if (!ctx) return;
-    ctx.imageSmoothingEnabled = false;
+    // 使用 putImageData 覆盖整个画布，因此不需要 clearRect
+    // 但为了保险（例如ImageData创建失败），还是清空一下
     ctx.clearRect(0, 0, c.width, c.height);
 
-    const start = getRGBAForCell(cell.x, cell.y);
-    const borderColor = getContrastColorForRGBA(start);
+    const { r, g, b, a } = getPreviewColor(color || '#000000', 0.5);
 
-    const visited = new Uint8Array(rows * columns);
-    const stack: Point[] = [cell];
-    const region: Point[] = [];
-    const MAX_CELLS = MAX_FILL_CHECK_PREVIEW_NUMBER;
+    const width = c.width;
+    const height = c.height;
+    // 创建一个和画布一样大的空白像素数据块
+    // 这个数组的结构是 [R, G, B, A, R, G, B, A, ...]
+    // 每个像素点有4个值，分别是红、绿、蓝、透明度
+    // 即每个像素点的颜色信息是连续的4个字节
+    // 此处操作的是Uint8ClampedArray类型的数组,内存空间中连续，比正常的Array类型快非常多
+    // 同时会自动修正超出范围的颜色值（0-255）
+    const imgData = ctx.createImageData(width, height);
+    const data = imgData.data;
 
-    const matchStart = (x: number, y: number) => {
-      if (x < 0 || x >= columns || y < 0 || y >= rows) return false;
-      const rgba = getRGBAForCell(x, y);
-      return rgbaEqual(rgba, start);
-    };
+    // 获取鼠标所在的填充区域的索引
+    const indices = pixelBuffer.getFillIndices(cell.x, cell.y);
+    if (!indices) return;
 
-    while (stack.length) {
-      const p = stack.pop()!;
-      const idx = p.y * columns + p.x;
-      if (visited[idx]) continue;
-      visited[idx] = 1;
-      if (!matchStart(p.x, p.y)) continue;
-      region.push(p);
-      if (region.length > MAX_CELLS) break;
-      // 4 邻域
-      stack.push({ x: p.x + 1, y: p.y });
-      stack.push({ x: p.x - 1, y: p.y });
-      stack.push({ x: p.x, y: p.y + 1 });
-      stack.push({ x: p.x, y: p.y - 1 });
+    const len = indices.length;
+    for (let i = 0; i < len; i++) {
+      const idx = indices[i];
+      const dataIdx = idx * 4;
+      data[dataIdx] = r;
+      data[dataIdx + 1] = g;
+      data[dataIdx + 2] = b;
+      data[dataIdx + 3] = a;
     }
 
-    ctx.beginPath();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = borderColor;
-    const off = 0.5;
-    if (region.length > MAX_CELLS) {
-      // 区域过大时，退化为显示起始像素所在颜色块的粗略外接框
-      let minX = cell.x,
-        maxX = cell.x,
-        minY = cell.y,
-        maxY = cell.y;
-      // 尝试扩大到同色的局部邻域
-      for (let dy = -10; dy <= 10; dy++) {
-        for (let dx = -10; dx <= 10; dx++) {
-          const nx = cell.x + dx;
-          const ny = cell.y + dy;
-          if (matchStart(nx, ny)) {
-            minX = Math.min(minX, nx);
-            maxX = Math.max(maxX, nx);
-            minY = Math.min(minY, ny);
-            maxY = Math.max(maxY, ny);
-          }
-        }
-      }
-      const x0 = minX * cellSize,
-        y0 = minY * cellSize;
-      const x1 = (maxX + 1) * cellSize,
-        y1 = (maxY + 1) * cellSize;
-      ctx.rect(x0 + off, y0 + off, x1 - x0, y1 - y0);
-      ctx.stroke();
-      return;
-    }
-
-    for (const p of region) {
-      const x0 = p.x * cellSize;
-      const y0 = p.y * cellSize;
-      // 上边界
-      if (!matchStart(p.x, p.y - 1)) {
-        ctx.moveTo(x0 + off, y0 + off);
-        ctx.lineTo(x0 + cellSize + off, y0 + off);
-      }
-      // 下边界
-      if (!matchStart(p.x, p.y + 1)) {
-        ctx.moveTo(x0 + off, y0 + cellSize + off);
-        ctx.lineTo(x0 + cellSize + off, y0 + cellSize + off);
-      }
-      // 左边界
-      if (!matchStart(p.x - 1, p.y)) {
-        ctx.moveTo(x0 + off, y0 + off);
-        ctx.lineTo(x0 + off, y0 + cellSize + off);
-      }
-      // 右边界
-      if (!matchStart(p.x + 1, p.y)) {
-        ctx.moveTo(x0 + cellSize + off, y0 + off);
-        ctx.lineTo(x0 + cellSize + off, y0 + cellSize + off);
-      }
-    }
-    ctx.stroke();
+    ctx.putImageData(imgData, 0, 0);
   };
 
   /**
@@ -349,6 +386,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     setPanning(true);
     panStartRef.current = { x: e.clientX, y: e.clientY };
     baseTranslateRef.current = { ...translate };
+    // 捕获指针事件，确保在拖动过程中不会丢失指针
     (e.currentTarget as HTMLDivElement).setPointerCapture?.(e.pointerId);
   };
 
@@ -360,6 +398,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       throttle((e: React.PointerEvent<HTMLDivElement>) => {
         if (!panning || !panStartRef.current) return;
         e.preventDefault();
+        // 拖动计算公式：新位置 = 原来的位置 + 拖动距离
+        //            拖动距离 = 当前位置 - 开始拖动位置
         const dx = e.clientX - panStartRef.current.x;
         const dy = e.clientY - panStartRef.current.y;
         setTranslate({
@@ -380,6 +420,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     e.preventDefault();
     setPanning(false);
     panStartRef.current = null;
+    // 释放指针捕获，确保后续事件不会被干扰
     (e.currentTarget as HTMLDivElement).releasePointerCapture?.(e.pointerId);
   };
 
@@ -390,7 +431,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
    */
   const drawHoverPreview = (cell: Point) => {
     const { uiTool } = getToolCtx();
-    // 填充工具：预览将被填充的区域边界
+    // 填充工具：预览将被填充的区域
     if (!drawingRef.current && uiTool === TOOLS.FILL) {
       drawFillPreview(cell);
       return;
@@ -398,106 +439,78 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     // 拖动没有预览
     if (uiTool === TOOLS.DRAG) return;
 
+    // 其他工具：预览将是一个 1×1 的像素方块，大小随 pencilSize 变化
     const c = previewCanvasRef.current;
     if (!c) return;
     const ctx = c.getContext('2d');
     if (!ctx) return;
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, c.width, c.height);
-    ctx.fillStyle = getPreviewFill();
+    ctx.fillStyle = getPreviewPaint();
     // 吸管工具的预览固定为 1×1 的方块，不随 pencilSize 变化
     const size = uiTool === TOOLS.PICKER ? 1 : Math.max(1, pencilSize);
     const half = Math.floor((size - 1) / 2);
     for (let by = 0; by < size; by++) {
       for (let bx = 0; bx < size; bx++) {
-        const cx = clamp(cell.x - half + bx, 0, columns - 1);
-        const cy = clamp(cell.y - half + by, 0, rows - 1);
-        ctx.fillRect(cx * cellSize, cy * cellSize, cellSize, cellSize);
+        const cx = cell.x - half + bx;
+        const cy = cell.y - half + by;
+        // 使用 1x1 逻辑像素绘制半透明预览
+        // 不需要 clamping，Canvas 会自动忽略绘制在边界外的部分，从而实现"滑出"效果
+        ctx.fillRect(cx, cy, 1, 1);
       }
     }
   };
 
   /**
-   * 绘制单个像素
-   * @param ctx 画布上下文
-   * @param x 像素 x 坐标
-   * @param y 像素 y 坐标
-   * @param
+   * 记录单个像素变更
+   * @param x 像素坐标 x
+   * @param y 像素坐标 y
+   * @param prev 变更前的颜色值
+   * @param next 变更后的颜色值
    */
-  const paintCell = (
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    col: string
-  ) => {
-    const key = `${x},${y}`;
-    // 记录变更（仅在一次操作期间）
-    if (opStartedRef.current) {
-      const prev = runtimePixels.get(key) ?? null;
-      const next = col ?? null;
-      if (prev !== next) {
-        const existed = opChangesRef.current.get(key);
-        if (existed) {
-          existed.next = next;
-        } else {
-          opChangesRef.current.set(key, { prev, next });
+  const recordPixelChange = useCallback(
+    (x: number, y: number, prev: string | null, next: string | null) => {
+      const key = `${x},${y}`;
+      if (opStartedRef.current) {
+        if (prev !== next) {
+          const existed = opChangesRef.current.get(key);
+          if (existed) {
+            existed.next = next;
+          } else {
+            opChangesRef.current.set(key, { prev, next });
+          }
         }
       }
-    }
-    runtimePixels.set(key, col);
-    ctx.fillStyle = col;
-    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-  };
+    },
+    []
+  );
 
   /**
-   * 清除单个像素
-   * @param ctx 画布上下文
-   * @param x 像素 x 坐标
-   * @param y 像素 y 坐标
-   */
-  const clearCell = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
-    const key = `${x},${y}`;
-    if (opStartedRef.current) {
-      const prev = runtimePixels.get(key) ?? null;
-      const next = null;
-      if (prev !== next) {
-        const existed = opChangesRef.current.get(key);
-        if (existed) {
-          existed.next = next;
-        } else {
-          opChangesRef.current.set(key, { prev, next });
-        }
-      }
-    }
-    runtimePixels.delete(key);
-    ctx.clearRect(x * cellSize, y * cellSize, cellSize, cellSize);
-  };
-
-  /**
-   * 应用画笔工具到单个像素
-   * @param cell 像素坐标
+   * 将当前工具的笔触操作提交到 PixelBuffer（纯数据更新，不涉及渲染）
+   * @param start 起始坐标
+   * @param end 结束坐标
    * @param activeTool 可选的活动工具（默认当前工具）
-   * @returns
    */
-  const applyBrush = (cell: Point, activeTool?: Tool) => {
-    const pixelCanvas = pixelCanvasRef.current;
-    if (!pixelCanvas) return;
-    const ctx = pixelCanvas.getContext('2d');
-    if (!ctx) return;
+  const commitStrokeToBuffer = (
+    start: Point,
+    end: Point,
+    activeTool?: Tool
+  ) => {
     const size = Math.max(1, pencilSize);
-    const half = Math.floor((size - 1) / 2);
-    for (let by = 0; by < size; by++) {
-      for (let bx = 0; bx < size; bx++) {
-        const cx = clamp(cell.x - half + bx, 0, columns - 1);
-        const cy = clamp(cell.y - half + by, 0, rows - 1);
-        const useTool = activeTool ?? tool;
-        if (useTool === TOOLS.ERASER) {
-          clearCell(ctx, cx, cy);
-        } else {
-          paintCell(ctx, cx, cy, color);
-        }
-      }
-    }
+    const useTool = activeTool ?? tool;
+
+    // 橡皮擦也是画笔，只是颜色为 null (或透明)
+    const brushColor = useTool === TOOLS.ERASER ? null : color;
+
+    pixelBuffer.drawStroke(
+      start.x,
+      start.y,
+      end.x,
+      end.y,
+      size,
+      brushColor,
+      recordPixelChange
+    );
   };
 
   /**
@@ -508,12 +521,17 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const getCellFromEvent = (
     e: React.PointerEvent<HTMLCanvasElement>
   ): Point => {
+    // rect 当前canvas的显示矩形区域
     const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    // clientX, clientY 指针事件在浏览器窗口中的坐标（相对窗口左上角）
+    // rect.left, rect.top  canvas 元素在页面中的位置（相对窗口左上角）
     const px = e.clientX - rect.left;
     const py = e.clientY - rect.top;
-    // 修正坐标映射
-    const x = clamp(Math.floor(px / (cellSize * zoom)), 0, columns - 1);
-    const y = clamp(Math.floor(py / (cellSize * zoom)), 0, rows - 1);
+    // 修正坐标映射: 直接基于当前显示尺寸与逻辑分辨率的比例
+    // px / 宽度 = 指针位于canvas宽度比例位置， 乘以列数 = 指针位于canvas宽度比例位置对应的列数，相当于坐标x
+    const x = Math.floor((px / rect.width) * columns);
+    const y = Math.floor((py / rect.height) * rows);
+    // 不进行 clamping，允许返回画布外的坐标，以便实现"虚拟笔刷"（指笔刷出去边界后仍保持绘画状态）
     return { x, y };
   };
 
@@ -534,8 +552,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     }
 
     if (uiTool === TOOLS.PICKER) {
-      const key = `${cell.x},${cell.y}`;
-      const picked = runtimePixels.get(key);
+      const picked = pixelBuffer.getPixel(cell.x, cell.y);
       if (picked) {
         setColor(picked);
       }
@@ -544,42 +561,35 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
 
     if (uiTool === TOOLS.FILL) {
       e.preventDefault();
-      const pixelCanvas = pixelCanvasRef.current;
-      if (!pixelCanvas) return;
-      const ctx = pixelCanvas.getContext('2d');
-      if (!ctx) return;
       beginOp();
 
-      // 起始颜色作为区域匹配基准
-      const startKey = `${cell.x},${cell.y}`;
-      const startColor = runtimePixels.get(startKey);
+      const isErase = e.button === MOUSE_BUTTON.RIGHT;
+      const targetColor = isErase ? null : color;
 
-      const isErase = e.button === MOUSE_BUTTON.RIGHT; // 右键擦除填充
-      if (isErase) {
-        if (startColor === undefined) return; // 已透明，无需填充
-      } else {
-        if (startColor === color) return; // 与目标色相同，跳过
+      const result = pixelBuffer.floodFill(cell.x, cell.y, targetColor);
+
+      if (result) {
+        const { indices, oldHex } = result;
+
+        // 优化：直接存储索引列表，而不是百万级的变更对象数组
+        commitOp({
+          type: 'fill',
+          fillData: {
+            indices,
+            prev: oldHex,
+            next: targetColor,
+          },
+        });
+
+        // 触发防抖保存
+        mutatePixels([]);
+
+        renderCanvas();
       }
-
-      const match = (x: number, y: number) => {
-        const k = `${x},${y}`;
-        const c = runtimePixels.get(k);
-        return c === startColor;
-      };
-
-      const onFill = (x: number, y: number) => {
-        if (isErase) {
-          clearCell(ctx, x, y);
-        } else {
-          paintCell(ctx, x, y, color);
-        }
-      };
-
-      scanlineFloodFill(cell.x, cell.y, columns, rows, match, onFill);
-
       return;
     }
 
+    // 处理普通画笔/橡皮擦操作
     gestureToolRef.current =
       e.button === MOUSE_BUTTON.RIGHT
         ? TOOLS.ERASER
@@ -588,10 +598,14 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
           : TOOLS.PENCIL;
     if (e.button === MOUSE_BUTTON.RIGHT) e.preventDefault();
     beginOp();
+    // 捕获指针事件，确保在拖动过程中不会丢失指针
+    e.currentTarget.setPointerCapture(e.pointerId);
     drawingRef.current = true;
-    applyBrush(cell, getToolCtx().effectiveTool);
+
+    // 记录点击
+    commitStrokeToBuffer(cell, cell, getToolCtx().effectiveTool);
+    renderCanvas();
     lastCellRef.current = cell;
-    drawHoverPreview(cell);
   };
 
   /**
@@ -603,20 +617,13 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     lastCellRef.current = null;
     // 提交像素缓存到 store（一次操作结束时）
     if (opStartedRef.current) {
-      // 仅对变更过的单元格进行增量更新
       const entries = Array.from(opChangesRef.current.entries());
-      if (entries.length > 0) {
-        // 不需要触发 React 更新，所以用的 mutatePixels（不做拷贝）
-        mutatePixels(
-          entries.map(([key, v]) => [key, v.next]) as [string, string | null][]
-        );
-      }
       const changes = entries.map(([key, v]) => {
         const [xs, ys] = key.split(',');
         return { x: Number(xs), y: Number(ys), prev: v.prev, next: v.next };
       });
       if (changes.length > 0) {
-        commitOp({ changes });
+        commitOp({ type: 'stroke', changes });
       }
       opChangesRef.current.clear();
       opStartedRef.current = false;
@@ -628,6 +635,32 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   };
 
   /**
+   * 实际的指针移动处理逻辑
+   * 提取为非节流函数，通过 ref 保持最新引用，解决闭包陷阱
+   * @param e 指针事件
+   */
+  const handlePointerMoveLogic = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const { effectiveTool } = getToolCtx();
+    // 拖动工具下不绘制预览/轨迹
+    if (effectiveTool === TOOLS.DRAG || panning) return;
+    const current = getCellFromEvent(e);
+    if (!drawingRef.current) {
+      hoverCellRef.current = current;
+      drawHoverPreview(current);
+      return;
+    }
+    const last = lastCellRef.current || current;
+    commitStrokeToBuffer(last, current, effectiveTool);
+    renderCanvas();
+    lastCellRef.current = current;
+    // 拖拽期间保持预览显示在当前光标位置
+    drawHoverPreview(current);
+  };
+
+  const handlePointerMoveLogicRef = useRef(handlePointerMoveLogic);
+  handlePointerMoveLogicRef.current = handlePointerMoveLogic;
+
+  /**
    * 处理指针移动事件（节流）
    * @param e 指针事件
    * @returns
@@ -635,74 +668,10 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   const handlePointerMoveThrottled = useMemo(
     () =>
       throttle((e: React.PointerEvent<HTMLCanvasElement>) => {
-        const { effectiveTool } = getToolCtx();
-        // 拖动工具下不绘制预览/轨迹
-        if (effectiveTool === TOOLS.DRAG || panning) return;
-        const current = getCellFromEvent(e);
-        if (!drawingRef.current) {
-          hoverCellRef.current = current;
-          drawHoverPreview(current);
-          return;
-        }
-        const last = lastCellRef.current || current;
-        const line = bresenhamLine(last, current);
-        for (const p of line) {
-          applyBrush(p, getToolCtx().effectiveTool);
-        }
-        lastCellRef.current = current;
-        // 拖拽期间保持预览显示在当前光标位置
-        drawHoverPreview(current);
+        handlePointerMoveLogicRef.current(e);
       }, 16),
-    [rows, columns, pencilSize, color, zoom, panning, getToolCtx]
+    []
   );
-
-  // 导出：将当前像素层按 pixelSize 输出 PNG
-  useImperativeHandle(ref, () => ({
-    exportImage: () => {
-      const pixelCanvas = pixelCanvasRef.current;
-      if (!pixelCanvas) return;
-      const floorRows = Math.floor((originalHeight || 0) / exportPixelSize);
-      const floorCols = Math.floor((originalWidth || 0) / exportPixelSize);
-      const targetRows = autoComplete
-        ? rows
-        : Math.min(rows, floorRows || rows);
-      const targetCols = autoComplete
-        ? columns
-        : Math.min(columns, floorCols || columns);
-
-      const out = document.createElement('canvas');
-      out.width = targetCols * exportPixelSize;
-      out.height = targetRows * exportPixelSize;
-      const outCtx = out.getContext('2d');
-      if (!outCtx) return;
-      outCtx.imageSmoothingEnabled = false;
-
-      // 从显示层按格裁剪并缩放到导出像素尺寸
-      const srcW = targetCols * cellSize;
-      const srcH = targetRows * cellSize;
-      outCtx.drawImage(
-        pixelCanvas,
-        0,
-        0,
-        srcW,
-        srcH,
-        0,
-        0,
-        out.width,
-        out.height
-      );
-
-      const url = out.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = filename
-        ? `${filename.replace(/\.[^.]+$/, '')}.png`
-        : 'pixel-art.png';
-      link.href = url;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    },
-  }));
 
   /**
    * 处理鼠标滚轮事件（节流）
@@ -717,7 +686,6 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         if (!stageEl || !containerEl) return;
         const rect = stageEl.getBoundingClientRect();
         // 容器尺寸用于布局居中；缩放边界从初始化计算的 zoomLimits 提供
-        e.preventDefault();
 
         const prevZoom = zoomRef.current;
         const factor = e.deltaY < 0 ? 1.1 : 0.9;
@@ -746,14 +714,10 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     [rows, columns, cellSize, zoomLimits]
   );
 
-  // 初始化预览层尺寸
+  // 当数据版本或尺寸变化时，重绘
   useEffect(() => {
-    const c = previewCanvasRef.current;
-    if (!c) return;
-    c.width = stageSize.width;
-    c.height = stageSize.height;
-    clearPreview();
-  }, [stageSize.width, stageSize.height]);
+    renderCanvas();
+  }, [rows, columns, dataVersion, renderCanvas]);
 
   // 画笔大小/工具/颜色变化时，若鼠标未移动但存在悬停位置，则主动重绘预览，避免预览方块大小颜色与当前画笔大小不一致
   useEffect(() => {
@@ -764,124 +728,28 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     }
   }, [pencilSize, tool, color]);
 
-  // 新建画布后：基于容器大小计算一次 CELL，并计算缩放上下限；初始缩放按上下限夹取并居中
+  // 新建画布或尺寸变化后：自动适配视口
   useEffect(() => {
+    // 对画布做的初始化，目的是让画布正好占满容器，且不超出容器边界，同时缩放保证
     if (!hasCanvas) return;
-    const container = containerRef.current;
-    const cw = container?.clientWidth ?? 0;
-    const ch = container?.clientHeight ?? 0;
-    if (cw > 0 && ch > 0 && rows > 0 && columns > 0) {
-      const baseCell = Math.max(
-        4,
-        Math.floor(Math.min(cw / columns, ch / rows))
-      );
-      setCellSize(baseCell);
-      const stageW = columns * baseCell;
-      const stageH = rows * baseCell;
-      const minBound = Math.min(cw / stageW, ch / stageH) * 0.5;
-      const maxBound = ch / 2 / baseCell;
-      const minLimit = Math.max(MIN_ZOOM, minBound);
-      const maxLimit = Math.max(minLimit, maxBound);
-      setZoomLimits({ min: minLimit, max: maxLimit });
-      const initialZoom = minLimit / 0.5;
-      setZoom(initialZoom);
-      // 将缩放后的画布在自身盒内居中
-      setTranslate({
-        x: Math.floor((cw - stageW * initialZoom) / 2),
-        y: Math.floor((ch - stageH * initialZoom) / 2),
-      });
-    }
-  }, [hasCanvas, rows, columns]);
+    resetView();
+  }, [hasCanvas, resetView]);
 
-  // 初始化像素画布尺寸，调整尺寸会自动清空内容
+  // 尺寸变化时重置交互状态
   useEffect(() => {
-    const pixelCanvas = pixelCanvasRef.current;
-    if (!pixelCanvas) return;
-    pixelCanvas.width = stageSize.width;
-    pixelCanvas.height = stageSize.height;
-    // 重置最近落点引用，避免尺寸变化后继续连接旧路径
     lastCellRef.current = null;
+  }, [rows, columns]);
 
-    // 尺寸变化导致画布清空，需要从 Store 重新绘制
-    const ctx = pixelCanvas.getContext('2d');
-    if (!ctx) return;
-    ctx.imageSmoothingEnabled = false;
-
-    if (runtimePixels.size > 0) {
-      for (const [key, val] of runtimePixels.entries()) {
-        const [xs, ys] = key.split(',');
-        const x = Number(xs);
-        const y = Number(ys);
-        if (Number.isFinite(x) && Number.isFinite(y)) {
-          ctx.fillStyle = val;
-          ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-        }
-      }
-    }
-  }, [stageSize.width, stageSize.height, cellSize, dataVersion]);
-
-  // 监听 Store 变化，实现增量更新或重置
+  // 监听 Store 变化（撤销/重做/重置），同步视觉状态
   useEffect(() => {
     const unsub = useEditorDataStore.subscribe((state, prevState) => {
-      const pixelCanvas = pixelCanvasRef.current;
-      if (!pixelCanvas) return;
-      const ctx = pixelCanvas.getContext('2d');
-      if (!ctx) return;
-
-      const paint = (x: number, y: number, color: string | null) => {
-        const key = `${x},${y}`;
-        if (color === null) {
-          runtimePixels.delete(key);
-          ctx.clearRect(x * cellSize, y * cellSize, cellSize, cellSize);
-        } else {
-          runtimePixels.set(key, color);
-          ctx.fillStyle = color;
-          ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-        }
-      };
-
-      // 1. 撤销: OpIndex 减小 且 Ops 列表引用未变
-      if (state.opIndex < prevState.opIndex && state.ops === prevState.ops) {
-        for (let i = prevState.opIndex; i > state.opIndex; i--) {
-          const op = prevState.ops[i];
-          if (!op) continue;
-          // 反向应用变更
-          for (const c of op.changes) {
-            paint(c.x, c.y, c.prev);
-          }
-        }
-      }
-      // 2. 重做: OpIndex 增加 且 Ops 列表引用未变
-      else if (
-        state.opIndex > prevState.opIndex &&
-        state.ops === prevState.ops
-      ) {
-        // 重做操作
-        for (let i = prevState.opIndex + 1; i <= state.opIndex; i++) {
-          const op = state.ops[i];
-          if (!op) continue;
-          // 正向应用变更
-          for (const c of op.changes) {
-            paint(c.x, c.y, c.next);
-          }
-        }
-      }
-      // 重置/加载创作页绘画 : Ops 列表引用改变且被清空
-      else if (state.ops !== prevState.ops && state.ops.length === 0) {
-        ctx.clearRect(0, 0, pixelCanvas.width, pixelCanvas.height);
-        for (const [key, val] of runtimePixels.entries()) {
-          const [xs, ys] = key.split(',');
-          const x = Number(xs);
-          const y = Number(ys);
-          if (Number.isFinite(x) && Number.isFinite(y)) {
-            ctx.fillStyle = val;
-            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-          }
-        }
+      // 只要操作历史或索引发生变化，说明数据已被 Store 更新，直接重绘
+      if (state.opIndex !== prevState.opIndex || state.ops !== prevState.ops) {
+        renderCanvas();
       }
     });
     return unsub;
-  }, [cellSize]);
+  }, [renderCanvas]);
 
   // 背景棋盘：#d9d9d9 与 #ffffff，每个显示格内再细分为 2x2 小方块
   useEffect(() => {
@@ -889,34 +757,36 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     if (!bg) return;
     const ctx = bg.getContext('2d');
     if (!ctx) return;
-    bg.width = stageSize.width;
-    bg.height = stageSize.height;
+
+    const w = columns * 2;
+    const h = rows * 2;
+    bg.width = w;
+    bg.height = h;
+
     ctx.imageSmoothingEnabled = false;
     const c1 = '#d9d9d9';
     const c2 = '#ffffff';
-    const subW = Math.max(1, Math.floor(cellSize / 2));
-    const subH = subW;
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < columns; x++) {
-        const ox = x * cellSize;
-        const oy = y * cellSize;
-        const rw = cellSize - subW; // 右半宽度（处理奇数）
-        const bh = cellSize - subH; // 下半高度（处理奇数）
-        // 左上：c1
-        ctx.fillStyle = c1;
-        ctx.fillRect(ox, oy, subW, subH);
-        // 右上：c2
-        ctx.fillStyle = c2;
-        ctx.fillRect(ox + subW, oy, rw, subH);
-        // 左下：c2
-        ctx.fillStyle = c2;
-        ctx.fillRect(ox, oy + subH, subW, bh);
-        // 右下：c1
-        ctx.fillStyle = c1;
-        ctx.fillRect(ox + subW, oy + subH, rw, bh);
+
+    // 纹理填充
+    const patternCanvas = document.createElement('canvas');
+    patternCanvas.width = 2;
+    patternCanvas.height = 2;
+    const pCtx = patternCanvas.getContext('2d');
+    if (pCtx) {
+      pCtx.fillStyle = c1;
+      pCtx.fillRect(0, 0, 1, 1);
+      pCtx.fillRect(1, 1, 1, 1);
+      pCtx.fillStyle = c2;
+      pCtx.fillRect(1, 0, 1, 1);
+      pCtx.fillRect(0, 1, 1, 1);
+
+      const pattern = ctx.createPattern(patternCanvas, 'repeat');
+      if (pattern) {
+        ctx.fillStyle = pattern;
+        ctx.fillRect(0, 0, w, h);
       }
     }
-  }, [stageSize.width, stageSize.height, rows, columns, cellSize]);
+  }, [rows, columns]);
 
   useEffect(() => {
     return () => {
@@ -966,15 +836,15 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         {/* 背景棋盘层 */}
         <canvas
           ref={bgCanvasRef}
-          width={stageSize.width}
-          height={stageSize.height}
+          width={columns * 2}
+          height={rows * 2}
           className={styles.bgCanvas}
         />
         {/* 像素层 */}
         <canvas
           ref={pixelCanvasRef}
-          width={stageSize.width}
-          height={stageSize.height}
+          width={columns}
+          height={rows}
           className={styles.pixelCanvas}
           onContextMenu={(e) => e.preventDefault()}
           onPointerDown={handlePointerDown}
@@ -985,8 +855,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
         {/* 预览层（浅色覆盖） */}
         <canvas
           ref={previewCanvasRef}
-          width={stageSize.width}
-          height={stageSize.height}
+          width={columns}
+          height={rows}
           className={styles.previewCanvas}
         />
       </div>

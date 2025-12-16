@@ -1,17 +1,19 @@
-import { useEditorDataStore } from '@/stores/editorDataStore';
-import { useEditorUIStore } from '@/stores/editorUIStore';
+import { useEditorDataStore, useEditorUIStore } from '@/stores';
 import {
   DEFAULT_COLUMNS,
   DEFAULT_ROWS,
   MAX_COLUMNS,
   MAX_PENCIL_SIZE,
+  MAX_PIXEL_SIZE,
   MAX_ROWS,
   MIN_COLUMNS,
   MIN_PENCIL_SIZE,
+  MIN_PIXEL_SIZE,
   MIN_ROWS,
 } from '@/utils/constants';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import {
+  App,
   Button,
   Checkbox,
   Flex,
@@ -23,7 +25,6 @@ import {
   Space,
   Tooltip,
   Typography,
-  App,
 } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/lib';
 import { useState } from 'react';
@@ -45,6 +46,8 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
   const setPaletteName = useEditorUIStore((s) => s.setPaletteName);
   const pencilSize = useEditorUIStore((s) => s.pencilSize);
   const setPencilSize = useEditorUIStore((s) => s.setPencilSize);
+  const exportPixelSize = useEditorUIStore((s) => s.exportPixelSize);
+  const setPixelSize = useEditorUIStore((s) => s.setExportPixelSize);
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
   const createCanvas = useEditorDataStore((s) => s.createCanvas);
   const clearCanvas = useEditorDataStore((s) => s.clearCanvas);
@@ -144,7 +147,7 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
         </Typography.Title>
         <Typography.Text strong>{pencilSize}</Typography.Text>
       </Flex>
-      <div className={styles.configBase}>
+      <div className={`${styles.configBase} ${styles.sliderPadding}`}>
         <Slider
           min={MIN_PENCIL_SIZE}
           max={MAX_PENCIL_SIZE}
@@ -175,6 +178,32 @@ const ConfigsPanel: React.FC<ConfigsPanelProps> = ({ onExport }) => {
       <Typography.Title level={5} style={{ margin: 0 }}>
         {t('configs_panel.export_config')}
       </Typography.Title>
+
+      {/* 导出像素大小 */}
+      <Flex
+        justify="space-between"
+        align="center"
+        className={styles.configBase}
+      >
+        <Space>
+          <Typography.Text>
+            {t('configs_panel.export_pixel_size')}
+          </Typography.Text>
+          <Tooltip title={t('configs_panel.export_pixel_size_tooltip')}>
+            <QuestionCircleOutlined />
+          </Tooltip>
+        </Space>
+        <Typography.Text strong>{exportPixelSize} px</Typography.Text>
+      </Flex>
+      <div className={`${styles.configBase} ${styles.sliderPadding}`}>
+        <Slider
+          min={MIN_PIXEL_SIZE}
+          max={MAX_PIXEL_SIZE}
+          value={exportPixelSize}
+          onChange={(v) => setPixelSize(v)}
+        />
+      </div>
+
       {/** 导出时自动填充画布边缘 */}
       <Space>
         <Checkbox checked={autoComplete} onChange={toggleAutoComplete}>

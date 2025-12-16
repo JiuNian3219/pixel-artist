@@ -1,5 +1,4 @@
-import { useEditorDataStore } from '@/stores/editorDataStore';
-import { useEditorUIStore } from '@/stores/editorUIStore';
+import { useEditorDataStore, useEditorUIStore } from '@/stores';
 import { TOOLS } from '@/utils/constants';
 import { Button, ColorPicker } from 'antd';
 import type { Color } from 'antd/es/color-picker';
@@ -7,7 +6,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from '../index.module.less';
 
-const ToolsPanel: React.FC = () => {
+interface ToolsPanelProps {
+  onResetView?: () => void;
+}
+
+const ToolsPanel: React.FC<ToolsPanelProps> = ({ onResetView }) => {
   const { t } = useTranslation('editor');
   const tool = useEditorUIStore((s) => s.tool);
   const color = useEditorUIStore((s) => s.color);
@@ -68,6 +71,12 @@ const ToolsPanel: React.FC = () => {
         icon={<span className="iconfont icon-yidong_huaban1"></span>}
         onClick={() => setTool(TOOLS.DRAG)}
         title={t('tools_panel.drag')}
+      />
+      <Button
+        className={styles.toolButton}
+        icon={<span className="iconfont icon-quanping_huaban1"></span>}
+        onClick={onResetView}
+        title={t('tools_panel.reset_view')}
       />
 
       <ColorPicker

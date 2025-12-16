@@ -25,7 +25,7 @@
     "palette_select": "调色板选择",
     "generating": "生成中",
     "stop_generation": "终止生成",
-    "clear_session": "清除图片上传与生成"
+    "clear_workspace": "清除图片上传与生成"
   },
   "preview_panel": {
     "title": "预览效果",
