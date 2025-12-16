@@ -1,6 +1,10 @@
+import CenterSpin from '@/components/CenterSpin';
 import GlobalLoadingOverlay from '@/components/GlobalLoadingOverlay';
-import { useCreatorLocalStore } from '@/stores/creatorStore';
-import { useEditorDataStore } from '@/stores/editorDataStore';
+import {
+  useCreatorLocalStore,
+  useEditorDataStore,
+  useEditorUIStore,
+} from '@/stores';
 import {
   MAX_COLUMNS,
   MAX_PREVIEW_HEIGHT,
@@ -10,8 +14,8 @@ import {
 import { parseDataUrlToGridPixels } from '@/utils/image';
 import { parseLocaleFromPath, withLocalePath } from '@/utils/locale';
 import { DownloadOutlined, EditOutlined } from '@ant-design/icons';
-import { App, Button, Image, message, Row, Tag } from 'antd';
-import { useState } from 'react';
+import { App, Button, Image, Row, Tag, message } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { navigate } from 'vike/client/router';
 import { TAG_COLORS } from '../../utils';
@@ -30,6 +34,7 @@ interface PreviewCardProps {
   showEditButton?: boolean;
   editButtonPlacement?: ButtonPlacement;
   showResizeHandle?: boolean;
+  pixelSize?: number;
   tags?: string[];
 }
 
@@ -43,16 +48,19 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   showEditButton = true,
   editButtonPlacement = 'top',
   showResizeHandle = false,
+  pixelSize: propPixelSize,
   tags = [],
 }) => {
   const { t } = useTranslation('creator');
+  const setExportPixelSize = useEditorUIStore((s) => s.setExportPixelSize);
   const { modal } = App.useApp();
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
   const initializeFromPixelated = useEditorDataStore(
     (s) => s.initializeFromPixelated
   );
   const [processing, setProcessing] = useState(false);
-  const pixelSize = useCreatorLocalStore((s) => s.pixelSize);
+  const storePixelSize = useCreatorLocalStore((s) => s.pixelSize);
+  const pixelSize = propPixelSize || storePixelSize;
   const paletteName = useCreatorLocalStore((s) => s.paletteName);
   const [previewHeight, setPreviewHeight] =
     useState<number>(defaultPreviewHeight);
@@ -60,6 +68,27 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
     width: number;
     height: number;
   }>({ width: 0, height: 0 });
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '100px' }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleSaveImage = () => {
     if (!pixelatedImage || !originalFile) return;
@@ -94,7 +123,6 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   };
 
   const handlePreviewWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
     e.stopPropagation();
     if (!e.shiftKey) return;
     const delta = e.deltaY > 0 ? -30 : 30;
@@ -136,6 +164,9 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
           originalHeight: imageNaturalSize.height,
           pixels,
         });
+
+        setExportPixelSize(pixelSize);
+
         const locale = parseLocaleFromPath(window.location.pathname);
         navigate(withLocalePath(locale, '/editor'));
       } catch (err) {
@@ -168,8 +199,12 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   return (
     <>
       <GlobalLoadingOverlay visible={processing} />
-      <div className={styles.previewCard} onWheel={handlePreviewWheel}>
-        {pixelatedImage ? (
+      <div
+        className={styles.previewCard}
+        onWheel={handlePreviewWheel}
+        ref={cardRef}
+      >
+        {pixelatedImage && isVisible ? (
           <PixelGrid
             imageWidth={imageNaturalSize.width}
             imageHeight={imageNaturalSize.height}
@@ -184,9 +219,13 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
           </PixelGrid>
         ) : (
           <div className={styles.emptyPreview}>
-            {originalFile
-              ? t('preview_panel.upload_after_hint')
-              : t('preview_panel.upload_hint')}
+            {pixelatedImage ? (
+              <CenterSpin />
+            ) : originalFile ? (
+              t('preview_panel.upload_after_hint')
+            ) : (
+              t('preview_panel.upload_hint')
+            )}
           </div>
         )}
 

@@ -1,5 +1,5 @@
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { useCreatorLocalStore } from '@/stores';
+import { useCreatorDataStore, useCreatorLocalStore } from '@/stores';
 import React, { useEffect, useMemo, useState } from 'react';
 import styles from './index.module.less';
 import ControlPanel from './screen/ControlPanel';
@@ -8,11 +8,9 @@ import PreviewPanel from './screen/PreviewPanel';
 const Creator: React.FC = () => {
   const extendMode = useCreatorLocalStore((state) => state.extendMode);
   const setExtendMode = useCreatorLocalStore((state) => state.setExtendMode);
+  const { results, clearResults } = useCreatorDataStore();
   const isMobile = useIsMobile();
   const [originalFile, setOriginalFile] = useState<File | null>(null);
-  const [pixelatedResults, setPixelatedResults] = useState<
-    { url: string; algorithm: string; palette: string }[]
-  >([]);
 
   const layoutStyle = useMemo(() => {
     return {
@@ -34,15 +32,12 @@ const Creator: React.FC = () => {
         <div className={styles.previewArea}>
           <PreviewPanel
             originalFile={originalFile}
-            pixelatedResults={pixelatedResults}
-            setPixelatedResults={setPixelatedResults}
+            pixelatedResults={results}
+            onClearResults={clearResults}
           />
         </div>
         <div className={styles.controlArea}>
-          <ControlPanel
-            setOriginalFile={setOriginalFile}
-            setPixelatedResults={setPixelatedResults}
-          />
+          <ControlPanel setOriginalFile={setOriginalFile} />
         </div>
       </div>
     </div>

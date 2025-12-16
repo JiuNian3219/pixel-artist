@@ -66,7 +66,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   }, [locale, i18n]);
 
-  const hideFooter = location.pathname.endsWith('/editor');
+  const hideFooter = normalizedPathname.endsWith('/editor');
 
   return (
     <>

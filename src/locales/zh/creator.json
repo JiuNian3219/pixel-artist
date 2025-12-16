@@ -22,7 +22,10 @@
     "preview_height_slider": "预览高度",
     "pixel_size_slider": "像素尺寸",
     "pixel_algorithm_select": "像素采样算法",
-    "palette_select": "调色板选择"
+    "palette_select": "调色板选择",
+    "generating": "生成中",
+    "stop_generation": "终止生成",
+    "clear_workspace": "清除图片上传与生成"
   },
   "preview_panel": {
     "title": "预览效果",

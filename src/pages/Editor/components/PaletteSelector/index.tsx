@@ -1,4 +1,4 @@
-import { useEditorUIStore } from '@/stores/editorUIStore';
+import { useEditorUIStore } from '@/stores';
 import { DEFAULT_COLOR_PALETTE } from '@/utils/constants';
 import {
   getColorHex,
@@ -52,7 +52,7 @@ const PaletteSelector: React.FC<PaletteSelectProps> = ({ value, onChange }) => {
           options={paletteOptions}
           value={value}
           onChange={onChange}
-          style={{ width: '100%' }}
+          style={{ width: 200 }}
           popupMatchSelectWidth={false}
         />
       </Flex>

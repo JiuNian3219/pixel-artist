@@ -6,6 +6,7 @@
     "fill": "填充",
     "picker": "拾色器",
     "drag": "拖动",
+    "reset_view": "重置视图",
     "color_picker": "颜色选择器",
     "back": "撤回",
     "next": "撤销撤回"
@@ -21,6 +22,8 @@
     "painting_config": "绘画配置",
     "picker_switch_to_pencil": "拾色切换",
     "picker_switch_to_pencil_tooltip": "当启用此功能时，拾色器工具吸取颜色后将自动切换到上一次使用的工具，方便绘画。",
+    "export_pixel_size": "导出像素大小",
+    "export_pixel_size_tooltip": "导出时每个像素块的大小",
     "create_model": {
       "title": "新建画布",
       "rows_and_columns": "高度 × 宽度",
@@ -57,5 +60,11 @@
       "button": "返回首页",
       "hint": "移动端暂不支持编辑功能，是否返回首页？"
     }
+  },
+  "mobile_not_supported": {
+    "title": "移动端体验优化中",
+    "description": "当前编辑器在移动端体验不佳，我们正在努力优化中。为了获得最佳体验，请使用 PC 端访问。",
+    "back_home": "返回首页",
+    "go_creator": "前往创作页"
   }
 }

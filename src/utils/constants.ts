@@ -175,9 +175,9 @@ export const DEFAULT_TRANSLATION = {
   y: 0,
 };
 /**
- * 最大的填充检查范围格子数
+ * 默认导出像素大小
  */
-export const MAX_FILL_CHECK_PREVIEW_NUMBER = 5000;
+export const DEFAULT_EXPORT_PIXEL_SIZE = 16;
 /**
  * 默认是否拾色器工具吸取颜色后切换到画笔工具
  */

@@ -10,8 +10,11 @@ export type PixelateBatchPayload = {
 
 export type PixelateBatchResult = {
   data: Uint8ClampedArray;
+  width: number;
+  height: number;
   algorithm: string;
   palette: string;
+  pixelSize: number;
 };
 
 export const SendType = {

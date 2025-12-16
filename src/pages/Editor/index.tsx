@@ -1,12 +1,14 @@
 import CenterSpin from '@/components/CenterSpin';
 import { ClientOnly } from '@/components/ClientOnly';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { useEditorDataStore } from '@/stores/editorDataStore';
-import { useEditorUIStore } from '@/stores/editorUIStore';
+import { usePageContext } from '@/renderer/usePageContext';
+import { useEditorDataStore, useEditorUIStore } from '@/stores';
 import { MAX_PENCIL_SIZE, MIN_PENCIL_SIZE, TOOLS } from '@/utils/constants';
-import { Typography } from 'antd';
+import { parseLocaleFromPath, withLocalePath } from '@/utils/locale';
+import { Button, Result, Spin, Typography } from 'antd';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { navigate } from 'vike/client/router';
 import styles from './index.module.less';
 import CanvasViewport, {
   type CanvasViewportHandle,
@@ -16,14 +18,25 @@ import ToolsPanel from './screen/ToolsPanel';
 
 const Editor: React.FC = () => {
   const { t } = useTranslation('editor');
+  const pageContext = usePageContext();
+  const locale = parseLocaleFromPath(pageContext.urlPathname);
   const setTool = useEditorUIStore((s) => s.setTool);
   const setPencilSize = useEditorUIStore((s) => s.setPencilSize);
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
+  const isLoading = useEditorDataStore((s) => s.isLoading);
   const undo = useEditorDataStore((s) => s.undo);
   const redo = useEditorDataStore((s) => s.redo);
   const triggerSave = useEditorDataStore((s) => s.triggerSave);
   const canvasRef = useRef<CanvasViewportHandle | null>(null);
   const isMobile = useIsMobile();
+
+  const goToCreator = () => {
+    navigate(withLocalePath(locale, '/creator'));
+  };
+
+  const goToHome = () => {
+    navigate(withLocalePath(locale, '/'));
+  };
 
   // 确保页面关闭前保存数据
   useEffect(() => {
@@ -86,45 +99,56 @@ const Editor: React.FC = () => {
 
   return (
     <ClientOnly fallback={<CenterSpin style={{ height: '100vh' }} />}>
-      <div className={styles.editorContainer}>
-        {/** 移动端工具栏位于 画布 下方 */}
-        {!isMobile && (
-          <div className={styles.toolsContainer}>
-            <ToolsPanel />
-          </div>
-        )}
-        <div className={styles.CanvasWrapper}>
-          {hasCanvas ? (
-            <CanvasViewport ref={canvasRef} />
-          ) : (
-            <div className={styles.emptyContainer}>
-              <Typography.Title level={4}>
-                {t('common.empty.title')}
-              </Typography.Title>
-              <Typography.Paragraph type="secondary">
-                {t('common.empty.hint')}
-              </Typography.Paragraph>
-            </div>
-          )}
+      {isMobile ? (
+        <div className={styles.mobileNotSupportedContainer}>
+          <Result
+            status="info"
+            title={t('mobile_not_supported.title')}
+            subTitle={t('mobile_not_supported.description')}
+            extra={[
+              <Button type="primary" key="home" onClick={goToHome}>
+                {t('mobile_not_supported.back_home')}
+              </Button>,
+              <Button key="creator" onClick={goToCreator}>
+                {t('mobile_not_supported.go_creator')}
+              </Button>,
+            ]}
+          />
         </div>
-
-        {isMobile && (
+      ) : (
+        <div className={styles.editorContainer}>
           <div className={styles.toolsContainer}>
-            <ToolsPanel />
+            <ToolsPanel onResetView={() => canvasRef.current?.resetView()} />
           </div>
-        )}
+          <div className={styles.CanvasWrapper}>
+            {isLoading ? (
+              <div className={styles.emptyContainer}>
+                <Spin />
+              </div>
+            ) : hasCanvas ? (
+              <CanvasViewport ref={canvasRef} />
+            ) : (
+              <div className={styles.emptyContainer}>
+                <Typography.Title level={4}>
+                  {t('common.empty.title')}
+                </Typography.Title>
+                <Typography.Paragraph type="secondary">
+                  {t('common.empty.hint')}
+                </Typography.Paragraph>
+              </div>
+            )}
+          </div>
 
-        <div className={styles.configContainer}>
-          <ConfigsPanel onExport={() => canvasRef.current?.exportImage()} />
-        </div>
+          <div className={styles.configContainer}>
+            <ConfigsPanel onExport={() => canvasRef.current?.exportImage()} />
+          </div>
 
-        {/** 操作提示 */}
-        {!isMobile && (
+          {/** 操作提示 */}
           <Typography.Text className={styles.operationHint}>
             {t('common.operation_hint')}
           </Typography.Text>
-        )}
-      </div>
+        </div>
+      )}
     </ClientOnly>
   );
 };

@@ -1,5 +1,8 @@
-import { useCreatorLocalStore } from '@/stores';
-import { useCreatorStore } from '@/stores/creatorStore';
+import {
+  useCreatorDataStore,
+  useCreatorLocalStore,
+  useCreatorStore,
+} from '@/stores';
 import { getPixelAlgorithmsOptions } from '@/utils/algorithm';
 import {
   MAX_PIXEL_SIZE,
@@ -8,18 +11,17 @@ import {
   MIN_PREVIEW_HEIGHT,
   TASK_FACTORS,
 } from '@/utils/constants';
-import {
-  ResultType,
-  SendType,
-  type PixelateBatchMessageData,
-} from '@/workers/constants';
+import { ResultType, SendType } from '@/workers/constants';
+import { pixelWorkerManager } from '@/workers/manager';
 import {
   BgColorsOutlined,
+  ClearOutlined,
   ColumnHeightOutlined,
   DeploymentUnitOutlined,
   HighlightOutlined,
   SearchOutlined,
   SettingOutlined,
+  StopOutlined,
   TableOutlined,
 } from '@ant-design/icons';
 import {
@@ -34,14 +36,7 @@ import {
 } from 'antd';
 import { Typography } from 'antd/lib';
 import debounce from 'lodash/debounce';
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ImageUploader from '../components/ImageUploader';
 import MultiAlgorithmPanel from '../components/MultiAlgorithmPanel';
@@ -50,17 +45,9 @@ import styles from '../index.module.less';
 
 interface ControlPanelProps {
   setOriginalFile: (file: File | null) => void;
-  setPixelatedResults?: Dispatch<
-    SetStateAction<{ url: string; algorithm: string; palette: string }[]>
-  >;
 }
 
-const ControlPanel: React.FC<ControlPanelProps> = ({
-  setOriginalFile,
-  setPixelatedResults,
-}) => {
-  const worker = useRef<Worker | null>(null);
-
+const ControlPanel: React.FC<ControlPanelProps> = ({ setOriginalFile }) => {
   const pixelSize = useCreatorLocalStore((state) => state.pixelSize);
   const setPixelSize = useCreatorLocalStore((state) => state.setPixelSize);
   const [uiPixelSize, setUiPixelSize] = useState<number>(pixelSize);
@@ -102,6 +89,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [originalImage, setOriginalImage] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const { t } = useTranslation('creator');
+  const {
+    setOriginalImage: saveOriginalImage,
+    restoreWorkspace,
+    clearResults,
+    clearWorkspace,
+    setGenerationConfig,
+    addResult,
+  } = useCreatorDataStore();
+  const results = useCreatorDataStore((state) => state.results);
+  const generationConfig = useCreatorDataStore(
+    (state) => state.generationConfig
+  );
+
   const pixelAlgorithmOptions = getPixelAlgorithmsOptions(t);
 
   const handlePaletteChange = (paletteName: string) => {
@@ -159,7 +159,27 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     setImageFile(file);
     setOriginalFile(file);
     setOriginalImage(url);
-    setPixelatedResults?.([]);
+    clearResults();
+
+    if (file) {
+      saveOriginalImage(file);
+    }
+  };
+
+  const handleClearWorkspace = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    pixelWorkerManager.terminate();
+    setInPixelation(false);
+    await clearWorkspace();
+    setImageFile(null);
+    setOriginalFile(null);
+    setOriginalImage('');
+  };
+
+  const handleStopGeneration = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    pixelWorkerManager.terminate();
+    setInPixelation(false);
   };
 
   // 可以像素画的条件：必须已选择图片，且如果开启多方案模式，其下至少选择一个算法与一个调色板
@@ -176,7 +196,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     const img = new Image();
     img.src = originalImage;
 
-    img.onload = () => {
+    img.onload = async () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
@@ -229,30 +249,25 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         return;
       }
 
-      if (!worker.current) return;
+      // 保存生成配置
+      // 关键点!!!：必须在 postMessage 之前执行！
+      // 下方的 postMessage 会通过 Transferable Objects 将 imageBuffer 的所有权“转移”给 Worker（零拷贝以提升性能）。
+      // 转移后，主线程中的 buffer 会立即被清空（Neutered），若此时再尝试读取或保存将会失败。
+      await setGenerationConfig({
+        totalTasks: tasks.length,
+        workerPayload: {
+          data,
+          width,
+          height,
+          pixelSize,
+          tasks,
+        },
+      });
 
       // 开始前清空预览结果
-      setPixelatedResults?.([]);
+      await clearResults();
 
-      worker.current.onmessage = (ev) => {
-        const msg = ev.data as PixelateBatchMessageData;
-        if (msg.type === ResultType.RESULT) {
-          const { data: outData, algorithm, palette } = msg.payload;
-          const outArray = new Uint8ClampedArray(outData.length);
-          outArray.set(outData);
-          const outImage = new ImageData(outArray, width, height);
-          ctx.putImageData(outImage, 0, 0);
-          const url = canvas.toDataURL('image/png');
-          setPixelatedResults?.((prev) => [
-            ...(prev ?? []),
-            { url, algorithm, palette },
-          ]);
-        } else if (msg.type === ResultType.COMPLETE) {
-          setInPixelation(false);
-        }
-      };
-
-      worker.current.postMessage(
+      pixelWorkerManager.postMessage(
         {
           type: SendType.PIXELATE_BATCH,
           payload: {
@@ -269,24 +284,78 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   useEffect(() => {
-    return () => {
-      setInPixelation(false);
-    };
-  }, []);
+    const initWorkspace = async () => {
+      if (!originalImage) {
+        const {
+          file,
+          results: restoredResults,
+          config,
+        } = await restoreWorkspace();
+        if (file) {
+          const url = URL.createObjectURL(file);
+          setOriginalImage(url);
+          setImageFile(file);
+          setOriginalFile(file);
+        }
 
-  useEffect(() => {
-    // 预渲染环境下跳过 Worker 创建，避免 Chromium 报错
-    if (navigator.userAgent === 'ReactSnap') return;
+        if (config && restoredResults.length < config.totalTasks) {
+          const completedKeys = new Set(
+            restoredResults.map((r) => `${r.algorithm}-${r.palette}`)
+          );
+          const remainingTasks = config.workerPayload.tasks.filter(
+            (t) => !completedKeys.has(`${t.algorithm}-${t.palette}`)
+          );
 
-    worker.current = new Worker(
-      new URL('../../../workers/pixelWorker.ts', import.meta.url),
-      {
-        type: 'module',
+          if (remainingTasks.length > 0) {
+            setInPixelation(true);
+            const { data } = config.workerPayload;
+            if (data && data.buffer) {
+              pixelWorkerManager.postMessage(
+                {
+                  type: SendType.PIXELATE_BATCH,
+                  payload: {
+                    ...config.workerPayload,
+                    tasks: remainingTasks,
+                  },
+                },
+                [data.buffer]
+              );
+            }
+          }
+        }
       }
-    );
-    return () => {
-      worker.current?.terminate();
     };
+
+    initWorkspace();
+
+    const unsubscribe = pixelWorkerManager.subscribe(async (msg) => {
+      if (msg.type === ResultType.RESULT) {
+        const { data, width, height, algorithm, palette, pixelSize } =
+          msg.payload;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const imageData = new ImageData(data as any, width, height);
+          ctx.putImageData(imageData, 0, 0);
+          canvas.toBlob(async (blob) => {
+            if (blob) {
+              await addResult({
+                algorithm,
+                palette,
+                pixelSize,
+                blob,
+                url: URL.createObjectURL(blob),
+              });
+            }
+          }, 'image/png');
+        }
+      } else if (msg.type === ResultType.COMPLETE) {
+        setInPixelation(false);
+      }
+    });
+    return unsubscribe;
   }, []);
 
   return extendMode ? (
@@ -297,13 +366,21 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         mode="button"
       />
       <Button
-        title={t('control_panel.to_pixel_button')}
-        type="primary"
+        title={
+          inPixelation
+            ? `${t('control_panel.stop_generation')} (${
+                generationConfig?.totalTasks
+                  ? `${results.length}/${generationConfig.totalTasks}`
+                  : ''
+              })`
+            : t('control_panel.to_pixel_button')
+        }
+        type={inPixelation ? 'default' : 'primary'}
+        danger={inPixelation}
         shape="circle"
-        icon={<HighlightOutlined />}
-        disabled={!canPixelate}
-        onClick={handlePixelate}
-        loading={inPixelation}
+        icon={inPixelation ? <StopOutlined /> : <HighlightOutlined />}
+        disabled={!canPixelate && !inPixelation}
+        onClick={inPixelation ? handleStopGeneration : handlePixelate}
         className={styles.miniPixelateButton}
       ></Button>
       <div className={styles.miniSetting}>
@@ -451,15 +528,37 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             />
           </Popover>
         </div>
+
+        {originalImage && (
+          <Button
+            title={t('control_panel.clear_workspace')}
+            shape="circle"
+            danger
+            icon={<ClearOutlined />}
+            className={styles.clearButton}
+            onClick={handleClearWorkspace}
+          />
+        )}
       </div>
     </div>
   ) : (
     <Card
       title={
-        <Space>
-          <SettingOutlined />
-          {t('control_panel.title')}
-        </Space>
+        <Flex justify="space-between" align="center">
+          <Space>
+            <SettingOutlined />
+            {t('control_panel.title')}
+          </Space>
+          {originalImage && (
+            <Button
+              type="text"
+              danger
+              icon={<ClearOutlined />}
+              onClick={handleClearWorkspace}
+              title={t('control_panel.clear_workspace')}
+            />
+          )}
+        </Flex>
       }
       className={styles.controlCard}
     >
@@ -472,15 +571,25 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/** 像素化按钮 */}
       <Button
-        title={t('control_panel.to_pixel_button')}
-        type="primary"
-        icon={<HighlightOutlined />}
-        disabled={!canPixelate}
-        onClick={handlePixelate}
-        loading={inPixelation}
+        title={
+          inPixelation
+            ? t('control_panel.stop_generation')
+            : t('control_panel.to_pixel_button')
+        }
+        type={inPixelation ? 'default' : 'primary'}
+        danger={inPixelation}
+        icon={inPixelation ? <StopOutlined /> : <HighlightOutlined />}
+        disabled={!canPixelate && !inPixelation}
+        onClick={inPixelation ? handleStopGeneration : handlePixelate}
         className={styles.pixelateButton}
       >
-        {t('control_panel.to_pixel_button')}
+        {inPixelation
+          ? `${t('control_panel.stop_generation')} (${
+              generationConfig?.totalTasks
+                ? `${results.length}/${generationConfig.totalTasks}`
+                : ''
+            })`
+          : t('control_panel.to_pixel_button')}
       </Button>
       <Divider />
 

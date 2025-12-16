@@ -1,7 +1,6 @@
 import CenterSpin from '@/components/CenterSpin';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { useCreatorLocalStore } from '@/stores';
-import { useCreatorStore } from '@/stores/creatorStore';
+import { useCreatorLocalStore, useCreatorStore } from '@/stores';
 import { getPixelAlgorithmsOptions } from '@/utils/algorithm';
 import { PREVIEW_COLUMNS, TASK_FACTORS } from '@/utils/constants';
 import { getPaletteOptions } from '@/utils/palettes';
@@ -21,25 +20,19 @@ import styles from '../index.module.less';
 interface PreviewPanelProps {
   originalFile: File | null;
   pixelatedResults?: {
+    id: string;
     url: string;
     algorithm: string;
     palette: string;
+    pixelSize?: number;
   }[];
-  setPixelatedResults: React.Dispatch<
-    React.SetStateAction<
-      {
-        url: string;
-        algorithm: string;
-        palette: string;
-      }[]
-    >
-  >;
+  onClearResults: () => Promise<void>;
 }
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({
   originalFile,
   pixelatedResults = [],
-  setPixelatedResults,
+  onClearResults,
 }) => {
   const { t } = useTranslation('creator');
   const { t: paletteT } = useTranslation('common');
@@ -99,9 +92,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     setPreviewColumns(Number(v));
   };
 
-  const clearPreview = () => {
+  const clearPreview = async () => {
     // 清除所有生成的预览图片
-    setPixelatedResults([]);
+    await onClearResults();
   };
 
   useEffect(() => {
@@ -162,8 +155,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     >
       {pixelatedResults.length > 0 ? (
         <Row gutter={[12, 12]}>
-          {pixelatedResults.map((res, idx) => (
-            <Col key={`${res.algorithm}-${res.palette}-${idx}`} span={colSpan}>
+          {pixelatedResults.map((res) => (
+            <Col key={res.id} span={colSpan}>
               <PreviewCard
                 tags={[
                   labelOf(algoOptions, res.algorithm),
@@ -171,10 +164,13 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 ]}
                 originalFile={originalFile}
                 pixelatedImage={res.url}
+                pixelSize={res.pixelSize}
                 showPixelGrid={showPreviewPixelGrid}
                 saveButtonPlacement={isMobile ? 'bottom' : 'top'}
                 showResizeHandle={!isMobile}
                 editButtonPlacement={isMobile ? 'bottom' : 'top'}
+                // 移动端暂时不提供编辑功能
+                showEditButton={!isMobile}
                 defaultPreviewHeight={defaultPreviewHeight}
               />
             </Col>
@@ -215,6 +211,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           pixelatedImage={''}
           showPixelGrid={showPreviewPixelGrid}
           saveButtonPlacement={isMobile ? 'bottom' : 'top'}
+          editButtonPlacement={isMobile ? 'bottom' : 'top'}
+          // 移动端暂时不提供编辑功能
+          showEditButton={!isMobile}
           showResizeHandle={!isMobile}
           defaultPreviewHeight={defaultPreviewHeight}
         />

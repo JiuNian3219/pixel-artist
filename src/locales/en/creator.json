@@ -22,7 +22,10 @@
     "preview_height_slider": "Preview Height",
     "pixel_size_slider": "Pixel Size",
     "pixel_algorithm_select": "Pixel Sampling Algorithm",
-    "palette_select": "Palette Selection"
+    "palette_select": "Palette Selection",
+    "generating": "Generating",
+    "stop_generation": "Stop Generation",
+    "clear_workspace": "Clear Uploaded Image and Generated Pixel Art"
   },
   "preview_panel": {
     "title": "Preview",

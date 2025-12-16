@@ -1,5 +1,5 @@
 .container {
-  height: calc(100vh - 167px);
+  min-height: calc(100vh - 167px);
 
   .title {
     display: inline-block;
@@ -47,6 +47,20 @@
         color: var(--primary-200);
         box-shadow: 0 10px 20px rgb(99 102 241 / 20%);
       }
+    }
+
+    .actionItem {
+      flex: 1;
+      max-width: 300px;
+    }
+
+    .description {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-secondary, #666);
+      text-align: center;
+
+      opacity: 0.9;
     }
 
     @media (width <= 768px) {

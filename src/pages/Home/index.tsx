@@ -10,15 +10,20 @@ import { Trans, useTranslation } from 'react-i18next';
 import { navigate } from 'vike/client/router';
 import styles from './index.module.less';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const Home: React.FC = () => {
   const pageContext = usePageContext();
   const locale = parseLocaleFromPath(pageContext.urlPathname);
   const isMobile = useIsMobile();
   const { t } = useTranslation('home');
+
   const handleStartClick = () => {
     navigate(withLocalePath(locale, '/creator'));
+  };
+
+  const handleEditorClick = () => {
+    navigate(withLocalePath(locale, '/editor'));
   };
 
   return (
@@ -56,16 +61,53 @@ const Home: React.FC = () => {
               />
             </Title>
           )}
-          <Button
-            title={t('start_button')}
-            color="primary"
-            variant="outlined"
-            size="large"
-            onClick={handleStartClick}
-            className={styles.startButton}
+          <Flex
+            gap={isMobile ? 32 : 48}
+            vertical={isMobile}
+            align={isMobile ? 'center' : 'start'}
           >
-            {t('start_button')}
-          </Button>
+            <Flex
+              vertical
+              align="center"
+              gap={16}
+              className={styles.actionItem}
+            >
+              <Button
+                title={t('start_button')}
+                color="primary"
+                variant="outlined"
+                size="large"
+                onClick={handleStartClick}
+                className={styles.startButton}
+              >
+                {t('start_button')}
+              </Button>
+              <Text className={styles.description}>
+                {t('start_button_desc')}
+              </Text>
+            </Flex>
+
+            <Flex
+              vertical
+              align="center"
+              gap={16}
+              className={styles.actionItem}
+            >
+              <Button
+                title={t('start_editor_button')}
+                variant="outlined"
+                size="large"
+                color="primary"
+                onClick={handleEditorClick}
+                className={styles.startButton}
+              >
+                {t('start_editor_button')}
+              </Button>
+              <Text className={styles.description}>
+                {t('start_editor_button_desc')}
+              </Text>
+            </Flex>
+          </Flex>
         </Flex>
       </Col>
     </Row>

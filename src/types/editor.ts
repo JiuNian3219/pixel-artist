@@ -13,9 +13,20 @@ export type OperationChange = {
 };
 
 // 编辑器一次操作
-export type EditorOperation = {
-  changes: OperationChange[];
-};
+export type EditorOperation =
+  | {
+      type: 'stroke';
+      changes: OperationChange[];
+    }
+  | {
+      type: 'fill';
+      /** 填充操作专用的数据结构 */
+      fillData: {
+        indices: number[]; // 变更的像素索引列表
+        prev: string | null; // 变更前的颜色
+        next: string | null; // 变更后的颜色
+      };
+    };
 
 // 从像素化结果初始化编辑器的参数
 export interface PrepareEditorFromPixelatedParams {
