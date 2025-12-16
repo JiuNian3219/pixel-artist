@@ -49,6 +49,7 @@ ${urls}
     const baseRoutes = [
       { base: "/", priority: "1.0", changefreq: "weekly" },
       { base: "/creator", priority: "0.8", changefreq: "weekly" },
+      { base: "/editor", priority: "0.8", changefreq: "weekly" },
     ];
     const locales = ["zh", "en"];
     const routes = [];
