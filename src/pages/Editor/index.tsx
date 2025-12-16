@@ -118,7 +118,7 @@ const Editor: React.FC = () => {
       ) : (
         <div className={styles.editorContainer}>
           <div className={styles.toolsContainer}>
-            <ToolsPanel />
+            <ToolsPanel onResetView={() => canvasRef.current?.resetView()} />
           </div>
           <div className={styles.CanvasWrapper}>
             {isLoading ? (

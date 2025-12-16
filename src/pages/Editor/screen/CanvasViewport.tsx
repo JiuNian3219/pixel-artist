@@ -26,6 +26,7 @@ const { throttle } = lodash;
 
 export interface CanvasViewportHandle {
   exportImage: () => void;
+  resetView: () => void;
 }
 
 const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
@@ -143,6 +144,59 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
     ctx.putImageData(imgData, 0, 0);
   }, [columns, rows, dataVersion]);
 
+  const resetView = useCallback(() => {
+    if (!hasCanvas) return;
+    const container = containerRef.current;
+    const cw = container?.clientWidth ?? 0;
+    const ch = container?.clientHeight ?? 0;
+
+    if (cw > 0 && ch > 0 && rows > 0 && columns > 0) {
+      // 计算基础单元格大小
+      // 目的是让整个网格能完整塞进容器里，类似背景图片的contain模式
+      // 例子：容器 1000x500，画布 100x100
+      // 按宽算：1000/100 = 10px/格；按高算：500/100 = 5px/格
+      // 取最小值 5px，才能保证宽高都不溢出容器
+      // 同时设置最小值为 4px，这里是因为背景格子用的是马赛克样式，左上 白 右上 灰 左下 灰 右下 白，所以最小也要4px
+      const baseCell = Math.max(
+        4,
+        Math.floor(Math.min(cw / columns, ch / rows))
+      );
+      setCellSize(baseCell);
+
+      // 计算画布在 基础单元格大小下的实际物理尺寸
+      const stageW = columns * baseCell;
+      const stageH = rows * baseCell;
+
+      // 计算最小缩放比例，这里是保证画布即使在最小缩放时，也能至少占据容器的一半空间（* 0.5）
+      // 避免用户一缩小，画布就变成一个看不见的点
+      const minBound = Math.min(cw / stageW, ch / stageH) * 0.5;
+
+      // 计算最大缩放比例，这里的逻辑是：限制最大放大倍数，防止用户无限放大
+      // 最大只能放大到 屏幕高度的一半只能显示 2 个格子 的程度
+      const maxBound = ch / 2 / baseCell;
+
+      // 结合全局常量 MIN_ZOOM，确定最终的缩放范围
+      // 确保最小缩放不低于 MIN_ZOOM，同时也不大于最大缩放
+      const minLimit = Math.max(MIN_ZOOM, minBound);
+      const maxLimit = Math.max(minLimit, maxBound);
+      setZoomLimits({ min: minLimit, max: maxLimit });
+
+      // 设定初始缩放值，此处是为了消除偏移误差
+      // 因为 baseCell 被强制向下取整（Math.floor），导致 stageW/stageH 会略小于容器尺寸
+      // minBound 计算时用了真实比例 (cw/stageW)，这里的 minLimit*2 其实就是还原了这个比例
+      // 让画布通过微小的放大（比如 1.05x），在视觉上完美撑满容器
+      const initialZoom = minLimit * 2;
+      setZoom(initialZoom);
+
+      // 计算居中偏移量
+      // (容器宽 - 画布实际宽 * 缩放) / 2 = 居中所需的左边距
+      setTranslate({
+        x: Math.floor((cw - stageW * initialZoom) / 2),
+        y: Math.floor((ch - stageH * initialZoom) / 2),
+      });
+    }
+  }, [hasCanvas, rows, columns]);
+
   // 暴露导出图像的方法
   useImperativeHandle(ref, () => ({
     exportImage: () => {
@@ -217,6 +271,7 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
       link.click();
       document.body.removeChild(link);
     },
+    resetView,
   }));
 
   /**
@@ -677,56 +732,8 @@ const CanvasViewport = forwardRef<CanvasViewportHandle>((_props, ref) => {
   useEffect(() => {
     // 对画布做的初始化，目的是让画布正好占满容器，且不超出容器边界，同时缩放保证
     if (!hasCanvas) return;
-    const container = containerRef.current;
-    const cw = container?.clientWidth ?? 0;
-    const ch = container?.clientHeight ?? 0;
-
-    if (cw > 0 && ch > 0 && rows > 0 && columns > 0) {
-      // 计算基础单元格大小
-      // 目的是让整个网格能完整塞进容器里，类似背景图片的contain模式
-      // 例子：容器 1000x500，画布 100x100
-      // 按宽算：1000/100 = 10px/格；按高算：500/100 = 5px/格
-      // 取最小值 5px，才能保证宽高都不溢出容器
-      // 同时设置最小值为 4px，这里是因为背景格子用的是马赛克样式，左上 白 右上 灰 左下 灰 右下 白，所以最小也要4px
-      const baseCell = Math.max(
-        4,
-        Math.floor(Math.min(cw / columns, ch / rows))
-      );
-      setCellSize(baseCell);
-
-      // 计算画布在 基础单元格大小下的实际物理尺寸
-      const stageW = columns * baseCell;
-      const stageH = rows * baseCell;
-
-      // 计算最小缩放比例，这里是保证画布即使在最小缩放时，也能至少占据容器的一半空间（* 0.5）
-      // 避免用户一缩小，画布就变成一个看不见的点
-      const minBound = Math.min(cw / stageW, ch / stageH) * 0.5;
-
-      // 计算最大缩放比例，这里的逻辑是：限制最大放大倍数，防止用户无限放大
-      // 最大只能放大到 屏幕高度的一半只能显示 2 个格子 的程度
-      const maxBound = ch / 2 / baseCell;
-
-      // 结合全局常量 MIN_ZOOM，确定最终的缩放范围
-      // 确保最小缩放不低于 MIN_ZOOM，同时也不大于最大缩放
-      const minLimit = Math.max(MIN_ZOOM, minBound);
-      const maxLimit = Math.max(minLimit, maxBound);
-      setZoomLimits({ min: minLimit, max: maxLimit });
-
-      // 设定初始缩放值，此处是为了消除偏移误差
-      // 因为 baseCell 被强制向下取整（Math.floor），导致 stageW/stageH 会略小于容器尺寸
-      // minBound 计算时用了真实比例 (cw/stageW)，这里的 minLimit*2 其实就是还原了这个比例
-      // 让画布通过微小的放大（比如 1.05x），在视觉上完美撑满容器
-      const initialZoom = minLimit * 2;
-      setZoom(initialZoom);
-
-      // 计算居中偏移量
-      // (容器宽 - 画布实际宽 * 缩放) / 2 = 居中所需的左边距
-      setTranslate({
-        x: Math.floor((cw - stageW * initialZoom) / 2),
-        y: Math.floor((ch - stageH * initialZoom) / 2),
-      });
-    }
-  }, [hasCanvas, rows, columns]);
+    resetView();
+  }, [hasCanvas, resetView]);
 
   // 尺寸变化时重置交互状态
   useEffect(() => {
