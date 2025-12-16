@@ -1,7 +1,10 @@
 import CenterSpin from '@/components/CenterSpin';
 import GlobalLoadingOverlay from '@/components/GlobalLoadingOverlay';
-import { useCreatorLocalStore } from '@/stores/creatorStore';
-import { useEditorDataStore } from '@/stores/editorDataStore';
+import {
+  useCreatorLocalStore,
+  useEditorDataStore,
+  useEditorUIStore,
+} from '@/stores';
 import {
   MAX_COLUMNS,
   MAX_PREVIEW_HEIGHT,
@@ -49,6 +52,7 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   tags = [],
 }) => {
   const { t } = useTranslation('creator');
+  const setExportPixelSize = useEditorUIStore((s) => s.setExportPixelSize);
   const { modal } = App.useApp();
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
   const initializeFromPixelated = useEditorDataStore(
@@ -119,7 +123,6 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
   };
 
   const handlePreviewWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
     e.stopPropagation();
     if (!e.shiftKey) return;
     const delta = e.deltaY > 0 ? -30 : 30;
@@ -161,6 +164,9 @@ const PreviewCard: React.FC<PreviewCardProps> = ({
           originalHeight: imageNaturalSize.height,
           pixels,
         });
+
+        setExportPixelSize(pixelSize);
+
         const locale = parseLocaleFromPath(window.location.pathname);
         navigate(withLocalePath(locale, '/editor'));
       } catch (err) {

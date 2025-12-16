@@ -1,5 +1,8 @@
-import { useCreatorDataStore, useCreatorLocalStore } from '@/stores';
-import { useCreatorStore } from '@/stores/creatorStore';
+import {
+  useCreatorDataStore,
+  useCreatorLocalStore,
+  useCreatorStore,
+} from '@/stores';
 import { getPixelAlgorithmsOptions } from '@/utils/algorithm';
 import {
   MAX_PIXEL_SIZE,

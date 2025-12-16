@@ -21,6 +21,8 @@
     "painting_config": "Painting Config",
     "picker_switch_to_pencil": "Switch to Last Used Tool",
     "picker_switch_to_pencil_tooltip": "When enabled, the picker tool will switch to the last used tool after picking a color, allowing for immediate painting.",
+    "export_pixel_size": "Export Pixel Size",
+    "export_pixel_size_tooltip": "The size of each pixel block when exporting the canvas",
     "create_model": {
       "title": "Create Canvas",
       "rows_and_columns": "Height × Width",

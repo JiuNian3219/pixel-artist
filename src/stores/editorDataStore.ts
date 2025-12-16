@@ -3,6 +3,8 @@ import type {
   PrepareEditorFromPixelatedParams,
 } from '@/types/editor';
 import { INITIAL_COLUMNS, INITIAL_ROWS } from '@/utils/constants';
+import { parseCoordinates } from '@/utils/parsers';
+import { pixelBuffer } from '@/utils/pixelBuffer';
 import { del, get, set as setIDB } from 'idb-keyval';
 import lodash from 'lodash';
 import { create } from 'zustand';
@@ -10,8 +12,12 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 const { debounce } = lodash;
 
-export const runtimePixels = new Map<string, string>();
-const PIXELS_STORAGE_KEY = 'editor-pixel-data';
+/**
+ * 存储当前画布像素数据的 IndexedDB 键名
+ * 废弃的旧数据键名，请勿重复使用：
+ * - 'editor-pixel-data': 曾用于存储 Map 结构的像素数据
+ */
+const PIXELS_BUFFER_KEY = 'editor-pixel-buffer-v1';
 
 export type Updater<T> = T | ((prev: T) => T);
 
@@ -20,6 +26,8 @@ interface EditorDataStoreState {
   columns: number;
   originalWidth: number;
   originalHeight: number;
+  /** 导入时的采样像素大小，用于导出时还原尺寸 */
+  importPixelSize?: number;
   filename?: string;
   /** 操作历史 */
   ops: Array<EditorOperation>;
@@ -27,6 +35,8 @@ interface EditorDataStoreState {
   opIndex: number;
   /** 数据版本号，用于通知 UI 重绘（当 runtimePixels 异步加载完成或发生重大变更时更新） */
   dataVersion: number;
+  /** 是否正在加载初始数据 */
+  isLoading: boolean;
 }
 
 interface EditorDataStoreActions {
@@ -34,6 +44,8 @@ interface EditorDataStoreActions {
   setColumns: (columns: number) => void;
   setOriginalSize: (width: number, height: number) => void;
   setFilename: (name?: string) => void;
+  setImportPixelSize: (size?: number) => void;
+  setIsLoading: (isLoading: boolean) => void;
   /** 不触发 React 渲染，自动触发防抖保存 */
   mutatePixels: (entries: [string, string | null][]) => void;
   /** 手动触发一次状态更新以保存数据 */
@@ -64,14 +76,13 @@ export const useEditorDataStore = create<
     (set, get) => {
       // 将 runtimePixels 直接存入 IDB，绕过 Zustand 状态更新，避免触发 React 渲染
       const debouncedSave = debounce(() => {
-        console.log('debouncedSave', runtimePixels);
-        setIDB(PIXELS_STORAGE_KEY, runtimePixels);
+        setIDB(PIXELS_BUFFER_KEY, pixelBuffer.getRawBuffer());
       }, 1000);
 
       // 立即保存 runtimePixels 到 IndexedDB
       const savePixelsNow = () => {
         debouncedSave.cancel();
-        return setIDB(PIXELS_STORAGE_KEY, runtimePixels);
+        return setIDB(PIXELS_BUFFER_KEY, pixelBuffer.getRawBuffer());
       };
 
       return {
@@ -82,20 +93,20 @@ export const useEditorDataStore = create<
         ops: [],
         opIndex: -1,
         dataVersion: 0,
+        isLoading: true,
 
         setRows: (rows) => set({ rows }),
         setColumns: (columns) => set({ columns }),
         setOriginalSize: (width, height) =>
           set({ originalWidth: width, originalHeight: height }),
         setFilename: (name) => set({ filename: name }),
+        setImportPixelSize: (size) => set({ importPixelSize: size }),
+        setIsLoading: (isLoading) => set({ isLoading }),
 
         mutatePixels: (entries) => {
           for (const [key, val] of entries) {
-            if (val === null) {
-              runtimePixels.delete(key);
-            } else {
-              runtimePixels.set(key, val);
-            }
+            const [x, y] = parseCoordinates(key);
+            pixelBuffer.setPixel(x, y, val);
           }
           debouncedSave();
           // 返回空对象，不触发 React 更新
@@ -110,7 +121,14 @@ export const useEditorDataStore = create<
         setOpIndex: (index) => set({ opIndex: index }),
         commitOp: (op) =>
           set((state) => {
-            if (!op || !op.changes || op.changes.length === 0) return state;
+            const isValid =
+              (op.type === 'stroke' && op.changes && op.changes.length > 0) ||
+              (op.type === 'fill' &&
+                op.fillData &&
+                op.fillData.indices.length > 0);
+
+            if (!isValid) return state;
+
             const nextOps = state.ops.slice(0, state.opIndex + 1);
             nextOps.push(op);
             return { ops: nextOps, opIndex: nextOps.length - 1 };
@@ -119,34 +137,42 @@ export const useEditorDataStore = create<
           set((state) => {
             if (state.opIndex < 0) return state;
             const op = state.ops[state.opIndex];
-            for (const c of op.changes) {
-              const key = `${c.x},${c.y}`;
-              if (c.prev == null) {
-                runtimePixels.delete(key);
-              } else {
-                runtimePixels.set(key, c.prev);
+
+            if (op.type === 'fill' && op.fillData) {
+              pixelBuffer.fillIndices(op.fillData.indices, op.fillData.prev);
+            } else if (op.type === 'stroke' && op.changes) {
+              for (const c of op.changes) {
+                pixelBuffer.setPixel(c.x, c.y, c.prev);
               }
             }
+
             debouncedSave();
-            return { opIndex: state.opIndex - 1 };
+            return {
+              opIndex: state.opIndex - 1,
+              dataVersion: state.dataVersion + 1,
+            };
           }),
         redo: () =>
           set((state) => {
             if (state.opIndex >= state.ops.length - 1) return state;
             const op = state.ops[state.opIndex + 1];
-            for (const c of op.changes) {
-              const key = `${c.x},${c.y}`;
-              if (c.next == null) {
-                runtimePixels.delete(key);
-              } else {
-                runtimePixels.set(key, c.next);
+
+            if (op.type === 'fill' && op.fillData) {
+              pixelBuffer.fillIndices(op.fillData.indices, op.fillData.next);
+            } else if (op.type === 'stroke' && op.changes) {
+              for (const c of op.changes) {
+                pixelBuffer.setPixel(c.x, c.y, c.next);
               }
             }
+
             debouncedSave();
-            return { opIndex: state.opIndex + 1 };
+            return {
+              opIndex: state.opIndex + 1,
+              dataVersion: state.dataVersion + 1,
+            };
           }),
         createCanvas: (rows, columns, filename) => {
-          runtimePixels.clear();
+          pixelBuffer.init(columns, rows);
           savePixelsNow();
 
           set((state) => ({
@@ -161,11 +187,12 @@ export const useEditorDataStore = create<
           }));
         },
         initializeFromPixelated: (p) => {
-          runtimePixels.clear();
+          pixelBuffer.init(p.columns, p.rows);
           if (p.pixels) {
-            Object.entries(p.pixels).forEach(([k, v]) =>
-              runtimePixels.set(k, v)
-            );
+            Object.entries(p.pixels).forEach(([k, v]) => {
+              const [x, y] = parseCoordinates(k);
+              pixelBuffer.setPixel(x, y, v);
+            });
           }
           savePixelsNow();
 
@@ -175,6 +202,7 @@ export const useEditorDataStore = create<
             filename: p.filename,
             originalWidth: p.originalWidth,
             originalHeight: p.originalHeight,
+            importPixelSize: p.pixelSize,
             // 清空编辑相关状态
             ops: [],
             opIndex: -1,
@@ -186,7 +214,7 @@ export const useEditorDataStore = create<
           return s.rows > 0 && s.columns > 0;
         },
         clearCanvas: () => {
-          runtimePixels.clear();
+          pixelBuffer.clear();
           savePixelsNow();
 
           set((state) => ({
@@ -195,6 +223,7 @@ export const useEditorDataStore = create<
             filename: '',
             originalWidth: 0,
             originalHeight: 0,
+            importPixelSize: undefined,
             // 清空编辑相关状态
             ops: [],
             opIndex: -1,
@@ -233,16 +262,22 @@ export const useEditorDataStore = create<
         columns: state.columns,
         ops: state.ops,
         opIndex: state.opIndex,
+        originalWidth: state.originalWidth,
+        originalHeight: state.originalHeight,
+        importPixelSize: state.importPixelSize,
       }),
+      // 从独立存储加载像素数据
       onRehydrateStorage: () => async (state) => {
         if (typeof window === 'undefined') return;
-        // 从独立存储加载像素数据
-        const storedPixels = await get(PIXELS_STORAGE_KEY);
-        if (storedPixels && storedPixels instanceof Map) {
-          runtimePixels.clear();
-          storedPixels.forEach((v, k) => runtimePixels.set(k, v));
-          // 通知 UI 数据已加载完毕
-          state?.forceRedraw();
+        const storedBuffer = await get(PIXELS_BUFFER_KEY);
+        if (storedBuffer && storedBuffer instanceof Uint32Array && state) {
+          pixelBuffer.loadRawBuffer(storedBuffer, state.columns, state.rows);
+          state.forceRedraw();
+        } else if (state) {
+          pixelBuffer.init(state.columns, state.rows);
+        }
+        if (state) {
+          state.setIsLoading(false);
         }
       },
     }

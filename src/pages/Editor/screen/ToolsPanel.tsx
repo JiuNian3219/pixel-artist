@@ -1,5 +1,4 @@
-import { useEditorDataStore } from '@/stores/editorDataStore';
-import { useEditorUIStore } from '@/stores/editorUIStore';
+import { useEditorDataStore, useEditorUIStore } from '@/stores';
 import { TOOLS } from '@/utils/constants';
 import { Button, ColorPicker } from 'antd';
 import type { Color } from 'antd/es/color-picker';

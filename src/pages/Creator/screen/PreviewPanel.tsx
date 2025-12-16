@@ -1,7 +1,6 @@
 import CenterSpin from '@/components/CenterSpin';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { useCreatorLocalStore } from '@/stores';
-import { useCreatorStore } from '@/stores/creatorStore';
+import { useCreatorLocalStore, useCreatorStore } from '@/stores';
 import { getPixelAlgorithmsOptions } from '@/utils/algorithm';
 import { PREVIEW_COLUMNS, TASK_FACTORS } from '@/utils/constants';
 import { getPaletteOptions } from '@/utils/palettes';

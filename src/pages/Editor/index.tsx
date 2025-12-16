@@ -2,11 +2,10 @@ import CenterSpin from '@/components/CenterSpin';
 import { ClientOnly } from '@/components/ClientOnly';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { usePageContext } from '@/renderer/usePageContext';
-import { useEditorDataStore } from '@/stores/editorDataStore';
-import { useEditorUIStore } from '@/stores/editorUIStore';
+import { useEditorDataStore, useEditorUIStore } from '@/stores';
 import { MAX_PENCIL_SIZE, MIN_PENCIL_SIZE, TOOLS } from '@/utils/constants';
 import { parseLocaleFromPath, withLocalePath } from '@/utils/locale';
-import { Button, Result, Typography } from 'antd';
+import { Button, Result, Spin, Typography } from 'antd';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { navigate } from 'vike/client/router';
@@ -24,6 +23,7 @@ const Editor: React.FC = () => {
   const setTool = useEditorUIStore((s) => s.setTool);
   const setPencilSize = useEditorUIStore((s) => s.setPencilSize);
   const hasCanvas = useEditorDataStore((s) => s.hasCanvas());
+  const isLoading = useEditorDataStore((s) => s.isLoading);
   const undo = useEditorDataStore((s) => s.undo);
   const redo = useEditorDataStore((s) => s.redo);
   const triggerSave = useEditorDataStore((s) => s.triggerSave);
@@ -121,7 +121,11 @@ const Editor: React.FC = () => {
             <ToolsPanel />
           </div>
           <div className={styles.CanvasWrapper}>
-            {hasCanvas ? (
+            {isLoading ? (
+              <div className={styles.emptyContainer}>
+                <Spin />
+              </div>
+            ) : hasCanvas ? (
               <CanvasViewport ref={canvasRef} />
             ) : (
               <div className={styles.emptyContainer}>
