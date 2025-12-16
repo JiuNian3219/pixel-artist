@@ -1,6 +1,9 @@
 import { type PixelateBatchPayload } from '@/workers/constants';
 import { del, get as getIDB, set as setIDB } from 'idb-keyval';
+import lodash from 'lodash';
 import { create } from 'zustand';
+
+const { uniqueId } = lodash;
 
 const CREATOR_IMAGE_KEY = 'creator-original-image';
 const CREATOR_RESULTS_KEY = 'creator-pixelated-results';
@@ -85,7 +88,7 @@ export const useCreatorDataStore = create<
           if (r.blob) {
             results.push({
               ...r,
-              id: r.id || crypto.randomUUID(),
+              id: r.id || uniqueId(),
               url: URL.createObjectURL(r.blob),
             });
           }
@@ -113,7 +116,7 @@ export const useCreatorDataStore = create<
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { url: _unused, ...rest } = newResult;
-      const resultToStore = { ...rest, id: crypto.randomUUID() };
+      const resultToStore = { ...rest, id: uniqueId() };
 
       const nextResults = [...currentResults, resultToStore];
 
