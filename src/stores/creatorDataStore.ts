@@ -1,7 +1,9 @@
 import { type PixelateBatchPayload } from '@/workers/constants';
 import { del, get as getIDB, set as setIDB } from 'idb-keyval';
-import { uniqueId } from 'lodash';
+import lodash from 'lodash';
 import { create } from 'zustand';
+
+const { uniqueId } = lodash;
 
 const CREATOR_IMAGE_KEY = 'creator-original-image';
 const CREATOR_RESULTS_KEY = 'creator-pixelated-results';
